@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { AuthBack } from "@/shared/icons/AuthBack";
 import { startBackText } from "@/features/auth/lib/classNames";
 import { AuthInput } from "../../shared/AuthInput/Index";
-import { memo, useState } from "react";
+import { memo, useCallback, useState } from "react";
+import { passwordSchema } from "../../lib/yupShemas";
 
 interface StepEmailProps {
 	onChange: (value: string) => void;
@@ -14,10 +15,25 @@ interface StepEmailProps {
 
 export const LoginPassword = memo(({ onChange, onNext, onPrev }: StepEmailProps) => {
 	const [localPassword, setLocalPassword] = useState("");
+	const [error, setError] = useState(false);
 
-	const handleNext = () => {
-		onChange(localPassword);
-		onNext();
+	const handleInputChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			setLocalPassword(e.target.value);
+			if (error) setError(false);
+		},
+		[error],
+	);
+
+	const handleNext = async () => {
+		try {
+			await passwordSchema.validate({ password: localPassword });
+			setError(false);
+			onChange(localPassword);
+			onNext();
+		} catch {
+			setError(true);
+		}
 	};
 
 	return (
@@ -35,7 +51,9 @@ export const LoginPassword = memo(({ onChange, onNext, onPrev }: StepEmailProps)
 				icon="🔐️"
 				placeholder="Пароль"
 				value={localPassword}
-				onChange={e => setLocalPassword(e.target.value)}
+				onChange={handleInputChange}
+				error={error}
+				errorTitle="Неверный пароль"
 			/>
 			<div className="mt-auto">
 				<Button variant="start" size="start" onClick={handleNext}>

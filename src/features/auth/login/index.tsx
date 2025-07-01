@@ -25,7 +25,7 @@ export const Login = () => {
 
 	const handlePasswordChange = useCallback((password: string) => setFormData(prev => ({ ...prev, password })), []);
 
-	const handleFinish = async () => {
+	const handleFinish = useCallback(async () => {
 		try {
 			await signInWithEmailAndPassword(auth, formData.email, formData.password);
 			router.push("/dashboard");
@@ -43,7 +43,7 @@ export const Login = () => {
 			setError(message);
 			toast.error(message);
 		}
-	};
+	}, [formData.email, formData.password, router]);
 
 	return (
 		<AuthLayout>
