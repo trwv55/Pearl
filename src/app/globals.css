@@ -1,26 +1,141 @@
 @import "tailwindcss";
+@import './fonts.css';
+
+@font-face {
+	font-family: "SF Pro";
+	src: url("/fonts/SF-pro/SFProDisplay-Regular.woff2") format("woff2");
+	font-weight: 400;
+	font-style: normal;
+  }
+  
+  @font-face {
+	font-family: "SF Pro";
+	src: url("/fonts/SF-pro/SFProDisplay-Semibold.woff2") format("woff2");
+	font-weight: 600;
+	font-style: normal;
+  }
+  
+  @font-face {
+	font-family: "SF Pro";
+	src: url("/fonts/SF-pro/SFProDisplay-Heavy.woff2") format("woff2");
+	font-weight: 800;
+	font-style: normal;
+  }
+  
+  
+  @font-face {
+	font-family: "SF Pro Text";
+	src: url("/fonts/SF-pro-text/SFProText-Heavy.woff2") format("woff2");
+	font-weight: 800;
+	font-style: normal;
+  }
+
+  @font-face {
+	font-family: "SF Pro Text";
+	src: url("/fonts/SF-pro-text/SFProText-Semibold.woff2") format("woff2");
+	font-weight: 600;
+	font-style: normal;
+  }
+
+  @font-face {
+	font-family: "Onest";
+	src: url("/fonts/Onest/Onest-Black.woff2") format("woff2");
+	font-weight: 900;
+	font-style: normal;
+  }
+
+  @font-face {
+	font-family: "Onest";
+	src: url("/fonts/Onest/Onest-Medium.woff2") format("woff2");
+	font-weight: 500;
+	font-style: normal;
+  }
+
+  @font-face {
+	font-family: "Onest";
+	src: url("/fonts/Onest/Onest-Light.woff2") format("woff2");
+	font-weight: 300;
+	font-style: normal;
+  }
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --font-family: "SF Pro", sans-serif;
+  --second-family: "Onest", sans-serif;
+  --third-family: "SF Pro Text", sans-serif;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --flowkit-purple: #7b61ff;
+	--flowkit-charcoal: #222;
+	--flowkit-red: #fc5555;
+	--flowkit-green: #29cc6a;
+	--flowkit-blue: #09f;
+	--flowkit-white: #fff;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --bg-register: linear-gradient(135deg, #ae96ff 0%, #3d00cb 60%);
+  --btn-text-main: #3d00cb;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-family);
 }
+
+main {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: start;
+  height: 100vh;
+}
+
+button {
+  cursor: pointer;
+}
+
+input:focus {
+  outline: none; /* отключает синий обвод */
+  box-shadow: none; /* отключает glow (в Safari, Firefox) */
+}
+
+/* .LoginWrap {
+	@apply w-full h-full py-10 ph-5;
+} */
+
+
+
+/* /* :root {
+
+} */
+
+/* .dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}  */
+
