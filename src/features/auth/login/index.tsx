@@ -25,20 +25,21 @@ export const Login = () => {
 
 	const handlePasswordChange = useCallback((password: string) => setFormData(prev => ({ ...prev, password })), []);
 
-	const handleFinish = useCallback(async () => {
-		try {
-			await signInWithEmailAndPassword(auth, formData.email, formData.password);
-			router.push("/dashboard");
-		} catch (err: any) {
-			console.error("Login error:", err);
+        const handleFinish = useCallback(async () => {
+                try {
+                        await signInWithEmailAndPassword(auth, formData.email, formData.password);
+                        router.push("/dashboard");
+                } catch (err: unknown) {
+                        console.error("Login error:", err);
 
-			let message = "Ошибка входа. Попробуйте ещё раз.";
+                        let message = "Ошибка входа. Попробуйте ещё раз.";
+                        const error = err as { code?: string };
 
-			if (err.code === "auth/user-not-found") {
-				message = "Пользователь не найден";
-			} else if (err.code === "auth/wrong-password") {
-				message = "Неверный пароль";
-			}
+                        if (error.code === "auth/user-not-found") {
+                                message = "Пользователь не найден";
+                        } else if (error.code === "auth/wrong-password") {
+                                message = "Неверный пароль";
+                        }
 
 			setError(message);
 			toast.error(message);
