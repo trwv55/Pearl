@@ -5,11 +5,7 @@ import { useRouter } from "next/navigation";
 import styles from "./auth.module.css";
 import Image from "next/image";
 
-interface AuthProps {
-	onNext: () => void;
-}
-
-export const Auth = ({ onNext }: AuthProps) => {
+export const Auth = () => {
 	const router = useRouter();
 
 	return (
@@ -26,12 +22,12 @@ export const Auth = ({ onNext }: AuthProps) => {
 			</div>
 
 			<div className="w-full flex flex-col gap-2">
-				<Button className="w-full" onClick={onNext} variant="start" size="start">
+				<Button className="w-full" onClick={() => router.push("/auth/register")} variant="start" size="start">
 					Начать
 				</Button>
-                                <button onClick={() => router.push("/auth/login")} className={styles.hasAccount}>
-                                        Уже есть аккаунт
-                                </button>
+				<button onClick={() => router.push("/auth/login")} className={styles.hasAccount}>
+					Уже есть аккаунт
+				</button>
 			</div>
 		</div>
 	);
