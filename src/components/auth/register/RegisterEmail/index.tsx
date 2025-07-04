@@ -40,7 +40,7 @@ export const RegisterEmail = memo(({ onChange, onNext }: StepEmailProps) => {
     return (
         <div className="h-full flex flex-col">
             <div className="flex justify-between">
-                <Button variant="startBack" onClick={() => router.push("/login")}> 
+                <Button variant="startBack" onClick={() => router.push("/auth/login")}> 
                     <AuthBack className="w-[6px] h-[10px]" />
                     Назад
                 </Button>

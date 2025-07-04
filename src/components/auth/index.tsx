@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import styles from "./StepIntro.module.css";
+import styles from "./auth.module.css";
 import Image from "next/image";
 
 interface AuthProps {
@@ -29,9 +29,9 @@ export const Auth = ({ onNext }: AuthProps) => {
 				<Button className="w-full" onClick={onNext} variant="start" size="start">
 					Начать
 				</Button>
-				<button onClick={() => router.push("/login")} className={styles.hasAccount}>
-					Уже есть аккаунт
-				</button>
+                                <button onClick={() => router.push("/auth/login")} className={styles.hasAccount}>
+                                        Уже есть аккаунт
+                                </button>
 			</div>
 		</div>
 	);
