@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { AuthBack } from "@/shared/icons/AuthBack";
 import { startBackText } from "@/features/auth/lib/classNames";
 import { memo } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
+import styles from "./RegisterNotifications.module.css";
 
 interface Props {
 	onFinish: () => void;
@@ -34,9 +35,9 @@ export const RegisterNotifications = memo(({ onFinish, onPrev }: Props) => {
 			</div>
 			<div className={`${startBackText} mt-[40px]`}>Шаг 5/5</div>
 			<div className="flex flex-col items-center gap-6 text-white mt-16">
-				<h2 className="text-2xl font-bold text-center">Включи уведомления</h2>
-				<div className="text-3xl">🔔</div>
-				<p className="text-center text-sm">Чтобы точно ничего не забыть</p>
+				<h2 className={styles.title}>Включи уведомления</h2>
+				<div className="text-[32px]">🔔</div>
+				<p className={styles.text}>Чтобы точно ничего не забыть</p>
 			</div>
 			<div className="mt-auto">
 				<Button variant="start" size="start" onClick={handleEnableNotifications}>

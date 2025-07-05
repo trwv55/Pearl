@@ -6,7 +6,7 @@ import { startBackText } from "@/features/auth/lib/classNames";
 import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
 import { passwordSchema } from "../../lib/yupShemas";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 interface Props {
 	onChange: (value: string) => void;
