@@ -1,19 +1,20 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { AuthBack } from "@/shared/icons/AuthBack";
+import { AuthBack } from "@/shared/assets/icons/AuthBack";
 import { startBackText } from "@/features/auth/lib/classNames";
 import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
 import { passwordSchema } from "../../lib/yupShemas";
+import { useRouter } from "next/navigation";
 
 interface StepEmailProps {
-	onChange: (value: string) => void;
-	onNext: () => void;
+	onNext: (value: string) => void;
 	onPrev: () => void;
 }
 
-export const LoginPassword = memo(({ onChange, onNext, onPrev }: StepEmailProps) => {
+export const LoginPassword = memo(({ onNext, onPrev }: StepEmailProps) => {
+	const router = useRouter();
 	const [localPassword, setLocalPassword] = useState("");
 	const [error, setError] = useState(false);
 
@@ -29,8 +30,7 @@ export const LoginPassword = memo(({ onChange, onNext, onPrev }: StepEmailProps)
 		try {
 			await passwordSchema.validate({ password: localPassword });
 			setError(false);
-			onChange(localPassword);
-			onNext();
+			onNext(localPassword);
 		} catch {
 			setError(true);
 		}
@@ -39,7 +39,7 @@ export const LoginPassword = memo(({ onChange, onNext, onPrev }: StepEmailProps)
 	return (
 		<div className="h-full flex flex-col">
 			<div className="flex justify-between">
-				<Button variant="startBack" onClick={onPrev}>
+				<Button variant="startBack" onClick={() => router.back()}>
 					<AuthBack className="w-[6px] h-[10px]" />
 					Назад
 				</Button>
