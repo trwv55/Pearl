@@ -1,0 +1,21 @@
+.title {
+	font-family: var(--second-family);
+	font-weight: 900;
+	font-size: 36px;
+	line-height: 100%;
+	letter-spacing: -0.03em;
+	text-align: center;
+	background: linear-gradient(146deg, #fff 0%, #ae96ff 100%);
+	background-clip: text;
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+.text {
+	font-family: var(--second-family);
+	font-weight: 500;
+	font-size: 20px;
+	letter-spacing: -0.05em;
+	text-align: center;
+	color: var(--flowkit-white);
+}
