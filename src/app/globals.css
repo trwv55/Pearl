@@ -87,6 +87,11 @@ main {
   height: 100vh;
 }
 
+body {
+  position: relative;
+  overflow-x: hidden;
+}
+
 button {
   cursor: pointer;
 }
@@ -94,6 +99,18 @@ button {
 input:focus {
   outline: none; /* отключает синий обвод */
   box-shadow: none; /* отключает glow (в Safari, Firefox) */
+}
+
+textarea {
+  resize: none;
+}
+
+.rdp-months {
+  max-width: 100% !important;
+}
+
+.rdp-month_grid {
+  width: 100%
 }
 
 /* .LoginWrap {

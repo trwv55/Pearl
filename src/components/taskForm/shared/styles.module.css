@@ -1,0 +1,111 @@
+.label {
+	font-family: var(--font-family);
+	font-weight: 300;
+	font-size: 16px;
+	letter-spacing: -0.06em;
+	text-align: center;
+	color: #000;
+}
+
+.label span {
+	font-weight: 900;
+}
+
+.labelWrap {
+	display: flex;
+	align-items: flex-start;
+	margin-bottom: 10px;
+	gap: 10px;
+}
+
+.wrap {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: start;
+}
+
+.textareaWrap {
+	position: relative;
+	width: 100%;
+	z-index: 2;
+}
+
+.textarea {
+	width: 100%;
+	border-radius: 20px;
+	box-shadow: inset 0 1px 2px 0 #bfbfbf;
+	background: var(--flowkit-white);
+	height: 96px;
+	padding: 10px;
+	font-family: var(--font-family);
+	font-weight: 900;
+	font-size: 24px;
+	line-height: 100%;
+	letter-spacing: -0.04em;
+	color: rgba(0, 0, 0, 0.25);
+}
+
+.textarea::placeholder {
+	font-family: var(--font-family);
+	font-weight: 900;
+	font-size: 24px;
+	line-height: 100%;
+	letter-spacing: -0.04em;
+	color: #000;
+	opacity: 0.25;
+}
+
+.textareaWrap span {
+	font-family: var(--font-family);
+	font-weight: 300;
+	font-size: 11px;
+	color: #000;
+	opacity: 0.25;
+	position: absolute;
+	bottom: 10;
+	right: 10;
+}
+
+.toggleBtnWrap {
+	position: relative;
+	display: flex;
+	flex: 1 1;
+	width: 100%;
+	min-height: 96px;
+	max-height: 96px;
+	box-shadow: 0 1px 2px 0 #d7ccc6;
+	background: var(--flowkit-white);
+	border-radius: 20px;
+}
+
+.toggleBtn {
+	width: 50%;
+	min-height: 96px;
+	max-height: 96px;
+	font-family: var(--font-family);
+	font-weight: 400;
+	font-size: 24px;
+	line-height: 100%;
+	color: rgba(0, 0, 0, 0.25);
+	transition: color 0.3s ease;
+}
+
+.toggleBtnWrapLine {
+	margin-top: 10px;
+	width: 1px;
+	height: 76px;
+	background-color: rgba(0, 0, 0, 0.25); 
+}
+
+.toggleBtnactive {
+	font-weight: 900;
+	color: var(--btn-text-main);
+}
+
+.calendarWrap {
+	width: 100%;
+	box-shadow: inset 0 1px 2px 0 #bfbfbf;
+	background: var(--flowkit-white);
+	border-radius: 20px;
+}	
