@@ -5,11 +5,9 @@ import { AppLayout } from "@/shared/layout/AppLayout/index";
 import { ProtectedRoute } from "@/providers/ProtectedRoute";
 
 export default function AuthStartPage() {
-  return (
-    <ProtectedRoute>
-      <AppLayout>
-        <CreateTask />
-      </AppLayout>
-    </ProtectedRoute>
-  );
+	return (
+		<ProtectedRoute>
+			<CreateTask />
+		</ProtectedRoute>
+	);
 }
