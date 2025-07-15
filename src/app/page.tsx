@@ -2,12 +2,15 @@
 
 import { ProtectedRoute } from "@/providers/ProtectedRoute";
 import { userStore } from "@/stores/userStore";
+import { observer } from "mobx-react-lite";
 
-export default function Home() {
-	console.log("userStore", userStore);
-	return (
-		<ProtectedRoute>
-			<h2>{userStore.user?.displayName}</h2>
-		</ProtectedRoute>
-	);
-}
+const Home = observer(() => {
+        console.log("userStore", userStore);
+        return (
+                <ProtectedRoute>
+                        <h2>{userStore.user?.displayName}</h2>
+                </ProtectedRoute>
+        );
+});
+
+export default Home;
