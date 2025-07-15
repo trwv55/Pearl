@@ -1,5 +1,12 @@
-import Image from "next/image";
+"use client";
+
+import { ProtectedRoute } from "@/providers/ProtectedRoute";
+import { userStore } from "@/stores/userStore";
 
 export default function Home() {
-	return <h2>Dashboard</h2>;
+  return (
+    <ProtectedRoute>
+      <h2>{userStore.user?.displayName}</h2>
+    </ProtectedRoute>
+  );
 }
