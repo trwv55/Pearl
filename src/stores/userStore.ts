@@ -2,30 +2,15 @@ import { makeAutoObservable } from "mobx";
 import { User } from "firebase/auth";
 
 class UserStore {
-	user: User | null = null;
-	isNewUser: boolean | null = null;
-	isLoading = true;
+        user: User | null = null;
 
 	constructor() {
 		makeAutoObservable(this);
 	}
 
-	setUser(user: User | null) {
-		this.user = user;
-		this.isLoading = false;
-	}
-
-	setIsNewUser(value: boolean | null) {
-		this.isNewUser = value;
-	}
-
-	setLoading(value: boolean) {
-		this.isLoading = value;
-	}
-
-	get isAuthenticated() {
-		return !!this.user;
-	}
+        setUser(user: User | null) {
+                this.user = user;
+        }
 }
 
 export const userStore = new UserStore();

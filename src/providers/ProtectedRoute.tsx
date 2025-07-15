@@ -1,28 +1,29 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { userStore } from "@/stores/userStore";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-	const router = useRouter();
+        const router = useRouter();
+        const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		// если пользователь НЕ авторизован
-		if (!userStore.isLoading && !userStore.user) {
-			router.replace("/auth");
-		}
-	}, [router, userStore.user, userStore.isLoading]);
+        useEffect(() => {
+                const unsubscribe = onAuthStateChanged(auth, user => {
+                        userStore.setUser(user);
+                        if (!user) {
+                                router.replace("/auth");
+                        }
+                        setLoading(false);
+                });
+                return () => unsubscribe();
+        }, [router]);
 
-	// Пока идёт проверка авторизации – ничего не показываем
-	if (userStore.isLoading) {
-		console.log("загрузкаа");
-	}
+        if (loading) {
+                return null;
+        }
 
-	// Если не авторизован – ничего не рендерим (редирект выше)
-	if (!userStore.user) {
-		console.log("загрузкаа");
-	}
-
-	return <>{children}</>;
+        return <>{children}</>;
 };
