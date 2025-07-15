@@ -7,6 +7,7 @@ import { AuthLayout } from "../layout/AuthLayout";
 import { LoginPassword } from "@/components/auth/login/LoginPassword";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { userStore } from "@/stores/userStore";
 import { toast } from "sonner";
 
 export const Login = () => {
@@ -26,8 +27,9 @@ export const Login = () => {
 	const handleFinish = useCallback(
 		async (password: string) => {
 			try {
-				await signInWithEmailAndPassword(auth, formData.email, password);
-				router.push("/");
+                                const cred = await signInWithEmailAndPassword(auth, formData.email, password);
+                                userStore.setUser(cred.user);
+                                router.push("/");
 			} catch (err: unknown) {
 				console.error("Login error:", err);
 
