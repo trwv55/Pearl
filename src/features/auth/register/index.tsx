@@ -34,6 +34,7 @@ export const Register = () => {
         try {
             const user = await registerUser(formData.email, formData.password, formData.name);
             userStore.setUser(user);
+            userStore.setIsNewUser(true);
             router.push("/");
         } catch (err: unknown) {
             console.error("Register error:", err);
