@@ -1,0 +1,9 @@
+.title {
+	font-family: var(--font-family);
+	font-weight: 900;
+	font-size: 20px;
+	line-height: 100%;
+	letter-spacing: -0.05em;
+	text-align: center;
+	color: var(--flowkit-white);
+}

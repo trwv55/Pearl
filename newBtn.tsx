@@ -36,13 +36,6 @@ const buttonVariants = cva(
 					"[&>svg]:shrink-0", // для иконки
 					"[&>svg]:fill-[white]", // цвет
 				].join(" "),
-				mainDashboard: [
-					"bg-[linear-gradient(135deg,_#ae96ff_0%,_#3d00cb_60%)]",
-					"rounded-[20px]",
-					"text-[24px] font-black tracking-[-0.04em] text-center",
-					'text-[color:var(--flowkit-white)] font-["Onest",_sans-serif]',
-					"cursor-pointer",
-				].join(" "),
 			},
 			size: {
 				default: "h-9 px-4 py-2 has-[>svg]:px-3",

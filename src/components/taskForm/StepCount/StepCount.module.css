@@ -1,0 +1,19 @@
+.label {
+	font-family: var(--font-family);
+	font-weight: 300;
+	font-size: 16px;
+	letter-spacing: -0.06em;
+	text-align: center;
+	color: #000;
+}
+
+.label span {
+	font-weight: 900;
+}
+
+.labelWrap {
+	display: flex;
+	align-items: flex-start;
+	margin-bottom: 10px;
+	gap: 10px;
+}

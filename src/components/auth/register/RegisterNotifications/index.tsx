@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { AuthBack } from "@/shared/icons/AuthBack";
+import { AuthBack } from "@/shared/assets/icons/AuthBack";
 import { startBackText } from "@/features/auth/lib/classNames";
 import { memo } from "react";
 import { useRouter } from "next/navigation";

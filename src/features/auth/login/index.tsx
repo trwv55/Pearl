@@ -23,33 +23,34 @@ export const Login = () => {
 
 	const handleEmailChange = useCallback((email: string) => setFormData(prev => ({ ...prev, email })), []);
 
-	const handlePasswordChange = useCallback((password: string) => setFormData(prev => ({ ...prev, password })), []);
+	const handleFinish = useCallback(
+		async (password: string) => {
+			try {
+				await signInWithEmailAndPassword(auth, formData.email, password);
+				router.push("/");
+			} catch (err: unknown) {
+				console.error("Login error:", err);
 
-        const handleFinish = useCallback(async () => {
-                try {
-                        await signInWithEmailAndPassword(auth, formData.email, formData.password);
-                        router.push("/dashboard");
-                } catch (err: unknown) {
-                        console.error("Login error:", err);
+				let message = "Ошибка входа. Попробуйте ещё раз.";
+				const error = err as { code?: string };
 
-                        let message = "Ошибка входа. Попробуйте ещё раз.";
-                        const error = err as { code?: string };
+				if (error.code === "auth/user-not-found") {
+					message = "Пользователь не найден";
+				} else if (error.code === "auth/wrong-password") {
+					message = "Неверный пароль";
+				}
 
-                        if (error.code === "auth/user-not-found") {
-                                message = "Пользователь не найден";
-                        } else if (error.code === "auth/wrong-password") {
-                                message = "Неверный пароль";
-                        }
-
-			setError(message);
-			toast.error(message);
-		}
-	}, [formData.email, formData.password, router]);
+				setError(message);
+				toast.error(message);
+			}
+		},
+		[formData.email, formData.password, router],
+	);
 
 	return (
 		<AuthLayout>
 			{step === 0 && <LoginEmail onChange={handleEmailChange} onNext={goNext} />}
-			{step === 1 && <LoginPassword onChange={handlePasswordChange} onNext={handleFinish} onPrev={goBack} />}
+			{step === 1 && <LoginPassword onNext={handleFinish} onPrev={goBack} />}
 		</AuthLayout>
 	);
 };
