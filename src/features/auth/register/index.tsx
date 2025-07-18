@@ -11,6 +11,7 @@ import { RegisterNotifications } from "@/components/auth/register/RegisterNotifi
 import { registerUser } from "@/lib/auth/register";
 import { toast } from "sonner";
 import { userStore } from "@/stores/userStore";
+import SplashScreen from "@/components/SplashScreen";
 
 export const Register = () => {
     const [step, setStep] = useState(0);
@@ -20,6 +21,7 @@ export const Register = () => {
         confirmPassword: "",
         name: "",
     });
+    const [showSplash, setShowSplash] = useState(false);
     const router = useRouter();
 
     const goNext = useCallback(() => setStep(prev => prev + 1), []);
@@ -34,7 +36,14 @@ export const Register = () => {
         try {
             const user = await registerUser(formData.email, formData.password, formData.name);
             userStore.setUser(user);
-            router.push("/");
+
+            if (typeof window !== "undefined" && !localStorage.getItem("splashShown")) {
+                setShowSplash(true);
+                localStorage.setItem("splashShown", "true");
+                setTimeout(() => router.push("/"), 2000);
+            } else {
+                router.push("/");
+            }
         } catch (err: unknown) {
             console.error("Register error:", err);
             const error = err as { message?: string };
@@ -55,5 +64,5 @@ export const Register = () => {
         <RegisterNotifications onFinish={handleFinish} onPrev={goBack} />,
     ];
 
-    return <AuthLayout>{steps[step]}</AuthLayout>;
+    return <AuthLayout>{steps[step]}{showSplash && <SplashScreen />}</AuthLayout>;
 };
