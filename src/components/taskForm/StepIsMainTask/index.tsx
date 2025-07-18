@@ -1,15 +1,17 @@
 "use client";
-import { useState } from "react";
-import styles from "../shared/styles.module.css";
 import clsx from "clsx";
+import styles from "../shared/styles.module.css";
 import { MainTasksCount } from "@/components/shared/tasksCount/MainTasksCount";
 
-export default function StepIsMainTask() {
-	const [value, setValue] = useState<"yes" | "no" | null>(null);
+interface Props {
+    value: "yes" | "no";
+    onChange: (val: "yes" | "no") => void;
+}
 
-	const handleToggle = (val: "yes" | "no") => {
-		setValue(val);
-	};
+export default function StepIsMainTask({ value, onChange }: Props) {
+        const handleToggle = (val: "yes" | "no") => {
+                onChange(val);
+        };
 
 	return (
 		<div className={styles.wrap}>
