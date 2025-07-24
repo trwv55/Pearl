@@ -3,9 +3,8 @@
 import { DayPicker } from "react-day-picker";
 import { ru } from "date-fns/locale";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import TimePicker from "react-time-picker";
 import "react-day-picker/style.css";
 import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
@@ -19,13 +18,24 @@ const customFormatters = {
 	formatCaption: (month: Date) => capitalize(format(month, "LLLL yyyy", { locale: ru })),
 };
 
-export const DateTimeSelector = () => {
-	const [date, setDate] = useState<Date>(new Date());
-	const [selected, setSelected] = useState<Date>();
+interface Props {
+	value: Date;
+	onChange: (date: Date) => void;
+}
+
+export const DateTimeSelector = ({ value, onChange }: Props) => {
+	const [selected, setSelected] = useState<Date>(value);
 	const [selectedTime, setSelectedTime] = useState<string>(() => {
-		const now = new Date();
-		return now.toTimeString().slice(0, 5); // "11:38"
+		return value.toTimeString().slice(0, 5);
 	});
+
+	useEffect(() => {
+		const [h, m] = selectedTime.split(":");
+		const newDate = new Date(selected);
+		newDate.setHours(parseInt(h, 10));
+		newDate.setMinutes(parseInt(m, 10));
+		onChange(newDate);
+	}, [selected, selectedTime, onChange]);
 
 	return (
 		<Card className={styles.card}>
@@ -35,6 +45,7 @@ export const DateTimeSelector = () => {
 					mode="single"
 					selected={selected}
 					onSelect={setSelected}
+					required
 					locale={ru}
 					formatters={customFormatters}
 					className={styles.root}
@@ -46,7 +57,7 @@ export const DateTimeSelector = () => {
 						selected: styles.selectedDay,
 					}}
 				/>
-				<TimeSelect />
+				<TimeSelect value={selectedTime} onChange={setSelectedTime} />
 			</CardContent>
 		</Card>
 	);

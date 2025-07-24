@@ -1,0 +1,34 @@
+.topBar {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+}
+
+.title {
+	font-family: var(--font-family);
+	font-weight: 300;
+	font-size: 40px;
+	line-height: 100%;
+	letter-spacing: -0.03em;
+	color: #000;
+}
+
+.title span {
+	font-weight: 900;
+	background: linear-gradient(125deg, #ae96ff 0%, #3d00cb 60%);
+	background-clip: text;
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+.logoContainer {
+	width: 53px;
+	height: 41px;
+	position: relative;
+}
+
+.logo {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}

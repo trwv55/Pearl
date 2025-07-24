@@ -1,0 +1,97 @@
+.wrapper {
+	/* padding: 16px; */
+	display: flex;
+	justify-content: center;
+}
+  
+.viewport {
+	display: flex;
+	overflow-x: scroll;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+	gap: 16px;
+	width: 100%;
+	scroll-snap-type: x mandatory;
+	scroll-behavior: smooth;
+	align-items: center;
+	height: fit-content;
+	padding-top: 20px;
+}
+  
+.viewport::-webkit-scrollbar {
+	display: none;
+}
+  
+  /* колонка: кнопка сверху, подпись снизу */
+.dayColumn {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	flex: 0 0 auto;
+	scroll-snap-align: center;
+}
+
+.activeColumn .dayName {
+	color: #3d00cb;
+	margin-top: 8px;
+}
+  
+.buttonWrapper {
+	position: relative;
+	border-radius: 20px;
+	width: 49px;
+	height: 49px;
+	border: none;
+	background: none;
+	border-radius: 16px;
+	font-size: 14px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.3s, color 0.3s;
+	opacity: 0.25;
+}
+  
+.dayNumber {
+	font-weight: 300;
+	font-family: var(--font-family);
+	font-size: 24px;
+	letter-spacing: -0.04em;
+	text-align: center;
+	color: #000;
+}
+
+.activeDay {
+	background-color: #ffffff;
+	color: #6a32f6;
+	box-shadow: 0 1px 2px 0 #d7ccc6;
+	width: 63px;
+	height: 63px;
+	opacity: 1;
+}
+
+.activeDay .dayNumber {
+	color: #3d00cb;
+}
+  
+  /* подпись вне обводки */
+.dayName {
+	font-weight: 300;
+	font-size: 11px;
+	letter-spacing: -0.09em;
+	pointer-events: none;
+	text-transform: capitalize;
+	color: #000;
+	margin-top: 4px;
+}
+
+.nextDay button {
+	border-radius: 15px;
+	width: 49px;
+	height: 49px;
+	background-color: var(--flowkit-white);
+	opacity: 0.25;
+	color: #000;
+}
+  

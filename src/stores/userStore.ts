@@ -8,6 +8,10 @@ class UserStore {
 		makeAutoObservable(this);
 	}
 
+	get displayName() {
+		return this.user?.displayName || null;
+	}
+
 	setUser(user: User | null) {
 		this.user = user;
 	}

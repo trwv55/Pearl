@@ -2,8 +2,13 @@
 
 import { DateTimeSelector } from "./DateTimeSelector";
 import styles from "../shared/styles.module.css";
+import { memo } from "react";
 
-export default function StepCalendar() {
+interface Props {
+	value: Date;
+	onChange: (date: Date) => void;
+}
+function StepCalendar({ value, onChange }: Props) {
 	return (
 		<div className={styles.wrap}>
 			<div className={styles.labelWrap}>
@@ -14,8 +19,10 @@ export default function StepCalendar() {
 			</div>
 
 			<div className={styles.calendarWrap}>
-				<DateTimeSelector />
+				<DateTimeSelector value={value} onChange={onChange} />
 			</div>
 		</div>
 	);
 }
+
+export default memo(StepCalendar);

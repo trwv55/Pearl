@@ -1,13 +1,38 @@
 "use client";
 
+import DaysSwitcher from "@/components/mainPage/DaySwitcher";
+import { MainPageTopBar } from "@/components/mainPage/MainPageTopBar";
+import { CreateTaskBtn } from "@/components/mainPage/shared/CreateTaskBtn";
+import { SwitcherModeBtn } from "@/components/mainPage/shared/SwitcherModeBtn";
+import { MainTasks } from "@/features/dashboard/MainTasks";
+import { RoutineTasks } from "@/features/dashboard/RoutineTasks";
+import { MainPageLayout } from "@/layouts/MainPageLayout";
 import { ProtectedRoute } from "@/providers/ProtectedRoute";
-import { userStore } from "@/stores/userStore";
 import { observer } from "mobx-react-lite";
 
 const Home = observer(() => {
 	return (
 		<ProtectedRoute>
-			<h2>{userStore.user?.displayName}</h2>
+			<MainPageLayout>
+				<div className="relative">
+					<div className="">
+						<MainPageTopBar />
+					</div>
+					<div className="">
+						<DaysSwitcher />
+					</div>
+					<div className="mt-[40px]">
+						<MainTasks />
+					</div>
+					<div className="mt-[40px]">
+						<RoutineTasks />
+					</div>
+					<div className="flex flex-col justify-between items-center">
+						<CreateTaskBtn />
+						<SwitcherModeBtn />
+					</div>
+				</div>
+			</MainPageLayout>
 		</ProtectedRoute>
 	);
 });

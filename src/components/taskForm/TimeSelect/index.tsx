@@ -1,4 +1,3 @@
-import { useState } from "react";
 import styles from "./TimeSelect.module.css";
 
 const generateTimeOptions = (interval = 30) => {
@@ -14,31 +13,34 @@ const generateTimeOptions = (interval = 30) => {
 };
 
 const roundToInterval = (date: Date, interval = 30) => {
-	const hours = date.getHours();
-	const minutes = date.getMinutes();
-	const roundedMinutes = Math.round(minutes / interval) * interval;
-	const adjustedMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
-	const adjustedHours = roundedMinutes === 60 ? hours + 1 : hours;
-	const hh = adjustedHours.toString().padStart(2, "0");
-	const mm = adjustedMinutes.toString().padStart(2, "0");
-	return `${hh}:${mm}`;
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const roundedMinutes = Math.round(minutes / interval) * interval;
+        const adjustedMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
+        const adjustedHours = roundedMinutes === 60 ? hours + 1 : hours;
+        const hh = adjustedHours.toString().padStart(2, "0");
+        const mm = adjustedMinutes.toString().padStart(2, "0");
+        return `${hh}:${mm}`;
 };
 
-export const TimeSelect = () => {
-	const timeOptions = generateTimeOptions(5);
-	const initialTime = roundToInterval(new Date(), 5);
-	const [selectedTime, setSelectedTime] = useState(initialTime);
+interface Props {
+        value: string;
+        onChange: (value: string) => void;
+}
 
-	return (
-		<div className="flex justify-between items-center mt[15px]">
-			<span className={styles.timeLabel}>Время</span>
-			<select value={selectedTime} onChange={e => setSelectedTime(e.target.value)} className={styles.select}>
-				{timeOptions.map(time => (
-					<option key={time} value={time}>
-						{time}
-					</option>
-				))}
-			</select>
-		</div>
-	);
+export const TimeSelect = ({ value, onChange }: Props) => {
+        const timeOptions = generateTimeOptions(5);
+
+        return (
+                <div className="flex justify-between items-center mt[15px]">
+                        <span className={styles.timeLabel}>Время</span>
+                        <select value={value} onChange={e => onChange(e.target.value)} className={styles.select}>
+                                {timeOptions.map(time => (
+                                        <option key={time} value={time}>
+                                                {time}
+                                        </option>
+                                ))}
+                        </select>
+                </div>
+        );
 };

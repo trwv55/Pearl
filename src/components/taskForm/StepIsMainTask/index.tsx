@@ -1,14 +1,17 @@
 "use client";
-import { useState } from "react";
-import styles from "../shared/styles.module.css";
 import clsx from "clsx";
-import { MainTasksCount } from "@/components/shared/tasksCount/MainTasksCount";
+import styles from "../shared/styles.module.css";
+import { MainTasksCount } from "@/components/mainPage/shared/tasksCount/MainTasksCount";
+import { memo } from "react";
 
-export default function StepIsMainTask() {
-	const [value, setValue] = useState<"yes" | "no" | null>(null);
+interface Props {
+	value: "yes" | "no";
+	onChange: (val: "yes" | "no") => void;
+}
 
+function StepIsMainTask({ value, onChange }: Props) {
 	const handleToggle = (val: "yes" | "no") => {
-		setValue(val);
+		onChange(val);
 	};
 
 	return (
@@ -44,3 +47,5 @@ export default function StepIsMainTask() {
 		</div>
 	);
 }
+
+export default memo(StepIsMainTask);
