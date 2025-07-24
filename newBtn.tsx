@@ -68,3 +68,11 @@ function Button({
 }
 
 export { Button, buttonVariants };
+
+// interface DisplayMainTasksProps {
+
+// }
+
+// export const DisplayMainTasks: React.FC<DisplayMainTasksProps> = () => {
+// 	return <h1></h1>;
+// };

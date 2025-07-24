@@ -11,58 +11,63 @@ import { RegisterNotifications } from "@/components/auth/register/RegisterNotifi
 import { registerUser } from "@/lib/auth/register";
 import { toast } from "sonner";
 import { userStore } from "@/stores/userStore";
-import SplashScreen from "@/components/SplashScreen";
+import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
 
 export const Register = () => {
-    const [step, setStep] = useState(0);
-    const [formData, setFormData] = useState({
-        email: "",
-        password: "",
-        confirmPassword: "",
-        name: "",
-    });
-    const [showSplash, setShowSplash] = useState(false);
-    const router = useRouter();
+	const [step, setStep] = useState(0);
+	const [formData, setFormData] = useState({
+		email: "",
+		password: "",
+		confirmPassword: "",
+		name: "",
+	});
+	const [showSplash, setShowSplash] = useState(false);
+	const router = useRouter();
 
-    const goNext = useCallback(() => setStep(prev => prev + 1), []);
-    const goBack = useCallback(() => setStep(prev => Math.max(0, prev - 1)), []);
+	const goNext = useCallback(() => setStep(prev => prev + 1), []);
+	const goBack = useCallback(() => setStep(prev => Math.max(0, prev - 1)), []);
 
-    const handleFinish = useCallback(async () => {
-        if (formData.password !== formData.confirmPassword) {
-            toast.error("Пароли не совпадают");
-            setStep(2);
-            return;
-        }
-        try {
-            const user = await registerUser(formData.email, formData.password, formData.name);
-            userStore.setUser(user);
+	const handleFinish = useCallback(async () => {
+		if (formData.password !== formData.confirmPassword) {
+			toast.error("Пароли не совпадают");
+			setStep(2);
+			return;
+		}
+		try {
+			const user = await registerUser(formData.email, formData.password, formData.name);
+			userStore.setUser(user);
 
-            if (typeof window !== "undefined" && !localStorage.getItem("splashShown")) {
-                setShowSplash(true);
-                localStorage.setItem("splashShown", "true");
-                setTimeout(() => router.push("/"), 2000);
-            } else {
-                router.push("/");
-            }
-        } catch (err: unknown) {
-            console.error("Register error:", err);
-            const error = err as { message?: string };
-            toast.error(error.message || "Ошибка при регистрации");
-        }
-    }, [formData, router]);
+			if (typeof window !== "undefined" && !localStorage.getItem("splashShown")) {
+				setShowSplash(true);
+				localStorage.setItem("splashShown", "true");
+				setTimeout(() => router.push("/"), 2000);
+			} else {
+				router.push("/");
+			}
+		} catch (err: unknown) {
+			console.error("Register error:", err);
+			const error = err as { message?: string };
+			toast.error(error.message || "Ошибка при регистрации");
+		}
+	}, [formData, router]);
 
-    const steps = [
-        <RegisterEmail onChange={email => setFormData(prev => ({ ...prev, email }))} onNext={goNext} />,
-        <RegisterPassword onChange={password => setFormData(prev => ({ ...prev, password }))} onNext={goNext} onPrev={goBack} />,
-        <RegisterConfirmPassword
-            password={formData.password}
-            onChange={confirmPassword => setFormData(prev => ({ ...prev, confirmPassword }))}
-            onNext={goNext}
-            onPrev={goBack}
-        />,
-        <RegisterName onChange={name => setFormData(prev => ({ ...prev, name }))} onNext={goNext} onPrev={goBack} />,
-        <RegisterNotifications onFinish={handleFinish} onPrev={goBack} />,
-    ];
+	const steps = [
+		<RegisterEmail onChange={email => setFormData(prev => ({ ...prev, email }))} onNext={goNext} />,
+		<RegisterPassword onChange={password => setFormData(prev => ({ ...prev, password }))} onNext={goNext} onPrev={goBack} />,
+		<RegisterConfirmPassword
+			password={formData.password}
+			onChange={confirmPassword => setFormData(prev => ({ ...prev, confirmPassword }))}
+			onNext={goNext}
+			onPrev={goBack}
+		/>,
+		<RegisterName onChange={name => setFormData(prev => ({ ...prev, name }))} onNext={goNext} onPrev={goBack} />,
+		<RegisterNotifications onFinish={handleFinish} onPrev={goBack} />,
+	];
 
-    return <AuthLayout>{steps[step]}{showSplash && <SplashScreen />}</AuthLayout>;
+	return (
+		<AuthLayout>
+			{steps[step]}
+			{showSplash && <SplashScreen />}
+		</AuthLayout>
+	);
 };

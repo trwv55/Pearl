@@ -1,0 +1,18 @@
+.wrap {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.marker {
+	width: 2rem;
+	height: 2rem;
+	border-radius: 9999px;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	box-sizing: border-box;
+  }
+  
+  .selected {
+	transform: scale(0.7);
+  }
+  

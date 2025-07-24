@@ -19,23 +19,23 @@ const customFormatters = {
 };
 
 interface Props {
-        value: Date;
-        onChange: (date: Date) => void;
+	value: Date;
+	onChange: (date: Date) => void;
 }
 
 export const DateTimeSelector = ({ value, onChange }: Props) => {
-        const [selected, setSelected] = useState<Date>(value);
-        const [selectedTime, setSelectedTime] = useState<string>(() => {
-                return value.toTimeString().slice(0, 5);
-        });
+	const [selected, setSelected] = useState<Date>(value);
+	const [selectedTime, setSelectedTime] = useState<string>(() => {
+		return value.toTimeString().slice(0, 5);
+	});
 
-        useEffect(() => {
-                const [h, m] = selectedTime.split(":");
-                const newDate = new Date(selected);
-                newDate.setHours(parseInt(h, 10));
-                newDate.setMinutes(parseInt(m, 10));
-                onChange(newDate);
-        }, [selected, selectedTime, onChange]);
+	useEffect(() => {
+		const [h, m] = selectedTime.split(":");
+		const newDate = new Date(selected);
+		newDate.setHours(parseInt(h, 10));
+		newDate.setMinutes(parseInt(m, 10));
+		onChange(newDate);
+	}, [selected, selectedTime, onChange]);
 
 	return (
 		<Card className={styles.card}>
@@ -45,6 +45,7 @@ export const DateTimeSelector = ({ value, onChange }: Props) => {
 					mode="single"
 					selected={selected}
 					onSelect={setSelected}
+					required
 					locale={ru}
 					formatters={customFormatters}
 					className={styles.root}
@@ -55,8 +56,8 @@ export const DateTimeSelector = ({ value, onChange }: Props) => {
 						today: styles.todayDay,
 						selected: styles.selectedDay,
 					}}
-                                />
-                                <TimeSelect value={selectedTime} onChange={setSelectedTime} />
+				/>
+				<TimeSelect value={selectedTime} onChange={setSelectedTime} />
 			</CardContent>
 		</Card>
 	);

@@ -1,4 +1,5 @@
 "use client";
+import { memo } from "react";
 import styles from "./StepTitle.module.css";
 
 interface StepTitleProps {
@@ -9,7 +10,7 @@ interface StepTitleProps {
 	onChange?: (value: string) => void;
 }
 
-export default function StepTitle({
+function StepTitle({
 	placeholder = "Сюда пиши текст...",
 	note = "Не больше 3-х строк",
 	rows = 3,
@@ -32,3 +33,5 @@ export default function StepTitle({
 		</div>
 	);
 }
+
+export default memo(StepTitle);

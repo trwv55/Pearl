@@ -59,9 +59,15 @@
   }
 
 :root {
-  --font-family: "SF Pro", sans-serif;
+  /* --font-family: "SF Pro", sans-serif;
   --second-family: "Onest", sans-serif;
-  --third-family: "SF Pro Text", sans-serif;
+  --third-family: "SF Pro Text", sans-serif; */
+  --font-family: "Onest", sans-serif;
+  --second-family: "SF Pro Text", sans-serif;
+  --third-family: "SF Compact", sans-serif;
+  --font3: "SF Pro", sans-serif;
+  --font4: "VK Sans Text", sans-serif;
+  --font5: "SF Pro Display", sans-serif;
 
   --flowkit-purple: #7b61ff;
 	--flowkit-charcoal: #222;
@@ -72,6 +78,7 @@
 
   --bg-register: linear-gradient(135deg, #ae96ff 0%, #3d00cb 60%);
   --btn-text-main: #3d00cb;
+  --main-accent: #3d00cb;
   --app-bg: #f7f1ee;
 }
 
@@ -94,6 +101,8 @@ body {
 
 button {
   cursor: pointer;
+  border: none;
+	outline: none
 }
 
 input:focus {
@@ -103,6 +112,11 @@ input:focus {
 
 textarea {
   resize: none;
+}
+
+textarea:focus, textarea:active {
+  outline: none;
+  box-shadow: none; /* На случай, если браузер использует shadow вместо outline */
 }
 
 .rdp-months {

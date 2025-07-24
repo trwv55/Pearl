@@ -1,17 +1,18 @@
 "use client";
 import clsx from "clsx";
 import styles from "../shared/styles.module.css";
-import { MainTasksCount } from "@/components/shared/tasksCount/MainTasksCount";
+import { MainTasksCount } from "@/components/mainPage/shared/tasksCount/MainTasksCount";
+import { memo } from "react";
 
 interface Props {
-    value: "yes" | "no";
-    onChange: (val: "yes" | "no") => void;
+	value: "yes" | "no";
+	onChange: (val: "yes" | "no") => void;
 }
 
-export default function StepIsMainTask({ value, onChange }: Props) {
-        const handleToggle = (val: "yes" | "no") => {
-                onChange(val);
-        };
+function StepIsMainTask({ value, onChange }: Props) {
+	const handleToggle = (val: "yes" | "no") => {
+		onChange(val);
+	};
 
 	return (
 		<div className={styles.wrap}>
@@ -46,3 +47,5 @@ export default function StepIsMainTask({ value, onChange }: Props) {
 		</div>
 	);
 }
+
+export default memo(StepIsMainTask);

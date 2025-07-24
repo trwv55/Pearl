@@ -1,0 +1,36 @@
+.wrap {
+	position: fixed;
+	bottom: 39px;
+	left: 20px;
+
+	width: 94spx;
+	height: 49px;
+	display: flex;
+	justify-content: center;
+	align-items: center;	
+	background: var(--bg-register);
+	border-radius: 999px;
+	/* padding: 4px;   */
+	box-shadow: 0 1px 2px 0 #d7ccc6;
+  }
+  
+  .btn {
+	width: 45px;
+	height: 45px;
+	border-radius: 50%;
+	border: none;
+	background: transparent;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+  }
+  
+  .btn img {
+	filter: brightness(0.9) saturate(1.2);
+  }
+  
+  .active {
+	background: #ffffff;
+  }
+  
