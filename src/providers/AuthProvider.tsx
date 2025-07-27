@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { userStore } from "@/stores/userStore";
+import { userStore } from "@/entities/user/store";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         useEffect(() => {

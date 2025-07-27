@@ -5,12 +5,12 @@ import { StepCount } from "@/components/taskForm/StepCount";
 import StepIsMainTask from "@/components/taskForm/StepIsMainTask";
 import StepTitle from "@/components/taskForm/StepTitle";
 import MarkerSelect from "@/components/taskForm/MarkerSelect";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import Icon from "../../../public/arrow.svg";
 import Image from "next/image";
 import { useState } from "react";
-import { addTask } from "@/lib/firestore/tasks";
-import { userStore } from "@/stores/userStore";
+import { addTask } from "@/entities/task/api";
+import { userStore } from "@/entities/user/store";
 import { observer } from "mobx-react-lite";
 import { toast } from "sonner";
 
