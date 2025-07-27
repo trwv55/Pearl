@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import styles from "./MainPageTopBar.module.css";
 import logoUrl from "../../../../public/logo-main.svg";
-import { userStore } from "@/stores/userStore";
+import { userStore } from "@/entities/user/store";
 
 interface MainPageTopBarProps {
 	logoAlt?: string;
