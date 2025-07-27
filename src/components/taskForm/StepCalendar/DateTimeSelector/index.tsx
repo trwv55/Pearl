@@ -4,7 +4,7 @@ import { DayPicker } from "react-day-picker";
 import { ru } from "date-fns/locale";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/shared/ui/card";
 import "react-day-picker/style.css";
 import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";

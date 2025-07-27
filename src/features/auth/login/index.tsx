@@ -7,7 +7,7 @@ import { AuthLayout } from "../layout/AuthLayout";
 import { LoginPassword } from "@/components/auth/login/LoginPassword";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { userStore } from "@/stores/userStore";
+import { userStore } from "@/entities/user/store";
 import { toast } from "sonner";
 import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
 

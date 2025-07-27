@@ -1,6 +1,6 @@
-import { ShowRoutineTasks } from "@/components/mainPage/ShowRoutineTasks";
+import { ShowRoutineTasks } from "@/widgets/mainPage/ShowRoutineTasks";
 import styles from "../shared/styles/TasksTop.module.css";
-import { RoutineTasksCount } from "@/components/mainPage/shared/tasksCount/RoutineTasksCount";
+import { RoutineTasksCount } from "@/widgets/mainPage/shared/tasksCount/RoutineTasksCount";
 
 export const RoutineTasks: React.FC = () => {
 	return (

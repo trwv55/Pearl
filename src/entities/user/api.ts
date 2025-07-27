@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase";
+import { db } from "@/lib/firebase";
 
 export const getUserProfile = async (uid: string) => {
     const snap = await getDoc(doc(db, "users", uid));

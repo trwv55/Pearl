@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { AuthBack } from "@/shared/assets/icons/AuthBack";
 import { startBackText } from "@/features/auth/lib/classNames";
 import { AuthInput } from "../../shared/AuthInput/Index";

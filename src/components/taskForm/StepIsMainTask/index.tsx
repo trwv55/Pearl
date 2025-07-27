@@ -1,7 +1,7 @@
 "use client";
 import clsx from "clsx";
 import styles from "../shared/styles.module.css";
-import { MainTasksCount } from "@/components/mainPage/shared/tasksCount/MainTasksCount";
+import { MainTasksCount } from "@/widgets/mainPage/shared/tasksCount/MainTasksCount";
 import { memo } from "react";
 
 interface Props {

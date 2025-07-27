@@ -1,6 +1,6 @@
-import { ShowMainTasks } from "@/components/mainPage/ShowMainTasks";
+import { ShowMainTasks } from "@/widgets/mainPage/ShowMainTasks";
 import styles from "../shared/styles/TasksTop.module.css";
-import { MainTasksCount } from "@/components/mainPage/shared/tasksCount/MainTasksCount";
+import { MainTasksCount } from "@/widgets/mainPage/shared/tasksCount/MainTasksCount";
 
 // interface DisplayMainTasksProps {
 

@@ -1,9 +1,9 @@
 "use client";
 
-import DaysSwitcher from "@/components/mainPage/DaySwitcher";
-import { MainPageTopBar } from "@/components/mainPage/MainPageTopBar";
-import { CreateTaskBtn } from "@/components/mainPage/shared/CreateTaskBtn";
-import { SwitcherModeBtn } from "@/components/mainPage/shared/SwitcherModeBtn";
+import DaysSwitcher from "@/widgets/mainPage/DaySwitcher";
+import { MainPageTopBar } from "@/widgets/mainPage/MainPageTopBar";
+import { CreateTaskBtn } from "@/widgets/mainPage/shared/CreateTaskBtn";
+import { SwitcherModeBtn } from "@/widgets/mainPage/shared/SwitcherModeBtn";
 import { MainTasks } from "@/features/dashboard/MainTasks";
 import { RoutineTasks } from "@/features/dashboard/RoutineTasks";
 import { MainPageLayout } from "@/layouts/MainPageLayout";

@@ -10,7 +10,7 @@ import { RegisterName } from "@/components/auth/register/RegisterName";
 import { RegisterNotifications } from "@/components/auth/register/RegisterNotifications";
 import { registerUser } from "@/lib/auth/register";
 import { toast } from "sonner";
-import { userStore } from "@/stores/userStore";
+import { userStore } from "@/entities/user/store";
 import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
 
 export const Register = () => {
