@@ -6,24 +6,54 @@ import { ru } from "date-fns/locale";
 import styles from "./DaysSwitcher.module.css";
 
 export default function DaysSwitcher() {
-	const baseDate = new Date();
-	const initialDays = Array.from({ length: 30 }).map((_, i) => addDays(baseDate, i - 15)); // создаём массив дней ±15 от сегодняшней даты
-	const today = new Date();
-	const todayIndex = initialDays.findIndex(d => isSameDay(d, today)); // ищем индекс сегодняшнего дня
-	const [days] = useState<Date[]>(initialDays);
+  const baseDate = new Date();
+  const initialDays = Array.from({ length: 30 }).map((_, i) => addDays(baseDate, i - 15)); // создаём массив дней ±15 от сегодняшней даты
+  const today = new Date();
+  const [days, setDays] = useState<Date[]>(initialDays);
 	const [selectedDate, setSelectedDate] = useState<Date>(today);
 	const [selectedTimestamp, setSelectedTimestamp] = useState<Timestamp>(Timestamp.fromDate(today));
-	const viewportRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  const appendDays = (count = 15) => {
+    const last = days[days.length - 1];
+    const more = Array.from({ length: count }).map((_, i) => addDays(last, i + 1));
+    setDays(prev => [...prev, ...more]);
+  };
+
+  const prependDays = (count = 15) => {
+    const first = days[0];
+    const more = Array.from({ length: count }).map((_, i) => addDays(first, -(count - i)));
+    setDays(prev => [...more, ...prev]);
+  };
 
 	// вычисляем индекс выбранного дня при каждом рендере
 	const selectedIndex = days.findIndex(d => isSameDay(d, selectedDate));
 
-	// скроллим к сегодняшнему дню при первом рендере
-	useEffect(() => {
-		if (selectedIndex !== -1) {
-			scrollToIndex(selectedIndex);
-		}
-	}, []);
+        // скроллим к выбранному дню при изменении списка дней или выбора
+        useEffect(() => {
+                if (selectedIndex !== -1) {
+                        scrollToIndex(selectedIndex);
+                }
+        }, [selectedIndex, days]);
+
+        // добавляем дни при прокрутке к краям
+        useEffect(() => {
+                const viewport = viewportRef.current;
+                if (!viewport) return;
+
+                const handleScroll = () => {
+                        const { scrollLeft, scrollWidth, clientWidth } = viewport;
+                        const threshold = 100;
+                        if (scrollLeft + clientWidth >= scrollWidth - threshold) {
+                                appendDays();
+                        } else if (scrollLeft <= threshold) {
+                                prependDays();
+                        }
+                };
+
+                viewport.addEventListener("scroll", handleScroll);
+                return () => viewport.removeEventListener("scroll", handleScroll);
+        }, [days]);
 
 	const scrollToIndex = (index: number) => {
 		const viewport = viewportRef.current;
@@ -41,12 +71,19 @@ export default function DaysSwitcher() {
 		viewport.scrollTo({ left: scrollLeft, behavior: "smooth" });
 	};
 
-	const handleSelect = (index: number) => {
-		const date = days[index];
-		setSelectedDate(date);
-		setSelectedTimestamp(Timestamp.fromDate(date));
-		scrollToIndex(index);
-	};
+        const handleSelect = (index: number) => {
+                const date = days[index];
+                setSelectedDate(date);
+                setSelectedTimestamp(Timestamp.fromDate(date));
+
+                if (index >= days.length - 5) {
+                        appendDays();
+                } else if (index <= 5) {
+                        prependDays();
+                }
+
+                scrollToIndex(index);
+        };
 
 	return (
 		<div className={`${styles.wrapper} ${selectedDate ? styles.active : ""}`}>
