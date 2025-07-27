@@ -9,12 +9,17 @@ import { RoutineTasks } from "@/features/dashboard/RoutineTasks";
 import { MainPageLayout } from "@/layouts/MainPageLayout";
 import { ProtectedRoute } from "@/providers/ProtectedRoute";
 import { observer } from "mobx-react-lite";
+import { logout } from "@/lib/auth/logout";
 
 const Home = observer(() => {
-	return (
-		<ProtectedRoute>
-			<MainPageLayout>
-				<div className="relative">
+        const handleLogout = () => {
+                logout();
+        };
+
+        return (
+                <ProtectedRoute>
+                        <MainPageLayout>
+                                <div className="relative">
 					<div className="">
 						<MainPageTopBar />
 					</div>
@@ -27,10 +32,11 @@ const Home = observer(() => {
 					<div className="mt-[40px]">
 						<RoutineTasks />
 					</div>
-					<div className="flex flex-col justify-between items-center">
-						<CreateTaskBtn />
-						<SwitcherModeBtn />
-					</div>
+                                        <div className="flex flex-col justify-between items-center">
+                                                <CreateTaskBtn />
+                                                <SwitcherModeBtn />
+                                                <button onClick={handleLogout}>Logout</button>
+                                        </div>
 				</div>
 			</MainPageLayout>
 		</ProtectedRoute>
