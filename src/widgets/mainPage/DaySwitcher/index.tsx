@@ -1,40 +1,45 @@
 import { motion } from "framer-motion";
 import { Timestamp } from "firebase/firestore";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useLayoutEffect, useEffect, useState } from "react";
 import { addDays, format, isSameDay } from "date-fns";
 import { ru } from "date-fns/locale";
 import styles from "./DaysSwitcher.module.css";
 
+const INITIAL_RANGE = 10;
+const BATCH_SIZE = 15;
+
 export default function DaysSwitcher() {
-	const baseDate = new Date();
-	const initialDays = Array.from({ length: 30 }).map((_, i) => addDays(baseDate, i - 15)); // создаём массив дней ±15 от сегодняшней даты
 	const today = new Date();
-	const todayIndex = initialDays.findIndex(d => isSameDay(d, today)); // ищем индекс сегодняшнего дня
-	const [days] = useState<Date[]>(initialDays);
+	const [days, setDays] = useState<Date[]>(() =>
+		Array.from({ length: INITIAL_RANGE * 2 }).map((_, i) => addDays(today, i - INITIAL_RANGE)),
+	);
 	const [selectedDate, setSelectedDate] = useState<Date>(today);
 	const [selectedTimestamp, setSelectedTimestamp] = useState<Timestamp>(Timestamp.fromDate(today));
 	const viewportRef = useRef<HTMLDivElement>(null);
 
-	// вычисляем индекс выбранного дня при каждом рендере
 	const selectedIndex = days.findIndex(d => isSameDay(d, selectedDate));
 
-	// скроллим к сегодняшнему дню при первом рендере
+	// Гарантируем, что today всегда в массиве дней
 	useEffect(() => {
-		if (selectedIndex !== -1) {
+		if (!days.some(d => isSameDay(d, today))) {
+			setDays(prev => [...prev, today]);
+		}
+	}, [days]);
+
+	// Скроллим к сегодняшнему дню при первом рендере или если today добавлен
+	useLayoutEffect(() => {
+		if (selectedIndex !== -1 && viewportRef.current) {
 			scrollToIndex(selectedIndex);
 		}
-	}, []);
+	}, [selectedIndex]);
 
 	const scrollToIndex = (index: number) => {
 		const viewport = viewportRef.current;
 		if (!viewport) return;
-
 		const dayEl = viewport.children[index] as HTMLElement;
 		if (!dayEl) return;
-
 		const viewportRect = viewport.getBoundingClientRect();
 		const dayRect = dayEl.getBoundingClientRect();
-
 		const delta = dayRect.left - viewportRect.left;
 		const scrollLeft = viewport.scrollLeft + delta - (viewportRect.width / 2 - dayRect.width / 2);
 
@@ -42,23 +47,82 @@ export default function DaysSwitcher() {
 	};
 
 	const handleSelect = (index: number) => {
-		const date = days[index];
+		const date = uniqueDays[index];
 		setSelectedDate(date);
 		setSelectedTimestamp(Timestamp.fromDate(date));
 		scrollToIndex(index);
 	};
 
+	const prependDays = (count: number) => {
+		const first = days[0];
+		const newDays: Date[] = [];
+		for (let i = count; i > 0; i--) {
+			const candidate = addDays(first, -i);
+			if (!days.some(d => isSameDay(d, candidate))) {
+				newDays.push(candidate);
+			}
+		}
+		setDays(prev => [...newDays, ...prev]);
+		// Корректируем scrollLeft чтобы визуально ничего не скакало
+		const viewport = viewportRef.current;
+		if (viewport) {
+			const firstChild = viewport.children[0] as HTMLElement | undefined;
+			const width = firstChild?.offsetWidth ?? 40;
+			viewport.scrollLeft += BATCH_SIZE * width;
+		}
+	};
+
+	const appendDays = (count: number) => {
+		const last = days[days.length - 1];
+		const newDays: Date[] = [];
+		for (let i = 1; i <= count; i++) {
+			const candidate = addDays(last, i);
+			if (!days.some(d => isSameDay(d, candidate))) {
+				newDays.push(candidate);
+			}
+		}
+		setDays(prev => [...prev, ...newDays]);
+	};
+
+	// Обработка скролла только у viewport
+	useEffect(() => {
+		const viewport = viewportRef.current;
+		if (!viewport) return;
+
+		const handleScroll = () => {
+			const { scrollLeft, scrollWidth, clientWidth } = viewport;
+
+			// Левый край
+			if (scrollLeft < 60) {
+				prependDays(BATCH_SIZE);
+			}
+			// Правый край
+			if (scrollLeft + clientWidth > scrollWidth - 60) {
+				appendDays(BATCH_SIZE);
+			}
+		};
+
+		viewport.addEventListener("scroll", handleScroll);
+		return () => viewport.removeEventListener("scroll", handleScroll);
+	}, [days]);
+
+	// --- УНИКАЛЬНЫЕ ДНИ для рендера! ---
+	const uniqueDays = days
+		.slice()
+		.sort((a, b) => a.getTime() - b.getTime())
+		.filter((day, i, arr) => i === 0 || !isSameDay(day, arr[i - 1]));
+
 	return (
 		<div className={`${styles.wrapper} ${selectedDate ? styles.active : ""}`}>
-			<div className={styles.viewport} ref={viewportRef}>
-				{days.map((day, i) => {
+			<div className={styles.viewport} ref={viewportRef} style={{ overflowX: "auto", whiteSpace: "nowrap" }}>
+				{uniqueDays.map((day, i) => {
 					const isActive = isSameDay(day, selectedDate);
-					const isNext = i === selectedIndex + 1;
+					const isNext = i === uniqueDays.findIndex(d => isSameDay(d, selectedDate)) + 1;
 					const weekday = format(day, "EEEEEE", { locale: ru }).slice(0, 2);
 
 					return (
 						<div
-							key={day.getTime()}
+							key={day.toISOString()}
 							className={`${styles.dayColumn} ${isNext ? styles.nextDay : ""} ${
 								isActive ? styles.activeColumn : ""
 							}`}
