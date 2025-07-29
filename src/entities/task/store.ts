@@ -7,6 +7,8 @@ export class TaskStore {
         loadedRanges = new Set<string>();
         isLoading = false;
 
+        currentUserId: string | null = null;
+
 	constructor() {
 		makeAutoObservable(this);
 	}
@@ -29,28 +31,29 @@ export class TaskStore {
 		return this.tasksByDate.has(key);
 	}
 
-	async fetchTasksRange(userId: string, start: Date, end: Date) {
-		const rangeKey = `${format(start, "yyyy-MM-dd")}_${format(end, "yyyy-MM-dd")}`;
-		if (this.loadedRanges.has(rangeKey)) return;
-		this.isLoading = true;
-		try {
-			const tasks = await getTasksForDateRange(userId, start, end);
-			runInAction(() => {
-				tasks.forEach(task => {
-					const dateKey = format(task.date.toDate(), "yyyy-MM-dd");
-					const existing = this.tasksByDate.get(dateKey) || [];
-					this.tasksByDate.set(dateKey, [...existing, task]);
-				});
-				this.loadedRanges.add(rangeKey);
-			});
-		} catch (error) {
-			console.error("Ошибка загрузки задач:", error);
-		} finally {
-			runInAction(() => {
-				this.isLoading = false;
-			});
-		}
-	}
+        async fetchTasksRange(userId: string, start: Date, end: Date) {
+                const rangeKey = `${format(start, "yyyy-MM-dd")}_${format(end, "yyyy-MM-dd")}`;
+                if (this.loadedRanges.has(rangeKey)) return;
+                this.isLoading = true;
+                try {
+                        const tasks = await getTasksForDateRange(userId, start, end);
+                        if (userId !== this.currentUserId) return;
+                        runInAction(() => {
+                                tasks.forEach(task => {
+                                        const dateKey = format(task.date.toDate(), "yyyy-MM-dd");
+                                        const existing = this.tasksByDate.get(dateKey) || [];
+                                        this.tasksByDate.set(dateKey, [...existing, task]);
+                                });
+                                this.loadedRanges.add(rangeKey);
+                        });
+                } catch (error) {
+                        console.error("Ошибка загрузки задач:", error);
+                } finally {
+                        runInAction(() => {
+                                this.isLoading = false;
+                        });
+                }
+        }
 
 	addTaskToCache(task: Task) {
 		const dateKey = format(task.date.toDate(), "yyyy-MM-dd");
@@ -63,6 +66,8 @@ export class TaskStore {
 	}
 
         async initTaskCache(userId: string) {
+                this.currentUserId = userId;
+
                 const today = new Date();
                 const start = subDays(today, 15);
                 const end = addDays(today, 15);
@@ -72,6 +77,9 @@ export class TaskStore {
         clearCache() {
                 this.tasksByDate.clear();
                 this.loadedRanges.clear();
+
+                this.currentUserId = null;
+
         }
 }
 

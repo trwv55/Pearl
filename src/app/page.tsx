@@ -22,6 +22,8 @@ const Home = observer(() => {
     useEffect(() => {
         if (userStore.user) {
             taskStore.initTaskCache(userStore.user.uid);
+        } else {
+            taskStore.clearCache();
         }
     }, [userStore.user]);
 
