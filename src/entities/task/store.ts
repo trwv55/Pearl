@@ -6,6 +6,7 @@ export class TaskStore {
         tasksByDate = new Map<string, Task[]>();
         loadedRanges = new Set<string>();
         isLoading = false;
+
         currentUserId: string | null = null;
 
 	constructor() {
@@ -66,6 +67,7 @@ export class TaskStore {
 
         async initTaskCache(userId: string) {
                 this.currentUserId = userId;
+
                 const today = new Date();
                 const start = subDays(today, 15);
                 const end = addDays(today, 15);
@@ -75,7 +77,9 @@ export class TaskStore {
         clearCache() {
                 this.tasksByDate.clear();
                 this.loadedRanges.clear();
+
                 this.currentUserId = null;
+
         }
 }
 
