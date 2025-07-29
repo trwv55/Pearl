@@ -15,41 +15,41 @@ import { taskStore } from "@/entities/task/store";
 import { userStore } from "@/entities/user/store";
 
 const Home = observer(() => {
-        const handleLogout = () => {
-                logout();
-        };
+    const handleLogout = () => {
+        logout();
+    };
 
-        useEffect(() => {
-                if (userStore.user) {
-                        taskStore.initTaskCache(userStore.user.uid);
-                }
-        }, [userStore.user]);
+    useEffect(() => {
+        if (userStore.user) {
+            taskStore.initTaskCache(userStore.user.uid);
+        }
+    }, [userStore.user]);
 
-        return (
-                <ProtectedRoute>
-                        <MainPageLayout>
-                                <div className="relative">
-					<div className="">
-						<MainPageTopBar />
-					</div>
-					<div className="">
-						<DaysSwitcher />
-					</div>
-					<div className="mt-[40px]">
-						<MainTasks />
-					</div>
-					<div className="mt-[40px]">
-						<RoutineTasks />
-					</div>
-                                        <div className="flex flex-col justify-between items-center">
-                                                <CreateTaskBtn />
-                                                <SwitcherModeBtn />
-                                                <button onClick={handleLogout}>Logout</button>
-                                        </div>
-				</div>
-			</MainPageLayout>
-		</ProtectedRoute>
-	);
+    return (
+        <ProtectedRoute>
+            <MainPageLayout>
+                <div className="relative">
+                    <div className="">
+                        <MainPageTopBar />
+                    </div>
+                    <div className="">
+                        <DaysSwitcher />
+                    </div>
+                    <div className="mt-[40px]">
+                        <MainTasks />
+                    </div>
+                    <div className="mt-[40px]">
+                        <RoutineTasks />
+                    </div>
+                    <div className="flex flex-col justify-between items-center">
+                        <CreateTaskBtn />
+                        <SwitcherModeBtn />
+                        <button onClick={handleLogout}>Logout</button>
+                    </div>
+                </div>
+            </MainPageLayout>
+        </ProtectedRoute>
+    );
 });
 
 export default Home;
