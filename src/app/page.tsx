@@ -10,11 +10,20 @@ import { MainPageLayout } from "@/layouts/MainPageLayout";
 import { ProtectedRoute } from "@/providers/ProtectedRoute";
 import { observer } from "mobx-react-lite";
 import { logout } from "@/lib/auth/logout";
+import { useEffect } from "react";
+import { taskStore } from "@/entities/task/store";
+import { userStore } from "@/entities/user/store";
 
 const Home = observer(() => {
         const handleLogout = () => {
                 logout();
         };
+
+        useEffect(() => {
+                if (userStore.user) {
+                        taskStore.initTaskCache(userStore.user.uid);
+                }
+        }, [userStore.user]);
 
         return (
                 <ProtectedRoute>

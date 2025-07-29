@@ -4,20 +4,21 @@ import { useRef, useLayoutEffect, useEffect, useState } from "react";
 import { addDays, format, isSameDay } from "date-fns";
 import { ru } from "date-fns/locale";
 import styles from "./DaysSwitcher.module.css";
+import { observer } from "mobx-react-lite";
+import { dateStore } from "@/entities/date/store";
 
 const INITIAL_RANGE = 10;
 const BATCH_SIZE = 15;
 
-export default function DaysSwitcher() {
+const DaysSwitcher = observer(function DaysSwitcher() {
 	const today = new Date();
 	const [days, setDays] = useState<Date[]>(() =>
 		Array.from({ length: INITIAL_RANGE * 2 }).map((_, i) => addDays(today, i - INITIAL_RANGE)),
 	);
-	const [selectedDate, setSelectedDate] = useState<Date>(today);
-	const [selectedTimestamp, setSelectedTimestamp] = useState<Timestamp>(Timestamp.fromDate(today));
+        const [selectedTimestamp, setSelectedTimestamp] = useState<Timestamp>(Timestamp.fromDate(dateStore.selectedDate));
 	const viewportRef = useRef<HTMLDivElement>(null);
 
-	const selectedIndex = days.findIndex(d => isSameDay(d, selectedDate));
+        const selectedIndex = days.findIndex(d => isSameDay(d, dateStore.selectedDate));
 
 	// Гарантируем, что today всегда в массиве дней
 	useEffect(() => {
@@ -46,12 +47,12 @@ export default function DaysSwitcher() {
 		viewport.scrollTo({ left: scrollLeft, behavior: "smooth" });
 	};
 
-	const handleSelect = (index: number) => {
-		const date = uniqueDays[index];
-		setSelectedDate(date);
-		setSelectedTimestamp(Timestamp.fromDate(date));
-		scrollToIndex(index);
-	};
+        const handleSelect = (index: number) => {
+                const date = uniqueDays[index];
+                dateStore.setSelectedDate(date);
+                setSelectedTimestamp(Timestamp.fromDate(date));
+                scrollToIndex(index);
+        };
 
 	const prependDays = (count: number) => {
 		const first = days[0];
@@ -107,17 +108,17 @@ export default function DaysSwitcher() {
 	}, [days]);
 
 	// --- УНИКАЛЬНЫЕ ДНИ для рендера! ---
-	const uniqueDays = days
-		.slice()
-		.sort((a, b) => a.getTime() - b.getTime())
-		.filter((day, i, arr) => i === 0 || !isSameDay(day, arr[i - 1]));
+        const uniqueDays = days
+                .slice()
+                .sort((a, b) => a.getTime() - b.getTime())
+                .filter((day, i, arr) => i === 0 || !isSameDay(day, arr[i - 1]));
 
-	return (
-		<div className={`${styles.wrapper} ${selectedDate ? styles.active : ""}`}>
-			<div className={styles.viewport} ref={viewportRef} style={{ overflowX: "auto", whiteSpace: "nowrap" }}>
-				{uniqueDays.map((day, i) => {
-					const isActive = isSameDay(day, selectedDate);
-					const isNext = i === uniqueDays.findIndex(d => isSameDay(d, selectedDate)) + 1;
+        return (
+                <div className={`${styles.wrapper} ${dateStore.selectedDate ? styles.active : ""}`}>
+                        <div className={styles.viewport} ref={viewportRef} style={{ overflowX: "auto", whiteSpace: "nowrap" }}>
+                                {uniqueDays.map((day, i) => {
+                                        const isActive = isSameDay(day, dateStore.selectedDate);
+                                        const isNext = i === uniqueDays.findIndex(d => isSameDay(d, dateStore.selectedDate)) + 1;
 					const weekday = format(day, "EEEEEE", { locale: ru }).slice(0, 2);
 
 					return (
@@ -143,6 +144,8 @@ export default function DaysSwitcher() {
 					);
 				})}
 			</div>
-		</div>
-	);
-}
+                </div>
+        );
+});
+
+export default DaysSwitcher;

@@ -2,12 +2,7 @@ import { useEffect, useCallback, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import styles from "./ShowTasks.module.css";
 import { EmptyTaskState } from "../shared/EmptyTaskState";
-
-type Task = {
-	id: string;
-	title: string;
-	done: boolean;
-};
+import { Task } from "@/entities/task/api";
 
 interface ShowTasksProps {
 	tasks: Task[];
