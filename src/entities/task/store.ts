@@ -3,9 +3,9 @@ import { format, subDays, addDays } from "date-fns";
 import { Task, getTasksForDateRange } from "./api";
 
 export class TaskStore {
-	tasksByDate = new Map<string, Task[]>();
-	loadedRanges = new Set<string>();
-	isLoading = false;
+        tasksByDate = new Map<string, Task[]>();
+        loadedRanges = new Set<string>();
+        isLoading = false;
 
 	constructor() {
 		makeAutoObservable(this);
@@ -62,12 +62,17 @@ export class TaskStore {
 		this.tasksByDate.set(dateKey, [...existing, task]);
 	}
 
-	async initTaskCache(userId: string) {
-		const today = new Date();
-		const start = subDays(today, 15);
-		const end = addDays(today, 15);
-		await this.fetchTasksRange(userId, start, end);
-	}
+        async initTaskCache(userId: string) {
+                const today = new Date();
+                const start = subDays(today, 15);
+                const end = addDays(today, 15);
+                await this.fetchTasksRange(userId, start, end);
+        }
+
+        clearCache() {
+                this.tasksByDate.clear();
+                this.loadedRanges.clear();
+        }
 }
 
 export const taskStore = new TaskStore();
