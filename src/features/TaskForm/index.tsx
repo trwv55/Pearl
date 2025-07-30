@@ -11,6 +11,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { addTask } from "@/entities/task/api";
 import { userStore } from "@/entities/user/store";
+import { taskStore } from "@/entities/task/store";
 import { observer } from "mobx-react-lite";
 import { toast } from "sonner";
 
@@ -33,16 +34,19 @@ const TaskForm = observer(() => {
 			return;
 		}
 
-		try {
-			await addTask(userStore.user.uid, {
-				title,
-				comment,
-				date,
-				emoji,
-				isMain: isMain === "no",
-				markerColor,
-			});
-			toast.success("Задача создана");
+                try {
+                        await addTask(userStore.user.uid, {
+                                title,
+                                comment,
+                                date,
+                                emoji,
+                                isMain: isMain === "no",
+                                markerColor,
+                        });
+                        if (userStore.user) {
+                                await taskStore.fetchTasks(userStore.user.uid, taskStore.selectedDate);
+                        }
+                        toast.success("Задача создана");
 		} catch (e) {
 			console.error(e);
 			toast.error("Не удалось создать задачу");

@@ -8,13 +8,23 @@ import styles from "./DaysSwitcher.module.css";
 const INITIAL_RANGE = 10;
 const BATCH_SIZE = 15;
 
-export default function DaysSwitcher() {
+interface DaysSwitcherProps {
+        value: Date;
+        onChange: (date: Date) => void;
+}
+
+export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 	const today = new Date();
 	const [days, setDays] = useState<Date[]>(() =>
 		Array.from({ length: INITIAL_RANGE * 2 }).map((_, i) => addDays(today, i - INITIAL_RANGE)),
 	);
-	const [selectedDate, setSelectedDate] = useState<Date>(today);
-	const [selectedTimestamp, setSelectedTimestamp] = useState<Timestamp>(Timestamp.fromDate(today));
+        const [selectedDate, setSelectedDate] = useState<Date>(value);
+        const [selectedTimestamp, setSelectedTimestamp] = useState<Timestamp>(Timestamp.fromDate(value));
+
+        useEffect(() => {
+                setSelectedDate(value);
+                setSelectedTimestamp(Timestamp.fromDate(value));
+        }, [value]);
 	const viewportRef = useRef<HTMLDivElement>(null);
 
 	const selectedIndex = days.findIndex(d => isSameDay(d, selectedDate));
@@ -46,12 +56,13 @@ export default function DaysSwitcher() {
 		viewport.scrollTo({ left: scrollLeft, behavior: "smooth" });
 	};
 
-	const handleSelect = (index: number) => {
-		const date = uniqueDays[index];
-		setSelectedDate(date);
-		setSelectedTimestamp(Timestamp.fromDate(date));
-		scrollToIndex(index);
-	};
+        const handleSelect = (index: number) => {
+                const date = uniqueDays[index];
+                setSelectedDate(date);
+                setSelectedTimestamp(Timestamp.fromDate(date));
+                onChange(date);
+                scrollToIndex(index);
+        };
 
 	const prependDays = (count: number) => {
 		const first = days[0];

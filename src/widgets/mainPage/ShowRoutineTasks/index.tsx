@@ -1,10 +1,5 @@
 import { EmptyTaskState } from "../shared/EmptyTaskState";
-
-type Task = {
-	id: string;
-	title: string;
-	done: boolean;
-};
+import type { Task } from "@/entities/task/types";
 
 interface ShowRoutineTasksProps {
 	tasks: Task[];
