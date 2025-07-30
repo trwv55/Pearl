@@ -4,20 +4,25 @@ import { useRef, useLayoutEffect, useEffect, useState } from "react";
 import { addDays, format, isSameDay } from "date-fns";
 import { ru } from "date-fns/locale";
 import styles from "./DaysSwitcher.module.css";
+import { observer } from "mobx-react-lite";
+import { taskStore } from "@/entities/task/store";
 
 const INITIAL_RANGE = 10;
 const BATCH_SIZE = 15;
 
-export default function DaysSwitcher() {
-	const today = new Date();
-	const [days, setDays] = useState<Date[]>(() =>
-		Array.from({ length: INITIAL_RANGE * 2 }).map((_, i) => addDays(today, i - INITIAL_RANGE)),
-	);
-	const [selectedDate, setSelectedDate] = useState<Date>(today);
-	const [selectedTimestamp, setSelectedTimestamp] = useState<Timestamp>(Timestamp.fromDate(today));
-	const viewportRef = useRef<HTMLDivElement>(null);
+const DaysSwitcher = observer(() => {
+        const today = new Date();
+        const [days, setDays] = useState<Date[]>(() =>
+                Array.from({ length: INITIAL_RANGE * 2 }).map((_, i) => addDays(today, i - INITIAL_RANGE)),
+        );
+        const selectedDate = taskStore.selectedDate;
+        const viewportRef = useRef<HTMLDivElement>(null);
 
-	const selectedIndex = days.findIndex(d => isSameDay(d, selectedDate));
+        const selectedIndex = days.findIndex(d => isSameDay(d, selectedDate));
+
+        useEffect(() => {
+                taskStore.fetchTasksForDate(selectedDate);
+        }, [selectedDate]);
 
 	// Гарантируем, что today всегда в массиве дней
 	useEffect(() => {
@@ -46,12 +51,11 @@ export default function DaysSwitcher() {
 		viewport.scrollTo({ left: scrollLeft, behavior: "smooth" });
 	};
 
-	const handleSelect = (index: number) => {
-		const date = uniqueDays[index];
-		setSelectedDate(date);
-		setSelectedTimestamp(Timestamp.fromDate(date));
-		scrollToIndex(index);
-	};
+        const handleSelect = (index: number) => {
+                const date = uniqueDays[index];
+                taskStore.setSelectedDate(date);
+                scrollToIndex(index);
+        };
 
 	const prependDays = (count: number) => {
 		const first = days[0];
@@ -112,8 +116,8 @@ export default function DaysSwitcher() {
 		.sort((a, b) => a.getTime() - b.getTime())
 		.filter((day, i, arr) => i === 0 || !isSameDay(day, arr[i - 1]));
 
-	return (
-		<div className={`${styles.wrapper} ${selectedDate ? styles.active : ""}`}>
+        return (
+                <div className={`${styles.wrapper} ${selectedDate ? styles.active : ""}`}>
 			<div className={styles.viewport} ref={viewportRef} style={{ overflowX: "auto", whiteSpace: "nowrap" }}>
 				{uniqueDays.map((day, i) => {
 					const isActive = isSameDay(day, selectedDate);
@@ -144,5 +148,7 @@ export default function DaysSwitcher() {
 				})}
 			</div>
 		</div>
-	);
-}
+        );
+});
+
+export default DaysSwitcher;

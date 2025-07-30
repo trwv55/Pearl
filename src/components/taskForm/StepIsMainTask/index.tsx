@@ -3,13 +3,15 @@ import clsx from "clsx";
 import styles from "../shared/styles.module.css";
 import { MainTasksCount } from "@/widgets/mainPage/shared/tasksCount/MainTasksCount";
 import { memo } from "react";
+import { observer } from "mobx-react-lite";
+import { taskStore } from "@/entities/task/store";
 
 interface Props {
 	value: "yes" | "no";
 	onChange: (val: "yes" | "no") => void;
 }
 
-function StepIsMainTask({ value, onChange }: Props) {
+const StepIsMainTask = observer(({ value, onChange }: Props) => {
 	const handleToggle = (val: "yes" | "no") => {
 		onChange(val);
 	};
@@ -22,7 +24,7 @@ function StepIsMainTask({ value, onChange }: Props) {
 					Это главная задача на сегодня?
 				</div>
 
-				<MainTasksCount current={0} max={3} />
+                                <MainTasksCount current={taskStore.mainTasks.length} max={3} />
 			</div>
 
 			<div className={styles.toggleBtnWrap}>
@@ -46,6 +48,6 @@ function StepIsMainTask({ value, onChange }: Props) {
 			</div>
 		</div>
 	);
-}
+});
 
 export default memo(StepIsMainTask);
