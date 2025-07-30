@@ -12,9 +12,10 @@ class UserStore {
 		return this.user?.displayName || null;
 	}
 
-	setUser(user: User | null) {
-		this.user = user;
-	}
+        setUser(user: User | null) {
+                if (this.user?.uid === user?.uid) return;
+                this.user = user;
+        }
 }
 
 export const userStore = new UserStore();

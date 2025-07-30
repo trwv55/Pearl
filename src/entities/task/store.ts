@@ -5,6 +5,7 @@ import { Task, getTasksForDateRange } from "./api";
 export class TaskStore {
         tasksByDate = new Map<string, Task[]>();
         loadedRanges = new Set<string>();
+        loadingRanges = new Set<string>();
         isLoading = false;
 
         currentUserId: string | null = null;
@@ -33,7 +34,8 @@ export class TaskStore {
 
         async fetchTasksRange(userId: string, start: Date, end: Date) {
                 const rangeKey = `${format(start, "yyyy-MM-dd")}_${format(end, "yyyy-MM-dd")}`;
-                if (this.loadedRanges.has(rangeKey)) return;
+                if (this.loadedRanges.has(rangeKey) || this.loadingRanges.has(rangeKey)) return;
+                this.loadingRanges.add(rangeKey);
                 this.isLoading = true;
                 try {
                         const tasks = await getTasksForDateRange(userId, start, end);
@@ -51,6 +53,7 @@ export class TaskStore {
                 } finally {
                         runInAction(() => {
                                 this.isLoading = false;
+                                this.loadingRanges.delete(rangeKey);
                         });
                 }
         }
@@ -66,6 +69,7 @@ export class TaskStore {
 	}
 
         async initTaskCache(userId: string) {
+                console.log("[TaskStore] init cache for", userId);
                 this.currentUserId = userId;
 
                 const today = new Date();
@@ -75,8 +79,10 @@ export class TaskStore {
         }
 
         clearCache() {
+                console.log("[TaskStore] clear cache");
                 this.tasksByDate.clear();
                 this.loadedRanges.clear();
+                this.loadingRanges.clear();
 
                 this.currentUserId = null;
 

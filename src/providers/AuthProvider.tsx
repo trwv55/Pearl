@@ -8,6 +8,7 @@ import { userStore } from "@/entities/user/store";
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         useEffect(() => {
                 const unsubscribe = onAuthStateChanged(auth, user => {
+                        console.log("[AuthProvider] auth state changed", user?.uid);
                         userStore.setUser(user);
                 });
                 return () => unsubscribe();

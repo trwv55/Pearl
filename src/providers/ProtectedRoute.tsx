@@ -12,6 +12,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
         useEffect(() => {
                 const unsubscribe = onAuthStateChanged(auth, user => {
+                        console.log("[ProtectedRoute] auth state changed", user?.uid);
                         userStore.setUser(user);
                         if (!user) {
                                 router.replace("/auth");
