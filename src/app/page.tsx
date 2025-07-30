@@ -10,10 +10,23 @@ import { MainPageLayout } from "@/layouts/MainPageLayout";
 import { ProtectedRoute } from "@/providers/ProtectedRoute";
 import { observer } from "mobx-react-lite";
 import { logout } from "@/lib/auth/logout";
+import { taskStore } from "@/entities/task/store";
+import { userStore } from "@/entities/user/store";
+import { useEffect } from "react";
 
 const Home = observer(() => {
         const handleLogout = () => {
                 logout();
+        };
+
+        useEffect(() => {
+                if (userStore.user) {
+                        taskStore.fetchTasks(userStore.user.uid, taskStore.selectedDate);
+                }
+        }, [userStore.user, taskStore.selectedDate]);
+
+        const handleDateChange = (date: Date) => {
+                taskStore.setSelectedDate(date);
         };
 
         return (
@@ -23,9 +36,12 @@ const Home = observer(() => {
 					<div className="">
 						<MainPageTopBar />
 					</div>
-					<div className="">
-						<DaysSwitcher />
-					</div>
+                                        <div className="">
+                                                <DaysSwitcher
+                                                        value={taskStore.selectedDate}
+                                                        onChange={handleDateChange}
+                                                />
+                                        </div>
 					<div className="mt-[40px]">
 						<MainTasks />
 					</div>
