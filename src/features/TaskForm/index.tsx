@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { addTask } from "@/entities/task/api";
+import { userStore } from "@/entities/user/store";
+import { taskStore } from "@/entities/task/store";
 import StepCalendar from "@/components/taskForm/StepCalendar";
 import { StepCount } from "@/components/taskForm/StepCount";
 import StepIsMainTask from "@/components/taskForm/StepIsMainTask";
@@ -8,45 +12,46 @@ import MarkerSelect from "@/components/taskForm/MarkerSelect";
 import { Button } from "@/shared/ui/button";
 import Icon from "../../../public/arrow.svg";
 import Image from "next/image";
-import { useState } from "react";
-import { addTask } from "@/entities/task/api";
-import { userStore } from "@/entities/user/store";
-import { taskStore } from "@/entities/task/store";
 import { observer } from "mobx-react-lite";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const TaskForm = observer(() => {
+	const router = useRouter();
 	const [title, setTitle] = useState("");
-	const [isMain, setIsMain] = useState<"yes" | "no">("yes");
+	const [isMain, setIsMain] = useState<boolean>(true);
 	const [date, setDate] = useState<Date>(new Date());
 	const [comment, setComment] = useState("");
 	const [markerColor, setMarkerColor] = useState<string>("#3d00cb");
 	const [emoji, setEmoji] = useState("");
 
 	const handleSubmit = async () => {
-		if (!title.trim() || !isMain || !date || !markerColor) {
+		console.log("isMain", isMain);
+		console.log("date", date);
+		console.log("markerColor", markerColor);
+
+		if (!title.trim() || !date || !markerColor) {
 			toast.error("Заполните обязательные поля");
 			return;
 		}
-
 		if (!userStore.user) {
 			toast.error("Нет данных пользователя");
 			return;
 		}
 
-                try {
-                        await addTask(userStore.user.uid, {
-                                title,
-                                comment,
-                                date,
-                                emoji,
-                                isMain: isMain === "no",
-                                markerColor,
-                        });
-                        if (userStore.user) {
-                                await taskStore.fetchTasks(userStore.user.uid, taskStore.selectedDate);
-                        }
-                        toast.success("Задача создана");
+		try {
+			await addTask(userStore.user.uid, {
+				title,
+				comment,
+				date,
+				emoji,
+				isMain,
+				markerColor,
+			});
+			if (userStore.user) {
+				await taskStore.fetchTasks(userStore.user.uid, taskStore.selectedDate);
+			}
+			router.push("/");
 		} catch (e) {
 			console.error(e);
 			toast.error("Не удалось создать задачу");

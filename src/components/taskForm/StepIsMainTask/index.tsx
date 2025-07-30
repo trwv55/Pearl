@@ -5,12 +5,12 @@ import { MainTasksCount } from "@/widgets/mainPage/shared/tasksCount/MainTasksCo
 import { memo } from "react";
 
 interface Props {
-	value: "yes" | "no";
-	onChange: (val: "yes" | "no") => void;
+	value: boolean;
+	onChange: (val: boolean) => void;
 }
 
 function StepIsMainTask({ value, onChange }: Props) {
-	const handleToggle = (val: "yes" | "no") => {
+	const handleToggle = (val: boolean) => {
 		onChange(val);
 	};
 
@@ -28,18 +28,18 @@ function StepIsMainTask({ value, onChange }: Props) {
 			<div className={styles.toggleBtnWrap}>
 				<button
 					className={clsx(styles.toggleBtn, {
-						[styles.toggleBtnactive]: value === "yes",
+						[styles.toggleBtnactive]: value === true,
 					})}
-					onClick={() => handleToggle("yes")}
+					onClick={() => handleToggle(true)}
 				>
 					Да
 				</button>
 				<span className={styles.toggleBtnWrapLine} />
 				<button
 					className={clsx(styles.toggleBtn, {
-						[styles.toggleBtnactive]: value === "no",
+						[styles.toggleBtnactive]: value === false,
 					})}
-					onClick={() => handleToggle("no")}
+					onClick={() => handleToggle(false)}
 				>
 					Нет
 				</button>
