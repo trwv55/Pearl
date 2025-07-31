@@ -10,21 +10,39 @@ import { MainPageLayout } from "@/layouts/MainPageLayout";
 import { ProtectedRoute } from "@/providers/ProtectedRoute";
 import { observer } from "mobx-react-lite";
 import { logout } from "@/lib/auth/logout";
+import { taskStore } from "@/entities/task/store";
+import { userStore } from "@/entities/user/store";
+import { useEffect } from "react";
+import { addDays, startOfDay } from "date-fns";
 
 const Home = observer(() => {
-        const handleLogout = () => {
-                logout();
-        };
+	const handleLogout = () => {
+		logout();
+	};
 
-        return (
-                <ProtectedRoute>
-                        <MainPageLayout>
-                                <div className="relative">
+	useEffect(() => {
+		if (userStore.user) {
+			const today = startOfDay(new Date());
+			const start = addDays(today, -15);
+			const end = addDays(today, 15);
+
+			taskStore.fetchTasksForRange(userStore.user.uid, start, end); // загрузить диапазон
+		}
+	}, [userStore.user]);
+
+	const handleDateChange = (date: Date) => {
+		taskStore.setSelectedDate(date);
+	};
+
+	return (
+		<ProtectedRoute>
+			<MainPageLayout>
+				<div className="relative">
 					<div className="">
 						<MainPageTopBar />
 					</div>
 					<div className="">
-						<DaysSwitcher />
+						<DaysSwitcher value={taskStore.selectedDate} onChange={handleDateChange} />
 					</div>
 					<div className="mt-[40px]">
 						<MainTasks />
@@ -32,11 +50,11 @@ const Home = observer(() => {
 					<div className="mt-[40px]">
 						<RoutineTasks />
 					</div>
-                                        <div className="flex flex-col justify-between items-center">
-                                                <CreateTaskBtn />
-                                                <SwitcherModeBtn />
-                                                <button onClick={handleLogout}>Logout</button>
-                                        </div>
+					<div className="flex flex-col justify-between items-center">
+						<CreateTaskBtn />
+						<SwitcherModeBtn />
+						<button onClick={handleLogout}>Logout</button>
+					</div>
 				</div>
 			</MainPageLayout>
 		</ProtectedRoute>

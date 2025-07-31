@@ -5,28 +5,30 @@ import { addDays, format, isSameDay } from "date-fns";
 import { ru } from "date-fns/locale";
 import styles from "./DaysSwitcher.module.css";
 
-const INITIAL_RANGE = 10;
-const BATCH_SIZE = 15;
+const INITIAL_RANGE = 3;
+const BATCH_SIZE = 10;
 
-export default function DaysSwitcher() {
+interface DaysSwitcherProps {
+	value: Date;
+	onChange: (date: Date) => void;
+}
+
+export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 	const today = new Date();
+	const [selectedDate, setSelectedDate] = useState<Date>(value);
+	const [selectedTimestamp, setSelectedTimestamp] = useState<Timestamp>(Timestamp.fromDate(value));
 	const [days, setDays] = useState<Date[]>(() =>
-		Array.from({ length: INITIAL_RANGE * 2 }).map((_, i) => addDays(today, i - INITIAL_RANGE)),
+		Array.from({ length: INITIAL_RANGE * 2 + 1 }).map((_, i) => addDays(today, i - INITIAL_RANGE)),
 	);
-	const [selectedDate, setSelectedDate] = useState<Date>(today);
-	const [selectedTimestamp, setSelectedTimestamp] = useState<Timestamp>(Timestamp.fromDate(today));
 	const viewportRef = useRef<HTMLDivElement>(null);
 
 	const selectedIndex = days.findIndex(d => isSameDay(d, selectedDate));
 
-	// Гарантируем, что today всегда в массиве дней
 	useEffect(() => {
-		if (!days.some(d => isSameDay(d, today))) {
-			setDays(prev => [...prev, today]);
-		}
-	}, [days]);
+		setSelectedDate(value);
+		setSelectedTimestamp(Timestamp.fromDate(value));
+	}, [value]);
 
-	// Скроллим к сегодняшнему дню при первом рендере или если today добавлен
 	useLayoutEffect(() => {
 		if (selectedIndex !== -1 && viewportRef.current) {
 			scrollToIndex(selectedIndex);
@@ -50,25 +52,29 @@ export default function DaysSwitcher() {
 		const date = uniqueDays[index];
 		setSelectedDate(date);
 		setSelectedTimestamp(Timestamp.fromDate(date));
+		onChange(date);
 		scrollToIndex(index);
 	};
+
+	useEffect(() => {
+		console.log(days.length);
+	}, [days]);
 
 	const prependDays = (count: number) => {
 		const first = days[0];
 		const newDays: Date[] = [];
 		for (let i = count; i > 0; i--) {
 			const candidate = addDays(first, -i);
-			if (!days.some(d => isSameDay(d, candidate))) {
-				newDays.push(candidate);
-			}
+			newDays.push(candidate);
 		}
 		setDays(prev => [...newDays, ...prev]);
-		// Корректируем scrollLeft чтобы визуально ничего не скакало
+
+		// Компенсация скролла
 		const viewport = viewportRef.current;
 		if (viewport) {
 			const firstChild = viewport.children[0] as HTMLElement | undefined;
 			const width = firstChild?.offsetWidth ?? 40;
-			viewport.scrollLeft += BATCH_SIZE * width;
+			viewport.scrollLeft += count * width;
 		}
 	};
 
@@ -77,14 +83,11 @@ export default function DaysSwitcher() {
 		const newDays: Date[] = [];
 		for (let i = 1; i <= count; i++) {
 			const candidate = addDays(last, i);
-			if (!days.some(d => isSameDay(d, candidate))) {
-				newDays.push(candidate);
-			}
+			newDays.push(candidate);
 		}
 		setDays(prev => [...prev, ...newDays]);
 	};
 
-	// Обработка скролла только у viewport
 	useEffect(() => {
 		const viewport = viewportRef.current;
 		if (!viewport) return;
@@ -92,11 +95,9 @@ export default function DaysSwitcher() {
 		const handleScroll = () => {
 			const { scrollLeft, scrollWidth, clientWidth } = viewport;
 
-			// Левый край
 			if (scrollLeft < 60) {
 				prependDays(BATCH_SIZE);
 			}
-			// Правый край
 			if (scrollLeft + clientWidth > scrollWidth - 60) {
 				appendDays(BATCH_SIZE);
 			}
@@ -106,7 +107,6 @@ export default function DaysSwitcher() {
 		return () => viewport.removeEventListener("scroll", handleScroll);
 	}, [days]);
 
-	// --- УНИКАЛЬНЫЕ ДНИ для рендера! ---
 	const uniqueDays = days
 		.slice()
 		.sort((a, b) => a.getTime() - b.getTime())
@@ -122,7 +122,7 @@ export default function DaysSwitcher() {
 
 					return (
 						<div
-							key={day.toISOString()}
+							key={day.toDateString()}
 							className={`${styles.dayColumn} ${isNext ? styles.nextDay : ""} ${
 								isActive ? styles.activeColumn : ""
 							}`}
