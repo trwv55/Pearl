@@ -28,24 +28,31 @@ export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 		setSelectedTimestamp(Timestamp.fromDate(value));
 	}, [value]);
 
-	useLayoutEffect(() => {
-		if (selectedIndex !== -1 && viewportRef.current) {
-			scrollToIndex(selectedIndex);
-		}
-	}, [selectedIndex]);
+       // Initial scroll to the selected date without animation
+       useLayoutEffect(() => {
+               if (selectedIndex !== -1 && viewportRef.current) {
+                       scrollToIndex(selectedIndex, "auto");
+               }
+       }, []);
 
-	const scrollToIndex = (index: number) => {
-		const viewport = viewportRef.current;
-		if (!viewport) return;
-		const dayEl = viewport.children[index] as HTMLElement;
-		if (!dayEl) return;
-		const viewportRect = viewport.getBoundingClientRect();
-		const dayRect = dayEl.getBoundingClientRect();
-		const delta = dayRect.left - viewportRect.left;
-		const scrollLeft = viewport.scrollLeft + delta - (viewportRect.width / 2 - dayRect.width / 2);
+       // Scroll smoothly when selected index changes after mount
+       useEffect(() => {
+               if (selectedIndex !== -1 && viewportRef.current) {
+                       scrollToIndex(selectedIndex, "smooth");
+               }
+       }, [selectedIndex]);
 
-		viewport.scrollTo({ left: scrollLeft, behavior: "smooth" });
-	};
+       const scrollToIndex = (index: number, behavior: ScrollBehavior = "smooth") => {
+               const viewport = viewportRef.current;
+               if (!viewport) return;
+               const dayEl = viewport.children[index] as HTMLElement;
+               if (!dayEl) return;
+               const viewportRect = viewport.getBoundingClientRect();
+               const dayRect = dayEl.getBoundingClientRect();
+               const delta = dayRect.left - viewportRect.left;
+               const scrollLeft = viewport.scrollLeft + delta - (viewportRect.width / 2 - dayRect.width / 2);
+               viewport.scrollTo({ left: scrollLeft, behavior });
+       };
 
 	const handleSelect = (index: number) => {
 		const date = uniqueDays[index];
