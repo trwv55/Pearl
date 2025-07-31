@@ -14,12 +14,11 @@ interface DaysSwitcherProps {
 }
 
 export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
-	const today = new Date();
-	const [selectedDate, setSelectedDate] = useState<Date>(value);
-	const [selectedTimestamp, setSelectedTimestamp] = useState<Timestamp>(Timestamp.fromDate(value));
-	const [days, setDays] = useState<Date[]>(() =>
-		Array.from({ length: INITIAL_RANGE * 2 + 1 }).map((_, i) => addDays(today, i - INITIAL_RANGE)),
-	);
+        const [selectedDate, setSelectedDate] = useState<Date>(value);
+        const [selectedTimestamp, setSelectedTimestamp] = useState<Timestamp>(Timestamp.fromDate(value));
+        const [days, setDays] = useState<Date[]>(() =>
+                Array.from({ length: INITIAL_RANGE * 2 + 1 }).map((_, i) => addDays(value, i - INITIAL_RANGE)),
+        );
 	const viewportRef = useRef<HTMLDivElement>(null);
 
 	const selectedIndex = days.findIndex(d => isSameDay(d, selectedDate));
@@ -56,9 +55,14 @@ export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 		scrollToIndex(index);
 	};
 
-	useEffect(() => {
-		console.log(days.length);
-	}, [days]);
+        useEffect(() => {
+                if (!days.some(d => isSameDay(d, value))) {
+                        const newDays = Array.from({ length: INITIAL_RANGE * 2 + 1 }).map((_, i) =>
+                                addDays(value, i - INITIAL_RANGE),
+                        );
+                        setDays(newDays);
+                }
+        }, [value]);
 
 	const prependDays = (count: number) => {
 		const first = days[0];
