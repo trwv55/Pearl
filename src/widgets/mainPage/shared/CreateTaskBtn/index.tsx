@@ -13,7 +13,6 @@ export const CreateTaskBtn = ({ date }: CreateTaskBtnProps) => {
 
 	const handleClick = () => {
 		router.push("/create");
-		console.log("Текущая дата в кнопке:", date);
 	};
 
 	return (

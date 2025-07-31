@@ -13,6 +13,7 @@ import { logout } from "@/lib/auth/logout";
 import { taskStore } from "@/entities/task/store";
 import { userStore } from "@/entities/user/store";
 import { useEffect } from "react";
+import { addDays, startOfDay } from "date-fns";
 
 const Home = observer(() => {
 	const handleLogout = () => {
@@ -21,9 +22,13 @@ const Home = observer(() => {
 
 	useEffect(() => {
 		if (userStore.user) {
-			taskStore.fetchTasks(userStore.user.uid, taskStore.selectedDate);
+			const today = startOfDay(new Date());
+			const start = addDays(today, -15);
+			const end = addDays(today, 15);
+
+			taskStore.fetchTasksForRange(userStore.user.uid, start, end); // загрузить диапазон
 		}
-	}, [userStore.user, taskStore.selectedDate]);
+	}, [userStore.user]);
 
 	const handleDateChange = (date: Date) => {
 		taskStore.setSelectedDate(date);

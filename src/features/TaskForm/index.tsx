@@ -20,16 +20,13 @@ const TaskForm = observer(() => {
 	const router = useRouter();
 	const [title, setTitle] = useState("");
 	const [isMain, setIsMain] = useState<boolean>(true);
-	const [date, setDate] = useState<Date>(new Date());
+	// const [date, setDate] = useState<Date>(new Date());
+	const [date, setDate] = useState<Date>(taskStore.selectedDate);
 	const [comment, setComment] = useState("");
 	const [markerColor, setMarkerColor] = useState<string>("#3d00cb");
 	const [emoji, setEmoji] = useState("");
 
 	const handleSubmit = async () => {
-		console.log("isMain", isMain);
-		console.log("date", date);
-		console.log("markerColor", markerColor);
-
 		if (!title.trim() || !date || !markerColor) {
 			toast.error("Заполните обязательные поля");
 			return;
@@ -49,9 +46,10 @@ const TaskForm = observer(() => {
 				markerColor,
 			});
 			if (userStore.user) {
-				await taskStore.fetchTasks(userStore.user.uid, taskStore.selectedDate);
+				taskStore.setSelectedDate(date); // устанавливаем выбранную дату как активную
+				await taskStore.fetchTasks(userStore.user.uid, taskStore.selectedDate); // подгружаем задачи на выбранную дату
 			}
-			router.push("/");
+			router.back();
 		} catch (e) {
 			console.error(e);
 			toast.error("Не удалось создать задачу");
