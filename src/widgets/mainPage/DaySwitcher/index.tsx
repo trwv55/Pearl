@@ -7,6 +7,7 @@ import styles from "./DaysSwitcher.module.css";
 
 const INITIAL_RANGE = 3;
 const BATCH_SIZE = 10;
+const MAX_DAYS = 21;
 
 interface DaysSwitcherProps {
 	value: Date;
@@ -14,11 +15,11 @@ interface DaysSwitcherProps {
 }
 
 export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
-        const [selectedDate, setSelectedDate] = useState<Date>(value);
-        const [selectedTimestamp, setSelectedTimestamp] = useState<Timestamp>(Timestamp.fromDate(value));
-        const [days, setDays] = useState<Date[]>(() =>
-                Array.from({ length: INITIAL_RANGE * 2 + 1 }).map((_, i) => addDays(value, i - INITIAL_RANGE)),
-        );
+	const [selectedDate, setSelectedDate] = useState<Date>(value);
+	const [selectedTimestamp, setSelectedTimestamp] = useState<Timestamp>(Timestamp.fromDate(value));
+	const [days, setDays] = useState<Date[]>(() =>
+		Array.from({ length: INITIAL_RANGE * 2 + 1 }).map((_, i) => addDays(value, i - INITIAL_RANGE)),
+	);
 	const viewportRef = useRef<HTMLDivElement>(null);
 
 	const selectedIndex = days.findIndex(d => isSameDay(d, selectedDate));
@@ -28,31 +29,35 @@ export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 		setSelectedTimestamp(Timestamp.fromDate(value));
 	}, [value]);
 
-       // Initial scroll to the selected date without animation
-       useLayoutEffect(() => {
-               if (selectedIndex !== -1 && viewportRef.current) {
-                       scrollToIndex(selectedIndex, "auto");
-               }
-       }, []);
+	// Initial scroll to the selected date without animation
+	useLayoutEffect(() => {
+		if (selectedIndex !== -1 && viewportRef.current) {
+			scrollToIndex(selectedIndex, "auto");
+		}
+	}, []);
 
-       // Scroll smoothly when selected index changes after mount
-       useEffect(() => {
-               if (selectedIndex !== -1 && viewportRef.current) {
-                       scrollToIndex(selectedIndex, "smooth");
-               }
-       }, [selectedIndex]);
+	// Scroll smoothly when selected index changes after mount
+	useEffect(() => {
+		if (selectedIndex !== -1 && viewportRef.current) {
+			scrollToIndex(selectedIndex, "smooth");
+		}
+	}, [selectedIndex]);
 
-       const scrollToIndex = (index: number, behavior: ScrollBehavior = "smooth") => {
-               const viewport = viewportRef.current;
-               if (!viewport) return;
-               const dayEl = viewport.children[index] as HTMLElement;
-               if (!dayEl) return;
-               const viewportRect = viewport.getBoundingClientRect();
-               const dayRect = dayEl.getBoundingClientRect();
-               const delta = dayRect.left - viewportRect.left;
-               const scrollLeft = viewport.scrollLeft + delta - (viewportRect.width / 2 - dayRect.width / 2);
-               viewport.scrollTo({ left: scrollLeft, behavior });
-       };
+	useEffect(() => {
+		console.log(days.length);
+	}, [days]);
+
+	const scrollToIndex = (index: number, behavior: ScrollBehavior = "smooth") => {
+		const viewport = viewportRef.current;
+		if (!viewport) return;
+		const dayEl = viewport.children[index] as HTMLElement;
+		if (!dayEl) return;
+		const viewportRect = viewport.getBoundingClientRect();
+		const dayRect = dayEl.getBoundingClientRect();
+		const delta = dayRect.left - viewportRect.left;
+		const scrollLeft = viewport.scrollLeft + delta - (viewportRect.width / 2 - dayRect.width / 2);
+		viewport.scrollTo({ left: scrollLeft, behavior });
+	};
 
 	const handleSelect = (index: number) => {
 		const date = uniqueDays[index];
@@ -62,14 +67,12 @@ export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 		scrollToIndex(index);
 	};
 
-        useEffect(() => {
-                if (!days.some(d => isSameDay(d, value))) {
-                        const newDays = Array.from({ length: INITIAL_RANGE * 2 + 1 }).map((_, i) =>
-                                addDays(value, i - INITIAL_RANGE),
-                        );
-                        setDays(newDays);
-                }
-        }, [value]);
+	useEffect(() => {
+		if (!days.some(d => isSameDay(d, value))) {
+			const newDays = Array.from({ length: INITIAL_RANGE * 2 + 1 }).map((_, i) => addDays(value, i - INITIAL_RANGE));
+			setDays(newDays);
+		}
+	}, [value]);
 
 	const prependDays = (count: number) => {
 		const first = days[0];
