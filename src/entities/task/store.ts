@@ -17,9 +17,6 @@ class TaskStore {
 		return format(date, "yyyy-MM-dd");
 	}
 
-	// setSelectedDate(date: Date) {
-	// 	this.selectedDate = date;
-	// }
 	setSelectedDate(date: Date) {
 		this.selectedDate = date;
 
@@ -31,28 +28,6 @@ class TaskStore {
 		}
 	}
 
-	// async fetchTasks(userId: string, date: Date = this.selectedDate) {
-	// 	const start = startOfDay(date);
-	// 	const end = addDays(start, 1);
-	// 	const q = query(collection(db, "users", userId, "tasks"), where("date", ">=", start), where("date", "<", end));
-	// 	const snapshot = await getDocs(q);
-	// 	const tasks: Task[] = snapshot.docs.map(doc => {
-	// 		const data = doc.data();
-	// 		return {
-	// 			id: doc.id,
-	// 			title: data.title,
-	// 			comment: data.comment,
-	// 			date: data.date.toDate ? data.date.toDate() : data.date,
-	// 			emoji: data.emoji,
-	// 			isMain: data.isMain,
-	// 			markerColor: data.markerColor,
-	// 			isCompleted: data.isCompleted,
-	// 		} as Task;
-	// 	});
-	// 	runInAction(() => {
-	// 		this.tasks = tasks;
-	// 	});
-	// }
 	async fetchTasks(userId: string, date: Date = this.selectedDate) {
 		const start = startOfDay(date);
 		const end = addDays(start, 1);

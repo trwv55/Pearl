@@ -1,0 +1,116 @@
+.taskItem {
+	border: 0.50px solid rgba(0, 0, 0, 0.1);
+	border-radius: 10px;
+	margin-bottom: 10px;
+	background: #ebe6e3;
+	width: 100%;
+	position: relative;
+}
+
+.checked .taskItemContentLeft {
+	opacity: 0.25;
+}
+
+.checked .title {
+	text-decoration: line-through;
+}
+
+.taskItemContent {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 35px 10px 10px;
+	overflow: hidden;
+}
+
+.taskItemContentLeft {
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	transition: opacity 0.25s ease;
+	overflow: hidden;
+}
+
+.checkbox {
+	width: 18px;
+	height: 18px;
+	appearance: none; /* убирает системный стиль */
+	border: none;      /* убирает рамку */
+	box-shadow: none;  /* убирает внутренние/внешние тени */
+	outline: none;
+	background-color: white;
+	border-radius: 6px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	padding: 0;
+	margin-right: 8px;
+	transition: background-color 0.2s, box-shadow 0.2s;
+	position: relative;
+}
+
+.checkbox:checked::after {
+	content: "";
+	position: absolute;
+	width: 10px;
+	height: 6.5px;
+	border-left: 2px solid #888888;
+	border-bottom: 2px solid #888888;
+	transform: rotate(-45deg);
+}
+
+.emoji {
+	font-family: var(--font-family);
+	font-weight: 400;
+	font-size: 16px;
+	margin-right: 5px;
+}
+
+.title {
+	font-family: var(--font-family);
+	font-weight: 400;
+	font-size: 16px;
+	color: #000;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 85%;
+}
+
+.marker {
+	min-width: 11px;
+	width: 11px;
+	height: 11px;
+	border-radius: 50%;
+}
+
+.dragging {
+	border: 2px solid #3d00cb;
+	box-shadow: 0 1px 2px 0 #d7ccc6;
+}
+
+.dragging::before {
+	content: "";
+	display: inline-block;
+	width: 14px;
+	height: 6px;
+	margin-right: 8px;
+	background-image: url("/svg/drag.svg");
+	background-size: contain;
+	background-repeat: no-repeat;
+	position: absolute;
+	right: 0px;
+	top: calc(50% - 3px);
+}
+
+.deleteBackground {
+	display: none;
+}
+
+.swiped .deleteBackground {
+	display: inline-block;
+	position: absolute;
+	top: 0;
+	right: 0;
+}
