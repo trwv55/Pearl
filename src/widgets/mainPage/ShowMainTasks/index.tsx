@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useMemo } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import styles from "./ShowTasks.module.css";
 import { EmptyTaskState } from "../shared/EmptyTaskState";
@@ -11,10 +11,10 @@ interface ShowTasksProps {
 }
 
 export function ShowMainTasks({ tasks, showDots }: ShowTasksProps) {
-        const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
-        const [selectedIndex, setSelectedIndex] = useState(0);
-        const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
-        const [isStackExpanded, setIsStackExpanded] = useState(false);
+	const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
+	const [selectedIndex, setSelectedIndex] = useState(0);
+	const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
+	const [isStackExpanded, setIsStackExpanded] = useState(false); // Флаг открытия стопки главных задач
 
 	// следим за изменением выбранного слайда
 	const onSelect = useCallback(() => {
@@ -22,67 +22,75 @@ export function ShowMainTasks({ tasks, showDots }: ShowTasksProps) {
 		setSelectedIndex(emblaApi.selectedScrollSnap());
 	}, [emblaApi]);
 
-	// инициализация
+	// инициализация слайдера
 	useEffect(() => {
 		if (!emblaApi) return;
+
+		const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap());
+
 		setScrollSnaps(emblaApi.scrollSnapList());
 		emblaApi.on("select", onSelect);
 		onSelect();
-	}, [emblaApi, onSelect]);
 
-	const renderFirstSlide = () => {
-		if (tasks.length === 0) {
-			return <EmptyTaskState />;
-		}
+		return () => {
+			emblaApi.off("select", onSelect); // важно отписаться
+		};
+	}, [emblaApi]);
 
-                return (
-                        <div className="flex flex-col gap-2">
-                                <MainTaskStack tasks={tasks} onExpandChange={setIsStackExpanded} />
-                        </div>
-                );
-	};
+	// Мемоизированный первый слайд
+	const firstSlide = useMemo(() => {
+		if (tasks.length === 0) return <EmptyTaskState />;
 
-        if (isStackExpanded) {
-                return (
-                        <div className="w-full">
-                                <MainTaskStack tasks={tasks} isExpanded onExpandChange={setIsStackExpanded} />
-                                {showDots && (
-                                        <div className={styles.dotsWrap}>
-                                                <button
-                                                        onClick={() => setIsStackExpanded(false)}
-                                                        className={styles.closeLine}
-                                                />
-                                        </div>
-                                )}
-                        </div>
-                );
-        }
+		return (
+			<div className="flex flex-col gap-2">
+				<MainTaskStack
+					tasks={tasks}
+					isExpanded={isStackExpanded}
+					onExpandChange={setIsStackExpanded}
+					canExpand={tasks.length > 1}
+				/>
+			</div>
+		);
+	}, [tasks, isStackExpanded]);
 
-        return (
-                <div className="w-full">
-                        <div className="overflow-hidden" ref={emblaRef}>
-                                <div className="flex">
-                                        {/* Слайд 1 */}
-                                        <div className="flex-[0_0_100%]">{renderFirstSlide()}</div>
-                                        {/* Слайд 2 (пока пустой) */}
-                                        <div className="flex-[0_0_100%] px-4">
-                                                <div className="">Пустой слайд</div>
-                                        </div>
-                                </div>
-                        </div>
+	if (isStackExpanded) {
+		return (
+			<div className="w-full">
+				<MainTaskStack tasks={tasks} isExpanded onExpandChange={setIsStackExpanded} />
+				{showDots && (
+					<div className={styles.dotsWrap}>
+						<button onClick={() => setIsStackExpanded(false)} className={styles.closeLine} />
+					</div>
+				)}
+			</div>
+		);
+	}
 
-                        {/* 🔵 Точки переключения */}
-                        {showDots && (
-                                <div className={styles.dotsWrap}>
-                                        {scrollSnaps.map((_, index) => (
-                                                <button
-                                                        key={index}
-                                                        onClick={() => emblaApi && emblaApi.scrollTo(index)}
-                                                        className={`${styles.dot} ${selectedIndex === index ? styles.dotActive : ""}`}
-                                                />
-                                        ))}
-                                </div>
-                        )}
-                </div>
-        );
+	return (
+		<div className="w-full">
+			<div className="overflow-hidden" ref={emblaRef}>
+				<div className="flex">
+					{/* Слайд 1 */}
+					<div className="flex-[0_0_100%]">{firstSlide}</div>
+					{/* Слайд 2 (пока пустой) */}
+					<div className="flex-[0_0_100%] px-4">
+						<div className="">Пустой слайд</div>
+					</div>
+				</div>
+			</div>
+
+			{/* 🔵 Точки переключения */}
+			{showDots && (
+				<div className={styles.dotsWrap}>
+					{scrollSnaps.map((_, index) => (
+						<button
+							key={index}
+							onClick={() => emblaApi && emblaApi.scrollTo(index)}
+							className={`${styles.dot} ${selectedIndex === index ? styles.dotActive : ""}`}
+						/>
+					))}
+				</div>
+			)}
+		</div>
+	);
 }

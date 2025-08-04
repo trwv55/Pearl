@@ -1,35 +1,33 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import type { Task } from "@/entities/task/types";
 import { MainTaskItem } from "@/components/dashboard/MainTaskItem";
 import styles from "./MainTaskStack.module.css";
 
 interface MainTaskStackProps {
-        tasks: Task[];
-        isExpanded?: boolean;
-        onExpandChange?: (expanded: boolean) => void;
+	tasks: Task[];
+	isExpanded?: boolean;
+	onExpandChange?: (expanded: boolean) => void;
+	canExpand?: boolean;
 }
 
-export const MainTaskStack: React.FC<MainTaskStackProps> = ({ tasks, isExpanded: controlledExpanded, onExpandChange }) => {
-        const [uncontrolledExpanded, setUncontrolledExpanded] = useState(false);
-        const isControlled = controlledExpanded !== undefined;
-        const isExpanded = isControlled ? controlledExpanded : uncontrolledExpanded;
-        const [collapsedHeight, setCollapsedHeight] = useState<number | null>(null);
-        const firstItemRef = useRef<HTMLDivElement | null>(null);
+export const MainTaskStack: React.FC<MainTaskStackProps> = ({
+	tasks,
+	isExpanded: controlledExpanded,
+	onExpandChange,
+	canExpand,
+}) => {
+	const [uncontrolledExpanded, setUncontrolledExpanded] = useState(false);
+	const isControlled = controlledExpanded !== undefined;
+	const isExpanded = isControlled ? controlledExpanded : uncontrolledExpanded;
 
-        const handleToggle = () => {
-                const next = !isExpanded;
-                if (!isControlled) {
-                        setUncontrolledExpanded(next);
-                }
-                onExpandChange?.(next);
-        };
-
-	useLayoutEffect(() => {
-		if (firstItemRef.current) {
-			setCollapsedHeight(firstItemRef.current.offsetHeight);
+	const handleToggle = useCallback(() => {
+		const next = !isExpanded;
+		if (!isControlled) {
+			setUncontrolledExpanded(next);
 		}
-	}, [tasks]);
+		onExpandChange?.(next);
+	}, [isExpanded, isControlled, onExpandChange]);
 
 	return (
 		<motion.div
@@ -64,13 +62,13 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({ tasks, isExpanded:
 							cursor: !isExpanded && index === 0 ? "pointer" : "default",
 						}}
 						onClick={() => {
-							if (!isExpanded && index === 0) {
+							if (!isExpanded && index === 0 && canExpand) {
 								handleToggle();
 							}
 						}}
 						className={styles.taskItemWrapper}
 					>
-						<div className={styles.taskItemWrap} ref={index === 0 ? firstItemRef : null}>
+						<div className={styles.taskItemWrap}>
 							<MainTaskItem task={task} />
 						</div>
 					</motion.div>
