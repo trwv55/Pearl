@@ -4,6 +4,7 @@ import styles from "./ShowTasks.module.css";
 import { EmptyTaskState } from "../shared/EmptyTaskState";
 import type { Task } from "@/entities/task/types";
 import { MainTaskStack } from "@/components/dashboard/MainTaskStack";
+import { taskStore } from "@/entities/task/store";
 
 interface ShowTasksProps {
 	tasks: Task[];
@@ -11,10 +12,15 @@ interface ShowTasksProps {
 }
 
 export function ShowMainTasks({ tasks, showDots }: ShowTasksProps) {
-	const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
-	const [selectedIndex, setSelectedIndex] = useState(0);
-	const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
-	const [isStackExpanded, setIsStackExpanded] = useState(false); // Флаг открытия стопки главных задач
+        const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
+        const [selectedIndex, setSelectedIndex] = useState(0);
+        const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
+        const [isStackExpanded, setIsStackExpanded] = useState(false); // Флаг открытия стопки главных задач
+
+        // Сбрасываем состояние стопки при смене дня
+        useEffect(() => {
+                setIsStackExpanded(false);
+        }, [taskStore.selectedDate]);
 
 	// следим за изменением выбранного слайда
 	const onSelect = useCallback(() => {
