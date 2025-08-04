@@ -5,17 +5,25 @@ import { MainTaskItem } from "@/components/dashboard/MainTaskItem";
 import styles from "./MainTaskStack.module.css";
 
 interface MainTaskStackProps {
-	tasks: Task[];
+        tasks: Task[];
+        isExpanded?: boolean;
+        onExpandChange?: (expanded: boolean) => void;
 }
 
-export const MainTaskStack: React.FC<MainTaskStackProps> = ({ tasks }) => {
-	const [isExpanded, setIsExpanded] = useState(false);
-	const [collapsedHeight, setCollapsedHeight] = useState<number | null>(null);
-	const firstItemRef = useRef<HTMLDivElement | null>(null);
+export const MainTaskStack: React.FC<MainTaskStackProps> = ({ tasks, isExpanded: controlledExpanded, onExpandChange }) => {
+        const [uncontrolledExpanded, setUncontrolledExpanded] = useState(false);
+        const isControlled = controlledExpanded !== undefined;
+        const isExpanded = isControlled ? controlledExpanded : uncontrolledExpanded;
+        const [collapsedHeight, setCollapsedHeight] = useState<number | null>(null);
+        const firstItemRef = useRef<HTMLDivElement | null>(null);
 
-	const handleToggle = () => {
-		setIsExpanded(prev => !prev);
-	};
+        const handleToggle = () => {
+                const next = !isExpanded;
+                if (!isControlled) {
+                        setUncontrolledExpanded(next);
+                }
+                onExpandChange?.(next);
+        };
 
 	useLayoutEffect(() => {
 		if (firstItemRef.current) {
