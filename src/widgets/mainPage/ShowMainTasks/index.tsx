@@ -3,6 +3,8 @@ import useEmblaCarousel from "embla-carousel-react";
 import styles from "./ShowTasks.module.css";
 import { EmptyTaskState } from "../shared/EmptyTaskState";
 import type { Task } from "@/entities/task/types";
+import { MainTaskItem } from "@/components/dashboard/MainTaskItem";
+import { MainTaskStack } from "@/components/dashboard/MainTaskStack";
 
 interface ShowTasksProps {
 	tasks: Task[];
@@ -35,11 +37,7 @@ export function ShowMainTasks({ tasks, showDots }: ShowTasksProps) {
 
 		return (
 			<div className="flex flex-col gap-2">
-				{tasks.map(task => (
-					<div key={task.id} className="border border-purple-300 rounded-xl p-4 shadow-sm">
-						<h3 className="font-semibold">{task.title}</h3>
-					</div>
-				))}
+				<MainTaskStack tasks={tasks} />
 			</div>
 		);
 	};

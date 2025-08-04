@@ -1,4 +1,3 @@
-import { useSwipeable } from "react-swipeable";
 import clsx from "clsx";
 import type { Task } from "@/entities/task/types";
 import { useState } from "react";
