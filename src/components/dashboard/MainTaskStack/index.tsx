@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import type { Task } from "@/entities/task/types";
 import { MainTaskItem } from "@/components/dashboard/MainTaskItem";
@@ -12,14 +12,25 @@ interface MainTaskStackProps {
 }
 
 export const MainTaskStack: React.FC<MainTaskStackProps> = ({
-	tasks,
-	isExpanded: controlledExpanded,
-	onExpandChange,
-	canExpand,
+        tasks,
+        isExpanded: controlledExpanded,
+        onExpandChange,
+        canExpand,
 }) => {
-	const [uncontrolledExpanded, setUncontrolledExpanded] = useState(false);
-	const isControlled = controlledExpanded !== undefined;
-	const isExpanded = isControlled ? controlledExpanded : uncontrolledExpanded;
+        const [uncontrolledExpanded, setUncontrolledExpanded] = useState(false);
+        const isControlled = controlledExpanded !== undefined;
+        const isExpanded = isControlled ? controlledExpanded : uncontrolledExpanded;
+
+        const prevTasksRef = useRef<string>("");
+
+        useEffect(() => {
+                if (isControlled) return;
+                const ids = tasks.map(t => t.id).join(",");
+                if (prevTasksRef.current !== ids) {
+                        setUncontrolledExpanded(false);
+                        prevTasksRef.current = ids;
+                }
+        }, [tasks, isControlled]);
 
 	const handleToggle = useCallback(() => {
 		const next = !isExpanded;
