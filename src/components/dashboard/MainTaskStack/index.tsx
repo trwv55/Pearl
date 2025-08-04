@@ -24,52 +24,8 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({ tasks }) => {
 	}, [tasks]);
 
 	return (
-		// <div className={`${styles.stack} ${isExpanded ? styles.expanded : ""}`}>
-		// 	{tasks.map((task, index) => {
-		// 		const offset = isExpanded ? 0 : index * 10;
-		// 		const scale = isExpanded ? 1 : 1 - index * 0.02;
-		// 		const z = isExpanded ? 0 : tasks.length - index;
-
-		// 		return (
-		// 			<motion.div
-		// 				key={task.id}
-		// 				initial={false}
-		// 				animate={{
-		// 					y: isExpanded ? 0 : offset,
-		// 					scale: isExpanded ? 1 : scale,
-		// 					opacity: isExpanded || index === 0 ? 1 : 0.95,
-		// 				}}
-		// 				transition={{
-		// 					type: "tween",
-		// 					duration: 0.4,
-		// 					ease: "easeOut",
-		// 				}}
-		// 				style={{
-		// 					position: isExpanded ? "relative" : "absolute",
-		// 					top: 0,
-		// 					left: 0,
-		// 					width: "100%",
-		// 					zIndex: isExpanded ? 0 : z,
-		// 					cursor: !isExpanded && index === 0 ? "pointer" : "default",
-		// 				}}
-		// 				onClick={() => {
-		// 					if (!isExpanded && index === 0) {
-		// 						handleToggle();
-		// 					}
-		// 				}}
-		// 				className={styles.taskItemWrapper}
-		// 			>
-		// 				<div className={styles.taskItemWrap}>
-		// 					<MainTaskItem task={task} />
-		// 				</div>
-		// 			</motion.div>
-		// 		);
-		// 	})}
-		// </div>
 		<motion.div
-			// animate={{ height: isExpanded ? 300 : collapsedHeight ?? 120 }}
 			transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
-			// style={{ height: isExpanded ? 300 : collapsedHeight ?? 1 }}
 			className={`${styles.stack} ${isExpanded ? styles.expanded : ""}`}
 		>
 			{tasks.map((task, index) => {
