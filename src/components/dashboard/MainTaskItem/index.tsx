@@ -3,6 +3,7 @@ import { useSwipeable } from "react-swipeable";
 import type { Task } from "@/entities/task/types";
 import { useState } from "react";
 import styles from "./MainTaskItem.module.css";
+import { getTaskBackground } from "@/shared/lib/taskBackground";
 
 interface RoutineTaskItemProps {
 	task: Task;
@@ -19,7 +20,6 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 	const swipeHandlers = useSwipeable({
 		onSwipedLeft: () => isExpanded && setShowDelete(true),
 		onSwipedRight: () => isExpanded && setShowDelete(false),
-		// preventDefaultTouchmoveEvent: true,
 		trackMouse: true, // Позволяет тестить свайп мышкой на десктопе
 	});
 
@@ -44,6 +44,9 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 					[styles.checked]: isChecked,
 					[styles.swiped]: showDelete,
 				})}
+				style={{
+					background: getTaskBackground(task.markerColor),
+				}}
 			>
 				<div className={styles.taskItemContent}>
 					<div className={styles.emojiWrap}>

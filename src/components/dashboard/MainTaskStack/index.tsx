@@ -22,7 +22,7 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 	const isExpanded = isControlled ? controlledExpanded : uncontrolledExpanded; // Раскрытая стопка
 	const prevTasksRef = useRef<string>("");
 
-	console.log("isExpanded", isExpanded);
+	console.log("tasks", tasks);
 
 	useEffect(() => {
 		if (isControlled) return;
@@ -47,8 +47,8 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 			className={`${styles.stack} ${isExpanded ? styles.expanded : ""}`}
 		>
 			{tasks.map((task, index) => {
-				const offset = index * 10;
-				const scale = 1 - index * 0.02;
+				const offset = index * 11;
+				const scale = 1 - index * 0.07;
 				const z = tasks.length - index;
 
 				return (
