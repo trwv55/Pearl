@@ -20,13 +20,8 @@
 }
 
 .expanded {
-	gap: 16px;
-	height: 300px;
-}
-
-.active {
-	/* transform: none !important;
-	scale: 1 !important; */
+	gap: 10px;
+	height: 280px;
 }
 
 .expanded .taskItemWrap {

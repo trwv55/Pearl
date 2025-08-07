@@ -12,25 +12,26 @@ interface MainTaskStackProps {
 }
 
 export const MainTaskStack: React.FC<MainTaskStackProps> = ({
-        tasks,
-        isExpanded: controlledExpanded,
-        onExpandChange,
-        canExpand,
+	tasks,
+	isExpanded: controlledExpanded,
+	onExpandChange,
+	canExpand,
 }) => {
-        const [uncontrolledExpanded, setUncontrolledExpanded] = useState(false);
-        const isControlled = controlledExpanded !== undefined;
-        const isExpanded = isControlled ? controlledExpanded : uncontrolledExpanded;
+	const [uncontrolledExpanded, setUncontrolledExpanded] = useState(false);
+	const isControlled = controlledExpanded !== undefined;
+	const isExpanded = isControlled ? controlledExpanded : uncontrolledExpanded; // Раскрытая стопка
+	const prevTasksRef = useRef<string>("");
 
-        const prevTasksRef = useRef<string>("");
+	console.log("isExpanded", isExpanded);
 
-        useEffect(() => {
-                if (isControlled) return;
-                const ids = tasks.map(t => t.id).join(",");
-                if (prevTasksRef.current !== ids) {
-                        setUncontrolledExpanded(false);
-                        prevTasksRef.current = ids;
-                }
-        }, [tasks, isControlled]);
+	useEffect(() => {
+		if (isControlled) return;
+		const ids = tasks.map(t => t.id).join(",");
+		if (prevTasksRef.current !== ids) {
+			setUncontrolledExpanded(false);
+			prevTasksRef.current = ids;
+		}
+	}, [tasks, isControlled]);
 
 	const handleToggle = useCallback(() => {
 		const next = !isExpanded;
@@ -80,7 +81,7 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 						className={styles.taskItemWrapper}
 					>
 						<div className={styles.taskItemWrap}>
-							<MainTaskItem task={task} />
+							<MainTaskItem task={task} isExpanded={isExpanded} />
 						</div>
 					</motion.div>
 				);
