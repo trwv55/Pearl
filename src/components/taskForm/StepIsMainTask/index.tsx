@@ -1,16 +1,25 @@
 "use client";
+
 import clsx from "clsx";
+import { observer } from "mobx-react-lite";
+import { taskStore } from "@/entities/task/store";
 import styles from "../shared/styles.module.css";
 import { MainTasksCount } from "@/widgets/mainPage/shared/tasksCount/MainTasksCount";
-import { memo } from "react";
 
 interface Props {
 	value: boolean;
 	onChange: (val: boolean) => void;
 }
 
+const MAX_MAIN_TASKS = 3;
+
 function StepIsMainTask({ value, onChange }: Props) {
+	const currentCount = taskStore.mainTasks.length;
+
+	console.log("currentCount", currentCount);
+
 	const handleToggle = (val: boolean) => {
+		if (val && currentCount >= MAX_MAIN_TASKS) return;
 		onChange(val);
 	};
 
@@ -22,7 +31,7 @@ function StepIsMainTask({ value, onChange }: Props) {
 					Это главная задача на сегодня?
 				</div>
 
-				<MainTasksCount current={0} max={3} />
+				<MainTasksCount current={currentCount} max={MAX_MAIN_TASKS} />
 			</div>
 
 			<div className={styles.toggleBtnWrap}>
@@ -31,6 +40,7 @@ function StepIsMainTask({ value, onChange }: Props) {
 						[styles.toggleBtnactive]: value === true,
 					})}
 					onClick={() => handleToggle(true)}
+					disabled={currentCount >= MAX_MAIN_TASKS}
 				>
 					Да
 				</button>
@@ -48,4 +58,4 @@ function StepIsMainTask({ value, onChange }: Props) {
 	);
 }
 
-export default memo(StepIsMainTask);
+export default observer(StepIsMainTask);

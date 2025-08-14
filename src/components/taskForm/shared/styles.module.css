@@ -80,15 +80,20 @@
 }
 
 .toggleBtn {
-	width: 50%;
-	min-height: 96px;
-	max-height: 96px;
-	font-family: var(--font-family);
+        width: 50%;
+        min-height: 96px;
+        max-height: 96px;
+        font-family: var(--font-family);
 	font-weight: 400;
 	font-size: 24px;
 	line-height: 100%;
 	color: rgba(0, 0, 0, 0.25);
-	transition: color 0.3s ease;
+        transition: color 0.3s ease;
+}
+
+.toggleBtn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
 }
 
 .toggleBtnWrapLine {

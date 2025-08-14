@@ -1,5 +1,5 @@
 "use client";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import styles from "./StepTitle.module.css";
 
 interface StepTitleProps {

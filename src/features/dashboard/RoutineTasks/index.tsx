@@ -13,7 +13,7 @@ export const RoutineTasks: React.FC = observer(() => {
 		<div className={styles.wrap}>
 			<div className={styles.top}>
 				<h2>Задачи на день</h2>
-				<RoutineTasksCount current={0} max={totalCount} />
+				<RoutineTasksCount current={completedCount} max={totalCount} />
 			</div>
 			<ShowRoutineTasks tasks={taskStore.routineTasks} />
 		</div>

@@ -21,7 +21,8 @@
 
 .expanded {
 	gap: 10px;
-	height: 280px;
+	/* height: 280px; */
+	height: auto;
 }
 
 .expanded .taskItemWrap {

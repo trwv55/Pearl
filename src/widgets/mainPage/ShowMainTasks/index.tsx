@@ -2,25 +2,26 @@ import { useEffect, useCallback, useState, useMemo } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import styles from "./ShowTasks.module.css";
 import { EmptyTaskState } from "../shared/EmptyTaskState";
-import type { Task } from "@/entities/task/types";
+import type { Task, TaskMain } from "@/entities/task/types";
 import { MainTaskStack } from "@/components/dashboard/MainTaskStack";
 import { taskStore } from "@/entities/task/store";
+import { observer } from "mobx-react-lite";
 
-interface ShowTasksProps {
-	tasks: Task[];
+interface ShowMainTasksProps {
+	tasks: TaskMain[];
 	showDots?: boolean;
 }
 
-export function ShowMainTasks({ tasks, showDots }: ShowTasksProps) {
-        const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
-        const [selectedIndex, setSelectedIndex] = useState(0);
-        const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
-        const [isStackExpanded, setIsStackExpanded] = useState(false); // Флаг открытия стопки главных задач
+export const ShowMainTasks = observer(({ tasks, showDots }: ShowMainTasksProps) => {
+	const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
+	const [selectedIndex, setSelectedIndex] = useState(0);
+	const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
+	const [isStackExpanded, setIsStackExpanded] = useState(false); // Флаг открытия стопки главных задач
 
-        // Сбрасываем состояние стопки при смене дня
-        useEffect(() => {
-                setIsStackExpanded(false);
-        }, [taskStore.selectedDate]);
+	// Сбрасываем состояние стопки при смене дня
+	useEffect(() => {
+		setIsStackExpanded(false);
+	}, [taskStore.selectedDate]);
 
 	// следим за изменением выбранного слайда
 	const onSelect = useCallback(() => {
@@ -53,13 +54,18 @@ export function ShowMainTasks({ tasks, showDots }: ShowTasksProps) {
 					tasks={tasks}
 					isExpanded={isStackExpanded}
 					onExpandChange={setIsStackExpanded}
-					canExpand={tasks.length > 1}
+					canExpand={tasks.length >= 1}
 				/>
 			</div>
 		);
 	}, [tasks, isStackExpanded]);
 
+	// Развернутый режим
 	if (isStackExpanded) {
+		if (tasks.length === 0) {
+			// если после удаления задач не осталось — показываем пустое состояние
+			return <EmptyTaskState />;
+		}
 		return (
 			<div className="w-full">
 				<MainTaskStack tasks={tasks} isExpanded onExpandChange={setIsStackExpanded} />
@@ -99,4 +105,4 @@ export function ShowMainTasks({ tasks, showDots }: ShowTasksProps) {
 			)}
 		</div>
 	);
-}
+});
