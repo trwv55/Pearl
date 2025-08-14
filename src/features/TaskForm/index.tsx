@@ -18,19 +18,18 @@ import { useRouter } from "next/navigation";
 
 const TaskForm = observer(() => {
 	const router = useRouter();
-        const [title, setTitle] = useState("");
-        const [isMain, setIsMain] = useState<boolean>(taskStore.mainTasks.length < 3);
-	// const [date, setDate] = useState<Date>(new Date());
+	const [title, setTitle] = useState("");
+	const [isMain, setIsMain] = useState<boolean>(taskStore.mainTasks.length < 3);
 	const [date, setDate] = useState<Date>(taskStore.selectedDate);
 	const [comment, setComment] = useState("");
 	const [markerColor, setMarkerColor] = useState<string>("#3d00cb");
-        const [emoji, setEmoji] = useState("");
+	const [emoji, setEmoji] = useState("");
 
-        useEffect(() => {
-                if (taskStore.mainTasks.length >= 3) {
-                        setIsMain(false);
-                }
-        }, [taskStore.mainTasks.length]);
+	useEffect(() => {
+		if (taskStore.mainTasks.length >= 3) {
+			setIsMain(false);
+		}
+	}, [taskStore.mainTasks.length]);
 
 	const handleSubmit = async () => {
 		if (!title.trim() || !date || !markerColor) {

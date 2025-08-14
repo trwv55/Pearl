@@ -1,26 +1,33 @@
 import clsx from "clsx";
 import { useSwipeable } from "react-swipeable";
-import type { Task } from "@/entities/task/types";
-import { useState } from "react";
-import styles from "./MainTaskItem.module.css";
+import type { Task, TaskMain } from "@/entities/task/types";
+import { useEffect, useState } from "react";
 import { getTaskBackground } from "@/shared/lib/taskBackground";
+import styles from "./MainTaskItem.module.css";
 
 interface RoutineTaskItemProps {
-	task: Task;
+	task: TaskMain;
 	isDragging?: boolean;
 	onDelete?: (taskId: string) => void;
 	isExpanded?: boolean;
+	onComplete?: (task: Task) => void;
 }
 
-export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded, onDelete }) => {
-	const [isChecked, setIsChecked] = useState(false);
+export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded, onDelete, onComplete }) => {
+	const [isChecked, setIsChecked] = useState(task.isCompleted);
 	const [showDelete, setShowDelete] = useState(false);
+
+	// Синхронизируем чекбокс с бэкендом
+	useEffect(() => {
+		setIsChecked(task.isCompleted);
+	}, [task.isCompleted]);
 
 	// Показываем свайп только если стопка раскрыта
 	const swipeHandlers = useSwipeable({
 		onSwipedLeft: () => isExpanded && setShowDelete(true),
 		onSwipedRight: () => isExpanded && setShowDelete(false),
 		trackMouse: true, // Позволяет тестить свайп мышкой на десктопе
+		delta: 25,
 	});
 
 	// Если стопка закрылась — скрываем delete
@@ -28,11 +35,21 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 		setShowDelete(false);
 	}
 
+	const handleDeleteClick = () => {
+		onDelete?.(task.id);
+		setShowDelete(false);
+	};
+
+	const handleChange = (e: { target: { checked: boolean | ((prevState: boolean) => boolean) } }) => {
+		setIsChecked(e.target.checked);
+		onComplete?.(task);
+	};
+
 	return (
 		<div className={styles.swipeWrap} {...(isExpanded ? swipeHandlers : {})}>
 			<button
 				className={clsx(styles.deleteBtn, showDelete && styles.showDelete)}
-				onClick={() => onDelete?.(task.id)}
+				onClick={handleDeleteClick}
 				aria-label="Удалить задачу"
 				tabIndex={showDelete ? 0 : -1}
 				style={{ display: isExpanded ? undefined : "none" }}
@@ -60,7 +77,8 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 								type="checkbox"
 								className={styles.checkbox}
 								checked={isChecked}
-								onChange={e => setIsChecked(e.target.checked)}
+								// onChange={e => setIsChecked(e.target.checked)}
+								onChange={handleChange}
 							/>
 						</div>
 					</div>
