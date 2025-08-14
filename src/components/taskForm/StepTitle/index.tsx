@@ -8,6 +8,8 @@ interface StepTitleProps {
 	rows?: number;
 	value?: string;
 	onChange?: (value: string) => void;
+	error?: boolean;
+	onErrorClear?: () => void;
 }
 
 function StepTitle({
@@ -16,17 +18,26 @@ function StepTitle({
 	rows = 3,
 	value,
 	onChange,
+	error,
+	onErrorClear,
 }: StepTitleProps) {
+	const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		const value = e.target.value;
+		onChange?.(value);
+		// если есть ошибка — снимаем её при любом вводе
+		if (error) onErrorClear?.();
+	};
+
 	return (
 		<div className={styles.wrap}>
 			<div className={styles.textareaWrap}>
 				<textarea
-					className={styles.textarea}
+					className={`${styles.textarea} ${error ? styles.error : ""}`}
 					placeholder={placeholder}
 					rows={rows}
 					style={{ lineHeight: "120%" }}
 					value={value}
-					onChange={e => onChange?.(e.target.value)}
+					onChange={handleChange}
 				/>
 				<span>{note}</span>
 			</div>
