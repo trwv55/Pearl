@@ -15,10 +15,14 @@ import Image from "next/image";
 import { observer } from "mobx-react-lite";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import StepEmoji from "@/components/taskForm/StepEmoji";
+
+const DEFAULT_EMOJI = "🐚";
 
 const TaskForm = observer(() => {
 	const router = useRouter();
 	const [title, setTitle] = useState("");
+	const [titleError, setTitleError] = useState(false);
 	const [isMain, setIsMain] = useState<boolean>(taskStore.mainTasks.length < 3);
 	const [date, setDate] = useState<Date>(taskStore.selectedDate);
 	const [comment, setComment] = useState("");
@@ -32,21 +36,28 @@ const TaskForm = observer(() => {
 	}, [taskStore.mainTasks.length]);
 
 	const handleSubmit = async () => {
+		if (!title.trim()) {
+			setTitleError(true);
+		}
+
 		if (!title.trim() || !date || !markerColor) {
 			toast.error("Заполните обязательные поля");
 			return;
 		}
+
 		if (!userStore.user) {
 			toast.error("Нет данных пользователя");
 			return;
 		}
+
+		const finalEmoji = emoji && emoji.trim() ? emoji : DEFAULT_EMOJI;
 
 		try {
 			await addTask(userStore.user.uid, {
 				title,
 				comment,
 				date,
-				emoji,
+				emoji: finalEmoji,
 				isMain,
 				markerColor,
 			});
@@ -65,7 +76,7 @@ const TaskForm = observer(() => {
 		<div className="flex flex-col gap-[40px] w-full pt-[110px]">
 			<div className="z-[2]">
 				<StepCount stepNumber={1} totalSteps={6} label="Что нужно сделать?" />
-				<StepTitle value={title} onChange={setTitle} />
+				<StepTitle value={title} onChange={setTitle} error={titleError} onErrorClear={() => setTitleError(false)} />
 			</div>
 			<StepIsMainTask value={isMain} onChange={setIsMain} />
 			<StepCalendar value={date} onChange={setDate} />
@@ -79,7 +90,7 @@ const TaskForm = observer(() => {
 			</div>
 			<div>
 				<StepCount stepNumber={6} totalSteps={6} label="Добавь эмодзи" />
-				<StepTitle note="Только один эмодзи" value={emoji} onChange={setEmoji} rows={1} />
+				<StepEmoji value={emoji} onChange={setEmoji} rows={1} />
 			</div>
 			<Button variant="mainDashboard" size="start" onClick={handleSubmit}>
 				Готово

@@ -13,8 +13,8 @@
 	-moz-appearance: none;
 	background: rgba(174, 150, 255, 0.25);
 	border-radius: 12px;
-	padding: 3px 7px;
-	padding-left: 2px;
+	padding: 3px 2px;
+	padding-right: 5px;
 	font-family: var(--font-family);
 	font-weight: 300;
 	font-size: 19px;
