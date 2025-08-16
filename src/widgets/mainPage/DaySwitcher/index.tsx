@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Timestamp } from "firebase/firestore";
-import { useRef, useLayoutEffect, useEffect, useState } from "react";
+import { useRef, useLayoutEffect, useEffect, useState, useMemo } from "react";
 import { addDays, format, isSameDay } from "date-fns";
 import { ru } from "date-fns/locale";
 import styles from "./DaysSwitcher.module.css";
@@ -28,6 +28,15 @@ export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 		setSelectedDate(value);
 		setSelectedTimestamp(Timestamp.fromDate(value));
 	}, [value]);
+
+	// вычисляем подпись месяца и года под текущую выбранную дату
+	const { monthTitle, yearTitle } = useMemo(() => {
+		// "LLL" в ru даёт "июн."; убираем точку и капитализуем
+		const raw = format(selectedDate, "LLL", { locale: ru }); // напр. "июн."
+		const withoutDot = raw.replace(".", "");
+		const cap = withoutDot.charAt(0).toUpperCase() + withoutDot.slice(1);
+		return { monthTitle: cap, yearTitle: format(selectedDate, "yyyy") };
+	}, [selectedDate]);
 
 	// Initial scroll to the selected date without animation
 	useLayoutEffect(() => {
@@ -128,34 +137,45 @@ export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 
 	return (
 		<div className={`${styles.wrapper} ${selectedDate ? styles.active : ""}`}>
-			<div className={styles.viewport} ref={viewportRef} style={{ overflowX: "auto", whiteSpace: "nowrap" }}>
-				{uniqueDays.map((day, i) => {
-					const isActive = isSameDay(day, selectedDate);
-					const isNext = i === uniqueDays.findIndex(d => isSameDay(d, selectedDate)) + 1;
-					const weekday = format(day, "EEEEEE", { locale: ru }).slice(0, 2);
+			<div className={styles.header}>
+				<div className={styles.monthBox}>
+					<div className={styles.monthLine}>
+						<span className={styles.month}>{monthTitle}</span>
+						<span className={styles.comma}>,</span>
+					</div>
+					<div className={styles.year}>{yearTitle}</div>
+				</div>
 
-					return (
-						<div
-							key={day.toDateString()}
-							className={`${styles.dayColumn} ${isNext ? styles.nextDay : ""} ${
-								isActive ? styles.activeColumn : ""
-							}`}
-						>
-							<motion.button
-								onClick={() => handleSelect(i)}
-								className={`${styles.buttonWrapper} ${isActive ? styles.activeDay : ""}`}
-								animate={{
-									scale: isActive ? 1.2 : 1,
-									zIndex: isActive ? 2 : 1,
-								}}
-								transition={{ type: "spring", stiffness: 300, damping: 25 }}
+				<div className={styles.separator} />
+				<div className={styles.viewport} ref={viewportRef} style={{ overflowX: "auto", whiteSpace: "nowrap" }}>
+					{uniqueDays.map((day, i) => {
+						const isActive = isSameDay(day, selectedDate);
+						const isNext = i === uniqueDays.findIndex(d => isSameDay(d, selectedDate)) + 1;
+						const weekday = format(day, "EEEEEE", { locale: ru }).slice(0, 2);
+
+						return (
+							<div
+								key={day.toDateString()}
+								className={`${styles.dayColumn} ${isNext ? styles.nextDay : ""} ${
+									isActive ? styles.activeColumn : ""
+								}`}
 							>
-								<span className={styles.dayNumber}>{format(day, "d")}</span>
-							</motion.button>
-							<span className={styles.dayName}>{weekday}</span>
-						</div>
-					);
-				})}
+								<motion.button
+									onClick={() => handleSelect(i)}
+									className={`${styles.buttonWrapper} ${isActive ? styles.activeDay : ""}`}
+									animate={{
+										scale: isActive ? 1.2 : 1,
+										zIndex: isActive ? 2 : 1,
+									}}
+									transition={{ type: "spring", stiffness: 300, damping: 25 }}
+								>
+									<span className={styles.dayNumber}>{format(day, "d")}</span>
+								</motion.button>
+								<span className={styles.dayName}>{weekday}</span>
+							</div>
+						);
+					})}
+				</div>
 			</div>
 		</div>
 	);
