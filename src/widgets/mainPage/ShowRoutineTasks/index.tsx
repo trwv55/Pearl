@@ -1,4 +1,3 @@
-import { RoutineTaskItem } from "@/components/dashboard/RoutineTaskItem";
 import { EmptyTaskState } from "../shared/EmptyTaskState";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
@@ -22,7 +21,14 @@ export const ShowRoutineTasks: React.FC<ShowRoutineTasksProps> = ({ tasks }) => 
 		setTaskOrder(tasks);
 	}, [tasks]);
 
-	const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+	const sensors = useSensors(
+		useSensor(PointerSensor, {
+			activationConstraint: {
+				delay: 1000, // 1 секунды удержания до старта drag
+				tolerance: 50, // можно «шевельнуться» на пару пикселей, не сбивая задержку
+			},
+		}),
+	);
 
 	const handleDragEnd = (event: DragEndEvent) => {
 		const { active, over } = event;
