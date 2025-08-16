@@ -4,10 +4,11 @@ import type { Task } from "@/entities/task/types";
 import { RoutineTaskItem } from "../RoutineTaskItem";
 
 interface SortableRoutineTaskItemProps {
-	task: Task;
+        task: Task;
+        onDelete?: (taskId: string) => void;
 }
 
-export const SortableRoutineTaskItem: React.FC<SortableRoutineTaskItemProps> = ({ task }) => {
+export const SortableRoutineTaskItem: React.FC<SortableRoutineTaskItemProps> = ({ task, onDelete }) => {
 	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
 		id: task.id,
 	});
@@ -17,9 +18,9 @@ export const SortableRoutineTaskItem: React.FC<SortableRoutineTaskItemProps> = (
 		transition,
 	};
 
-	return (
-		<div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-			<RoutineTaskItem task={task} isDragging={isDragging} />
-		</div>
-	);
+        return (
+                <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+                        <RoutineTaskItem task={task} isDragging={isDragging} onDelete={onDelete} />
+                </div>
+        );
 };

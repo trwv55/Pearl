@@ -49,10 +49,10 @@ export const RoutineTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isDraggi
 		[uid],
 	);
 
-	const handleDeleteClick = () => {
-		// onDelete?.(task.id);
-		setShowDelete(false);
-	};
+        const handleDeleteClick = () => {
+                onDelete?.(task.id);
+                setShowDelete(false);
+        };
 
 	return (
 		<div className={styles.swipeWrap} {...(canSwipe ? swipeHandlers : {})}>
