@@ -1,8 +1,48 @@
 .wrapper {
-	/* padding: 16px; */
 	display: flex;
 	justify-content: center;
 }
+
+.header {
+	display: grid;
+	grid-template-columns: auto 1px 1fr; /* месяц | разделитель | карусель */
+	align-items: center;
+	gap: 24px;
+	margin-top: 20px;
+  }
+  
+  .monthBox {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-width: 35px; 
+	padding-left: 8px;
+  }
+  
+  .monthLine {
+	display: flex;
+	align-items: baseline;
+	gap: 1px;
+  }
+  
+  .month, .comma, .year {
+	font-weight: 300;
+	font-size: 16px;
+	letter-spacing: -0.06em;
+	color: #000;
+	opacity: 0.25;          
+  }
+  
+  .year {
+	font-weight: 900;
+  }
+  
+  .separator {
+	height: 64px;
+	width: 1px;
+	background: #e7e1dc;
+	border-radius: 1px;
+  }
   
 .viewport {
 	display: flex;
@@ -21,7 +61,7 @@
 .viewport::-webkit-scrollbar {
 	display: none;
 }
-  
+
   /* колонка: кнопка сверху, подпись снизу */
 .dayColumn {
 	display: flex;

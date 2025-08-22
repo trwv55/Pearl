@@ -1,11 +1,14 @@
+import { ReactNode } from "react";
 import styles from "./EmptyTaskState.module.css";
 
-export function EmptyTaskState() {
+interface EmptyStateProps {
+	children: ReactNode;
+}
+
+export function EmptyTaskState({ children }: EmptyStateProps) {
 	return (
 		<div className={styles.emptyWrap}>
-			<div className={styles.emptyTitle}>
-				<span>Отдыхаем!</span>&nbsp;Задач на сегодня нет
-			</div>
+			<div className={styles.emptyTitle}>{children}</div>
 		</div>
 	);
 }
