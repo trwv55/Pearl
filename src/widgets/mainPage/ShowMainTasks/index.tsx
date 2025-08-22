@@ -2,7 +2,7 @@ import { useEffect, useCallback, useState, useMemo } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import styles from "./ShowTasks.module.css";
 import { EmptyTaskState } from "../shared/EmptyTaskState";
-import type { Task, TaskMain } from "@/entities/task/types";
+import type { TaskMain } from "@/entities/task/types";
 import { MainTaskStack } from "@/components/dashboard/MainTaskStack";
 import { taskStore } from "@/entities/task/store";
 import { observer } from "mobx-react-lite";
@@ -24,10 +24,10 @@ export const ShowMainTasks = observer(({ tasks, showDots }: ShowMainTasksProps) 
 	}, [taskStore.selectedDate]);
 
 	// следим за изменением выбранного слайда
-	const onSelect = useCallback(() => {
-		if (!emblaApi) return;
-		setSelectedIndex(emblaApi.selectedScrollSnap());
-	}, [emblaApi]);
+	// const onSelect = useCallback(() => {
+	// 	if (!emblaApi) return;
+	// 	setSelectedIndex(emblaApi.selectedScrollSnap());
+	// }, [emblaApi]);
 
 	// инициализация слайдера
 	useEffect(() => {
@@ -40,13 +40,18 @@ export const ShowMainTasks = observer(({ tasks, showDots }: ShowMainTasksProps) 
 		onSelect();
 
 		return () => {
-			emblaApi.off("select", onSelect); // важно отписаться
+			emblaApi.off("select", onSelect);
 		};
 	}, [emblaApi]);
 
 	// Мемоизированный первый слайд
 	const firstSlide = useMemo(() => {
-		if (tasks.length === 0) return <EmptyTaskState />;
+		if (tasks.length === 0)
+			return (
+				<EmptyTaskState>
+					<span>Отдыхаем!</span>&nbsp;Задач на сегодня нет
+				</EmptyTaskState>
+			);
 
 		return (
 			<div className="flex flex-col gap-2">
@@ -64,7 +69,11 @@ export const ShowMainTasks = observer(({ tasks, showDots }: ShowMainTasksProps) 
 	if (isStackExpanded) {
 		if (tasks.length === 0) {
 			// если после удаления задач не осталось — показываем пустое состояние
-			return <EmptyTaskState />;
+			return (
+				<EmptyTaskState>
+					<span>Отдыхаем!</span>&nbsp;Задач на сегодня нет
+				</EmptyTaskState>
+			);
 		}
 		return (
 			<div className="w-full">
