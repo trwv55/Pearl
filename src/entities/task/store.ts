@@ -182,10 +182,10 @@ class TaskStore {
 		});
 	}
 
-	async toggleCompletion(userId: string, taskId: string) {
-		try {
-			// Вызываем API для переключения статуса
-			const updatedTask = await toggleTaskCompletion(userId, taskId);
+        async toggleCompletion(userId: string, taskId: string) {
+                try {
+                        // Вызываем API для переключения статуса
+                        const updatedTask = await toggleTaskCompletion(userId, taskId);
 
 			runInAction(() => {
 				// Обновляем задачу в текущем списке
@@ -206,13 +206,19 @@ class TaskStore {
 			toast.error("Не удалось обновить статус задачи");
 
 			// Перезагружаем данные для актуального состояния
-			await this.reloadCurrentDay(userId);
-		}
-	}
+                        await this.reloadCurrentDay(userId);
+                }
+        }
 
-	get mainTasks(): TaskMain[] {
-		return this.tasks.filter(isTaskMain);
-	}
+        hasTasksForDate(date: Date): boolean {
+                const key = this.getDateKey(date);
+                const tasks = this.taskCache.get(key);
+                return !!tasks && tasks.length > 0;
+        }
+
+        get mainTasks(): TaskMain[] {
+                return this.tasks.filter(isTaskMain);
+        }
 
 	get routineTasks(): TaskRoutine[] {
 		return this.tasks.filter(isTaskRoutine);
