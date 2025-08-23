@@ -57,15 +57,16 @@ export const getTasksByDate = async (userId: string, date: Date) => {
 		return {
 			id: doc.id,
 			title: data.title,
-			comment: data.comment,
-			date: data.date.toDate ? data.date.toDate() : data.date,
-			emoji: data.emoji,
-			isMain: data.isMain,
-			markerColor: data.markerColor,
-			isCompleted: data.isCompleted,
-			completedAt: data.completedAt?.toDate() || null,
-		};
-	});
+                        comment: data.comment,
+                        date: data.date.toDate ? data.date.toDate() : data.date,
+                        emoji: data.emoji,
+                        isMain: data.isMain,
+                        markerColor: data.markerColor,
+                        isCompleted: data.isCompleted,
+                        completedAt: data.completedAt?.toDate() || null,
+                        time: typeof data.time === "number" ? data.time : null,
+                };
+        });
 };
 
 export const deleteTask = async (userId: string, taskId: string) => {

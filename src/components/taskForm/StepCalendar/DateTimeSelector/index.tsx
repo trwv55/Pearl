@@ -19,18 +19,22 @@ const customFormatters = {
 };
 
 interface Props {
-	value: Date;
-	onChange: (date: Date) => void;
+        value: Date;
+        onChange: (date: Date) => void;
+        onTimeChange?: (time: string) => void;
 }
 
-export const DateTimeSelector = ({ value, onChange }: Props) => {
-	const [selected, setSelected] = useState<Date>(value);
+export const DateTimeSelector = ({ value, onChange, onTimeChange }: Props) => {
+        const [selected, setSelected] = useState<Date>(value);
 	// const [selectedTime, setSelectedTime] = useState<string>(() => {
 	// 	return value.toTimeString().slice(0, 5);
 	// });
-	const [selectedTime, setSelectedTime] = useState<string>("");
+        const [selectedTime, setSelectedTime] = useState<string>("");
 
-	console.log("selectedTime", selectedTime);
+        const handleTimeChange = (t: string) => {
+                setSelectedTime(t);
+                onTimeChange?.(t);
+        };
 
 	// useEffect(() => {
 	// 	const [h, m] = selectedTime.split(":");
@@ -77,8 +81,8 @@ export const DateTimeSelector = ({ value, onChange }: Props) => {
 						selected: styles.selectedDay,
 					}}
 				/>
-				<TimeSelect value={selectedTime} onChange={setSelectedTime} interval={5} placeholderLabel="——:——" />
-			</CardContent>
-		</Card>
-	);
+                                <TimeSelect value={selectedTime} onChange={handleTimeChange} interval={5} placeholderLabel="--:--" />
+                        </CardContent>
+                </Card>
+        );
 };

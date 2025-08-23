@@ -5,9 +5,10 @@ export interface Task {
 	date: Date;
 	emoji: string;
 	isMain: boolean;
-	markerColor: string;
-	isCompleted: boolean;
-	completedAt: Date | null;
+        markerColor: string;
+        isCompleted: boolean;
+        completedAt: Date | null;
+        time: number | null;
 }
 
 export type TaskMain = Omit<Task, "isMain"> & { isMain: true };

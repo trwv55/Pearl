@@ -13,6 +13,14 @@ interface RoutineTaskItemProps {
 	onComplete?: (task: Task) => void;
 }
 
+const formatTime = (minutes: number) => {
+        const h = Math.floor(minutes / 60)
+                .toString()
+                .padStart(2, "0");
+        const m = (minutes % 60).toString().padStart(2, "0");
+        return `${h}:${m}`;
+};
+
 export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded, onDelete, onComplete }) => {
 	const [isChecked, setIsChecked] = useState(task.isCompleted);
 	const [showDelete, setShowDelete] = useState(false);
@@ -70,12 +78,14 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 						<div className={styles.emoji}>{task.emoji}</div>
 					</div>
 					<div className={styles.title}>{task.title}</div>
-					<div className={styles.right}>
-						<div className={styles.time}>15:00-16:00</div>
-						<div className={styles.checkboxWrap}>
-							<input
-								type="checkbox"
-								className={styles.checkbox}
+                                        <div className={styles.right}>
+                                                {task.time !== null && (
+                                                        <div className={styles.time}>{formatTime(task.time)}</div>
+                                                )}
+                                                <div className={styles.checkboxWrap}>
+                                                        <input
+                                                                type="checkbox"
+                                                                className={styles.checkbox}
 								checked={isChecked}
 								// onChange={e => setIsChecked(e.target.checked)}
 								onChange={handleChange}
