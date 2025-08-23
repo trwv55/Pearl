@@ -154,21 +154,6 @@ class TaskStore {
 
 		this.pending.set(task.id, timer);
 
-		// 3) показываем тост с кнопкой «Отменить»
-		// toast("Задача удалена", {
-		// 	description: `«${task.title}»`,
-		// 	duration: delayMs,
-		// 	action: {
-		// 		label: "Отменить",
-		// 		onClick: () => {
-		// 			cancelled = true;
-		// 			const t = this.pending.get(task.id);
-		// 			if (t) clearTimeout(t);
-		// 			this.pending.delete(task.id);
-		// 			runInAction(() => this.addLocal(task));
-		// 		},
-		// 	},
-		// });
 		showUndoToast({
 			title: "Задача удалена",
 			duration: delayMs,
@@ -182,10 +167,10 @@ class TaskStore {
 		});
 	}
 
-        async toggleCompletion(userId: string, taskId: string) {
-                try {
-                        // Вызываем API для переключения статуса
-                        const updatedTask = await toggleTaskCompletion(userId, taskId);
+	async toggleCompletion(userId: string, taskId: string) {
+		try {
+			// Вызываем API для переключения статуса
+			const updatedTask = await toggleTaskCompletion(userId, taskId);
 
 			runInAction(() => {
 				// Обновляем задачу в текущем списке
@@ -206,19 +191,20 @@ class TaskStore {
 			toast.error("Не удалось обновить статус задачи");
 
 			// Перезагружаем данные для актуального состояния
-                        await this.reloadCurrentDay(userId);
-                }
-        }
+			await this.reloadCurrentDay(userId);
+		}
+	}
 
-        hasTasksForDate(date: Date): boolean {
-                const key = this.getDateKey(date);
-                const tasks = this.taskCache.get(key);
-                return !!tasks && tasks.length > 0;
-        }
+	// идикатор наличия задач
+	hasTasksForDate(date: Date): boolean {
+		const key = this.getDateKey(date);
+		const tasks = this.taskCache.get(key);
+		return !!tasks && tasks.length > 0;
+	}
 
-        get mainTasks(): TaskMain[] {
-                return this.tasks.filter(isTaskMain);
-        }
+	get mainTasks(): TaskMain[] {
+		return this.tasks.filter(isTaskMain);
+	}
 
 	get routineTasks(): TaskRoutine[] {
 		return this.tasks.filter(isTaskRoutine);

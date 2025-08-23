@@ -52,11 +52,11 @@ export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 		}
 	}, [selectedIndex]);
 
-        const scrollToIndex = (index: number, behavior: ScrollBehavior = "smooth") => {
-                const viewport = viewportRef.current;
-                if (!viewport) return;
-                const dayEl = viewport.children[index] as HTMLElement;
-                if (!dayEl) return;
+	const scrollToIndex = (index: number, behavior: ScrollBehavior = "smooth") => {
+		const viewport = viewportRef.current;
+		if (!viewport) return;
+		const dayEl = viewport.children[index] as HTMLElement;
+		if (!dayEl) return;
 		const viewportRect = viewport.getBoundingClientRect();
 		const dayRect = dayEl.getBoundingClientRect();
 		const delta = dayRect.left - viewportRect.left;
@@ -126,15 +126,15 @@ export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 		return () => viewport.removeEventListener("scroll", handleScroll);
 	}, [days]);
 
-        const uniqueDays = days
-                .slice()
-                .sort((a, b) => a.getTime() - b.getTime())
-                .filter((day, i, arr) => i === 0 || !isSameDay(day, arr[i - 1]));
-        const activeIndex = uniqueDays.findIndex(d => isSameDay(d, selectedDate));
+	const uniqueDays = days
+		.slice()
+		.sort((a, b) => a.getTime() - b.getTime())
+		.filter((day, i, arr) => i === 0 || !isSameDay(day, arr[i - 1]));
+	const activeIndex = uniqueDays.findIndex(d => isSameDay(d, selectedDate));
 
-        return (
-                <div className={`${styles.wrapper} ${selectedDate ? styles.active : ""}`}>
-                        <div className={styles.header}>
+	return (
+		<div className={`${styles.wrapper} ${selectedDate ? styles.active : ""}`}>
+			<div className={styles.header}>
 				<div className={styles.monthBox}>
 					<div className={styles.monthLine}>
 						<span className={styles.month}>{monthTitle}</span>
@@ -144,18 +144,18 @@ export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 				</div>
 
 				<div className={styles.separator} />
-                                <div className={styles.viewport} ref={viewportRef} style={{ overflowX: "auto", whiteSpace: "nowrap" }}>
-                                        {uniqueDays.map((day, i) => (
-                                                <Day
-                                                        key={day.toDateString()}
-                                                        day={day}
-                                                        isActive={i === activeIndex}
-                                                        isNext={i === activeIndex + 1}
-                                                        onSelect={() => handleSelect(i)}
-                                                />
-                                        ))}
-                                </div>
-                        </div>
-                </div>
-        );
+				<div className={styles.viewport} ref={viewportRef} style={{ overflowX: "auto", whiteSpace: "nowrap" }}>
+					{uniqueDays.map((day, i) => (
+						<Day
+							key={day.toDateString()}
+							day={day}
+							isActive={i === activeIndex}
+							isNext={i === activeIndex + 1}
+							onSelect={() => handleSelect(i)}
+						/>
+					))}
+				</div>
+			</div>
+		</div>
+	);
 }
