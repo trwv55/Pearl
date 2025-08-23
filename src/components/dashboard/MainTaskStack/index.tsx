@@ -2,19 +2,18 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { motion } from "framer-motion";
 import type { Task, TaskMain } from "@/entities/task/types";
 import { MainTaskItem } from "@/components/dashboard/MainTaskItem";
+import { EmptyTaskState } from "@/widgets/mainPage/shared/EmptyTaskState";
 import styles from "./MainTaskStack.module.css";
 import { userStore } from "@/entities/user/store";
 import { taskStore } from "@/entities/task/store";
 import { toast } from "sonner";
 
 interface MainTaskStackProps {
-	tasks: TaskMain[];
+	tasks: (TaskMain | null)[];
 	isExpanded?: boolean;
 	onExpandChange?: (expanded: boolean) => void;
 	canExpand?: boolean;
 }
-
-const GAP = 10;
 
 export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 	tasks,
@@ -32,7 +31,7 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 
 	useEffect(() => {
 		if (isControlled) return;
-		const ids = tasks.map(t => t.id).join(",");
+		const ids = tasks.map(t => t?.id).join(",");
 		if (prevTasksRef.current !== ids) {
 			setUncontrolledExpanded(false);
 			prevTasksRef.current = ids;
@@ -50,7 +49,7 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 		const ro = new ResizeObserver(update);
 		ro.observe(el);
 		return () => ro.disconnect();
-	}, [tasks.length]); // пересчитать, если число задач поменялось
+	}, [tasks]);
 
 	const handleToggle = useCallback(() => {
 		const next = !isExpanded;
@@ -67,7 +66,7 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 				toast.error("Нет данных пользователя");
 				return;
 			}
-			const full = tasks.find(t => t.id === taskId);
+			const full = tasks.find(t => t?.id === taskId);
 			if (!full) return;
 			// сразу сворачиваем стопку у родителя
 			onExpandChange?.(false);
@@ -90,7 +89,7 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 	);
 
 	// ——— целевые высоты
-	const expandedHeight = itemH ? itemH * tasks.length + GAP * Math.max(0, tasks.length - 1) : undefined;
+	const expandedHeight = 300;
 	const collapsedHeight = itemH || undefined;
 
 	// Чтобы не дёргалось до первого измерения, не анимируем height, пока itemH=0
@@ -111,7 +110,7 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 
 				return (
 					<motion.div
-						key={task.id}
+						key={task ? task.id : `placeholder-${index}`}
 						initial={false}
 						animate={{
 							y: isExpanded ? 0 : offset,
@@ -139,12 +138,18 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 							// измеряем первую карточку
 							ref={index === 0 ? firstItemRef : undefined}
 						>
-							<MainTaskItem
-								task={task}
-								isExpanded={isExpanded}
-								onDelete={handleDelete}
-								onComplete={handleComplete}
-							/>
+							{task ? (
+								<MainTaskItem
+									task={task}
+									isExpanded={isExpanded}
+									onDelete={handleDelete}
+									onComplete={handleComplete}
+								/>
+							) : (
+								<EmptyTaskState>
+									<span>Будущая</span>&nbsp; задача
+								</EmptyTaskState>
+							)}
 						</div>
 					</motion.div>
 				);

@@ -5,6 +5,7 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { deleteTask as deleteTaskApi, toggleTaskCompletion } from "@/entities/task/api";
 import { isTaskMain, isTaskRoutine, TaskRoutine, type Task, type TaskMain } from "./types";
 import { toast } from "sonner";
+import { showUndoToast } from "@/shared/lib/showUndoToast";
 
 class TaskStore {
 	tasks: Task[] = [];
@@ -154,18 +155,29 @@ class TaskStore {
 		this.pending.set(task.id, timer);
 
 		// 3) показываем тост с кнопкой «Отменить»
-		toast("Задача удалена", {
-			description: `«${task.title}»`,
+		// toast("Задача удалена", {
+		// 	description: `«${task.title}»`,
+		// 	duration: delayMs,
+		// 	action: {
+		// 		label: "Отменить",
+		// 		onClick: () => {
+		// 			cancelled = true;
+		// 			const t = this.pending.get(task.id);
+		// 			if (t) clearTimeout(t);
+		// 			this.pending.delete(task.id);
+		// 			runInAction(() => this.addLocal(task));
+		// 		},
+		// 	},
+		// });
+		showUndoToast({
+			title: "Задача удалена",
 			duration: delayMs,
-			action: {
-				label: "Отменить",
-				onClick: () => {
-					cancelled = true;
-					const t = this.pending.get(task.id);
-					if (t) clearTimeout(t);
-					this.pending.delete(task.id);
-					runInAction(() => this.addLocal(task));
-				},
+			onUndo: () => {
+				cancelled = true;
+				const timer = this.pending.get(task.id);
+				if (timer) clearTimeout(timer);
+				this.pending.delete(task.id);
+				runInAction(() => this.addLocal(task));
 			},
 		});
 	}

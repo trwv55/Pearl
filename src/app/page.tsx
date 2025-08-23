@@ -1,5 +1,4 @@
 "use client";
-
 import DaysSwitcher from "@/widgets/mainPage/DaySwitcher";
 import { MainPageTopBar } from "@/widgets/mainPage/MainPageTopBar";
 import { CreateTaskBtn } from "@/widgets/mainPage/shared/CreateTaskBtn";
