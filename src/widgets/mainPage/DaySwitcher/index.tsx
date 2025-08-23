@@ -1,9 +1,9 @@
-import { motion } from "framer-motion";
 import { Timestamp } from "firebase/firestore";
 import { useRef, useLayoutEffect, useEffect, useState, useMemo } from "react";
 import { addDays, format, isSameDay } from "date-fns";
 import { ru } from "date-fns/locale";
 import styles from "./DaysSwitcher.module.css";
+import Day from "./Day";
 
 const INITIAL_RANGE = 3;
 const BATCH_SIZE = 10;
@@ -52,15 +52,11 @@ export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 		}
 	}, [selectedIndex]);
 
-	useEffect(() => {
-		console.log(days.length);
-	}, [days]);
-
-	const scrollToIndex = (index: number, behavior: ScrollBehavior = "smooth") => {
-		const viewport = viewportRef.current;
-		if (!viewport) return;
-		const dayEl = viewport.children[index] as HTMLElement;
-		if (!dayEl) return;
+        const scrollToIndex = (index: number, behavior: ScrollBehavior = "smooth") => {
+                const viewport = viewportRef.current;
+                if (!viewport) return;
+                const dayEl = viewport.children[index] as HTMLElement;
+                if (!dayEl) return;
 		const viewportRect = viewport.getBoundingClientRect();
 		const dayRect = dayEl.getBoundingClientRect();
 		const delta = dayRect.left - viewportRect.left;
@@ -130,14 +126,15 @@ export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 		return () => viewport.removeEventListener("scroll", handleScroll);
 	}, [days]);
 
-	const uniqueDays = days
-		.slice()
-		.sort((a, b) => a.getTime() - b.getTime())
-		.filter((day, i, arr) => i === 0 || !isSameDay(day, arr[i - 1]));
+        const uniqueDays = days
+                .slice()
+                .sort((a, b) => a.getTime() - b.getTime())
+                .filter((day, i, arr) => i === 0 || !isSameDay(day, arr[i - 1]));
+        const activeIndex = uniqueDays.findIndex(d => isSameDay(d, selectedDate));
 
-	return (
-		<div className={`${styles.wrapper} ${selectedDate ? styles.active : ""}`}>
-			<div className={styles.header}>
+        return (
+                <div className={`${styles.wrapper} ${selectedDate ? styles.active : ""}`}>
+                        <div className={styles.header}>
 				<div className={styles.monthBox}>
 					<div className={styles.monthLine}>
 						<span className={styles.month}>{monthTitle}</span>
@@ -147,36 +144,18 @@ export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 				</div>
 
 				<div className={styles.separator} />
-				<div className={styles.viewport} ref={viewportRef} style={{ overflowX: "auto", whiteSpace: "nowrap" }}>
-					{uniqueDays.map((day, i) => {
-						const isActive = isSameDay(day, selectedDate);
-						const isNext = i === uniqueDays.findIndex(d => isSameDay(d, selectedDate)) + 1;
-						const weekday = format(day, "EEEEEE", { locale: ru }).slice(0, 2);
-
-						return (
-							<div
-								key={day.toDateString()}
-								className={`${styles.dayColumn} ${isNext ? styles.nextDay : ""} ${
-									isActive ? styles.activeColumn : ""
-								}`}
-							>
-								<motion.button
-									onClick={() => handleSelect(i)}
-									className={`${styles.buttonWrapper} ${isActive ? styles.activeDay : ""}`}
-									animate={{
-										scale: isActive ? 1.2 : 1,
-										zIndex: isActive ? 2 : 1,
-									}}
-									transition={{ type: "spring", stiffness: 300, damping: 25 }}
-								>
-									<span className={styles.dayNumber}>{format(day, "d")}</span>
-								</motion.button>
-								<span className={styles.dayName}>{weekday}</span>
-							</div>
-						);
-					})}
-				</div>
-			</div>
-		</div>
-	);
+                                <div className={styles.viewport} ref={viewportRef} style={{ overflowX: "auto", whiteSpace: "nowrap" }}>
+                                        {uniqueDays.map((day, i) => (
+                                                <Day
+                                                        key={day.toDateString()}
+                                                        day={day}
+                                                        isActive={i === activeIndex}
+                                                        isNext={i === activeIndex + 1}
+                                                        onSelect={() => handleSelect(i)}
+                                                />
+                                        ))}
+                                </div>
+                        </div>
+                </div>
+        );
 }
