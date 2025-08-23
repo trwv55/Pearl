@@ -31,7 +31,7 @@ interface Props {
 	placeholderLabel?: string;
 }
 
-export const TimeSelect = ({ value, onChange, interval = 5, placeholderLabel = "--:--" }: Props) => {
+export const TimeSelect = ({ value, onChange, interval = 5, placeholderLabel = "——:——" }: Props) => {
 	const timeOptions = useMemo(() => generateTimeOptions(interval), [interval]);
 
 	return (

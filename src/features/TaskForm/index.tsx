@@ -60,6 +60,7 @@ const TaskForm = observer(() => {
 				emoji: finalEmoji,
 				isMain,
 				markerColor,
+				time: null,
 			});
 			if (userStore.user) {
 				taskStore.setSelectedDate(date); // устанавливаем выбранную дату как активную

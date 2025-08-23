@@ -22,10 +22,11 @@ export interface TaskPayload {
 	emoji: string;
 	isMain: boolean;
 	markerColor: string;
+	time: number | null;
 }
 
 export const addTask = async (userId: string, payload: TaskPayload) => {
-	const { title, comment, date, emoji, isMain, markerColor } = payload;
+	const { title, comment, date, emoji, isMain, markerColor, time } = payload;
 	const ref = doc(collection(db, "users", userId, "tasks"));
 	const id = ref.id;
 
@@ -38,6 +39,7 @@ export const addTask = async (userId: string, payload: TaskPayload) => {
 		emoji,
 		isMain,
 		markerColor,
+		time,
 		isCompleted: false,
 		completedAt: null,
 		createdAt: serverTimestamp(),

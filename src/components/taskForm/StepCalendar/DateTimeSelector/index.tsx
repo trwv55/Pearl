@@ -2,7 +2,7 @@
 
 import { DayPicker } from "react-day-picker";
 import { ru } from "date-fns/locale";
-import { format } from "date-fns";
+import { format, setHours, setMinutes } from "date-fns";
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/shared/ui/card";
 import "react-day-picker/style.css";
@@ -25,16 +25,36 @@ interface Props {
 
 export const DateTimeSelector = ({ value, onChange }: Props) => {
 	const [selected, setSelected] = useState<Date>(value);
-	const [selectedTime, setSelectedTime] = useState<string>(() => {
-		return value.toTimeString().slice(0, 5);
-	});
+	// const [selectedTime, setSelectedTime] = useState<string>(() => {
+	// 	return value.toTimeString().slice(0, 5);
+	// });
+	const [selectedTime, setSelectedTime] = useState<string>("");
+
+	console.log("selectedTime", selectedTime);
+
+	// useEffect(() => {
+	// 	const [h, m] = selectedTime.split(":");
+	// 	const newDate = new Date(selected);
+	// 	newDate.setHours(parseInt(h, 10));
+	// 	newDate.setMinutes(parseInt(m, 10));
+	// 	onChange(newDate);
+	// }, [selected, selectedTime, onChange]);
 
 	useEffect(() => {
-		const [h, m] = selectedTime.split(":");
-		const newDate = new Date(selected);
-		newDate.setHours(parseInt(h, 10));
-		newDate.setMinutes(parseInt(m, 10));
-		onChange(newDate);
+		let next = new Date(selected);
+
+		if (selectedTime) {
+			const [h, m] = selectedTime.split(":");
+			next = setHours(next, parseInt(h, 10));
+			next = setMinutes(next, parseInt(m, 10));
+		} else {
+			// Если время не выбрано — нормализуем к полуночи,
+			// чтобы не «протекало» текущее системное время.
+			next = setHours(next, 0);
+			next = setMinutes(next, 0);
+		}
+
+		onChange(next);
 	}, [selected, selectedTime, onChange]);
 
 	return (
@@ -57,7 +77,7 @@ export const DateTimeSelector = ({ value, onChange }: Props) => {
 						selected: styles.selectedDay,
 					}}
 				/>
-				<TimeSelect value={selectedTime} onChange={setSelectedTime} />
+				<TimeSelect value={selectedTime} onChange={setSelectedTime} interval={5} placeholderLabel="——:——" />
 			</CardContent>
 		</Card>
 	);
