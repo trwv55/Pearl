@@ -23,12 +23,6 @@ export const ShowMainTasks = observer(({ tasks, showDots }: ShowMainTasksProps) 
 		setIsStackExpanded(false);
 	}, [taskStore.selectedDate]);
 
-	// следим за изменением выбранного слайда
-	// const onSelect = useCallback(() => {
-	// 	if (!emblaApi) return;
-	// 	setSelectedIndex(emblaApi.selectedScrollSnap());
-	// }, [emblaApi]);
-
 	// инициализация слайдера
 	useEffect(() => {
 		if (!emblaApi) return;
@@ -44,54 +38,54 @@ export const ShowMainTasks = observer(({ tasks, showDots }: ShowMainTasksProps) 
 		};
 	}, [emblaApi]);
 
-        const stackTasks = useMemo<(TaskMain | null)[]>(() => {
-                if (tasks.length === 0) return [];
-                if (!isStackExpanded) return tasks;
-                return [...tasks, ...Array(Math.max(0, 3 - tasks.length)).fill(null)];
-        }, [tasks, isStackExpanded]);
+	const stackTasks = useMemo<(TaskMain | null)[]>(() => {
+		if (tasks.length === 0) return [];
+		if (!isStackExpanded) return tasks;
+		return [...tasks, ...Array(Math.max(0, 3 - tasks.length)).fill(null)];
+	}, [tasks, isStackExpanded]);
 
-        // Мемоизированный первый слайд
-        const firstSlide = useMemo(() => {
-                if (tasks.length === 0)
-                        return (
-                                <EmptyTaskState>
-                                        <span>Отдыхаем!</span>&nbsp;Задач на сегодня нет
-                                </EmptyTaskState>
-                        );
+	// Мемоизированный первый слайд
+	const firstSlide = useMemo(() => {
+		if (tasks.length === 0)
+			return (
+				<EmptyTaskState>
+					<span>Отдыхаем!</span>&nbsp;Задач на сегодня нет
+				</EmptyTaskState>
+			);
 
-                return (
-                        <div className="flex flex-col gap-2">
-                                <MainTaskStack
-                                        tasks={stackTasks}
-                                        isExpanded={isStackExpanded}
-                                        onExpandChange={setIsStackExpanded}
-                                        canExpand={tasks.length >= 1}
-                                />
-                        </div>
-                );
-        }, [tasks, isStackExpanded, stackTasks]);
+		return (
+			<div className="flex flex-col gap-2">
+				<MainTaskStack
+					tasks={stackTasks}
+					isExpanded={isStackExpanded}
+					onExpandChange={setIsStackExpanded}
+					canExpand={tasks.length >= 1}
+				/>
+			</div>
+		);
+	}, [tasks, isStackExpanded, stackTasks]);
 
 	// Развернутый режим
 	if (isStackExpanded) {
-                if (tasks.length === 0) {
-                        // если после удаления задач не осталось — показываем пустое состояние
-                        return (
-                                <EmptyTaskState>
-                                        <span>Отдыхаем!</span>&nbsp;Задач на сегодня нет
-                                </EmptyTaskState>
-                        );
-                }
-                return (
-                        <div className="w-full">
-                                <MainTaskStack tasks={stackTasks} isExpanded onExpandChange={setIsStackExpanded} />
-                                {showDots && (
-                                        <div className={styles.dotsWrap}>
-                                                <button onClick={() => setIsStackExpanded(false)} className={styles.closeLine} />
-                                        </div>
-                                )}
-                        </div>
-                );
-        }
+		if (tasks.length === 0) {
+			// если после удаления задач не осталось — показываем пустое состояние
+			return (
+				<EmptyTaskState>
+					<span>Отдыхаем!</span>&nbsp;Задач на сегодня нет
+				</EmptyTaskState>
+			);
+		}
+		return (
+			<div className="w-full">
+				<MainTaskStack tasks={stackTasks} isExpanded onExpandChange={setIsStackExpanded} />
+				{showDots && (
+					<div className={styles.dotsWrap}>
+						<button onClick={() => setIsStackExpanded(false)} className={styles.closeLine} />
+					</div>
+				)}
+			</div>
+		);
+	}
 
 	return (
 		<div className="w-full">

@@ -1,0 +1,62 @@
+.wrap {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 10px 12px 10px 16px;
+	height: 57px;
+	max-width: 335px;
+	border-radius: 999px;                      /* пилюля */
+	isolation: isolate;
+	background: linear-gradient(135deg, #434343 0%, #000 60%); 
+	font-weight: 400;
+	font-size: 16px;
+	color: var(--flowkit-white);       
+}
+  
+.left { 
+	flex: 1 1 auto; min-width: 0; 
+}
+  
+ 
+.title {
+	font-size: 16px;
+	font-weight: 600;
+	letter-spacing: 0.2px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+  
+.divider {
+	width: 1px;
+	align-self: stretch;
+	background: linear-gradient(
+	  to bottom,
+	  rgba(255,255,255,.08),
+	  rgba(255,255,255,.18),
+	  rgba(255,255,255,.08)
+	);
+	opacity: .9;
+}
+  
+  /* Правая часть: Отменить */
+.undoBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	border: 0;
+	background: transparent;
+	color: #ffffff;
+	font-size: 16px;
+	font-weight: 500;
+	cursor: pointer;
+	border-radius: 10px;
+	transition: background .2s ease, transform .02s ease;
+}
+.undoIcon { display: block; }
+
+  
+
+  
