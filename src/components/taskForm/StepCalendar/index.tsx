@@ -5,10 +5,11 @@ import styles from "../shared/styles.module.css";
 import { memo } from "react";
 
 interface Props {
-	value: Date;
-	onChange: (date: Date) => void;
+        value: Date;
+        onChange: (date: Date) => void;
+        onTimeChange?: (time: string) => void;
 }
-function StepCalendar({ value, onChange }: Props) {
+function StepCalendar({ value, onChange, onTimeChange }: Props) {
 	return (
 		<div className={styles.wrap}>
 			<div className={styles.labelWrap}>
@@ -18,11 +19,11 @@ function StepCalendar({ value, onChange }: Props) {
 				</div>
 			</div>
 
-			<div className={styles.calendarWrap}>
-				<DateTimeSelector value={value} onChange={onChange} />
-			</div>
-		</div>
-	);
+                        <div className={styles.calendarWrap}>
+                                <DateTimeSelector value={value} onChange={onChange} onTimeChange={onTimeChange} />
+                        </div>
+                </div>
+        );
 }
 
 export default memo(StepCalendar);

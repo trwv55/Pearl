@@ -25,10 +25,10 @@ const roundToInterval = (date: Date, interval = 30) => {
 };
 
 interface Props {
-	value: string;
-	onChange: (value: string) => void;
-	interval?: number;
-	placeholderLabel?: string;
+        value: string;
+        onChange: (value: string) => void;
+        interval?: number;
+        placeholderLabel?: string;
 }
 
 export const TimeSelect = ({ value, onChange, interval = 5, placeholderLabel = "--:--" }: Props) => {

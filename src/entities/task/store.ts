@@ -57,19 +57,21 @@ class TaskStore {
 		const end = addDays(start, 1);
 		const q = query(collection(db, "users", userId, "tasks"), where("date", ">=", start), where("date", "<", end));
 		const snapshot = await getDocs(q);
-		const tasks: Task[] = snapshot.docs.map(doc => {
-			const data = doc.data();
-			return {
-				id: doc.id,
-				title: data.title,
-				comment: data.comment,
-				date: data.date.toDate ? data.date.toDate() : data.date,
-				emoji: data.emoji,
-				isMain: data.isMain,
-				markerColor: data.markerColor,
-				isCompleted: data.isCompleted,
-			} as Task;
-		});
+                const tasks: Task[] = snapshot.docs.map(doc => {
+                        const data = doc.data();
+                        return {
+                                id: doc.id,
+                                title: data.title,
+                                comment: data.comment,
+                                date: data.date.toDate ? data.date.toDate() : data.date,
+                                emoji: data.emoji,
+                                isMain: data.isMain,
+                                markerColor: data.markerColor,
+                                isCompleted: data.isCompleted,
+                                completedAt: data.completedAt?.toDate() || null,
+                                time: typeof data.time === "number" ? data.time : null,
+                        };
+                });
 
 		runInAction(() => {
 			const key = this.getDateKey(date);
@@ -94,17 +96,18 @@ class TaskStore {
 
 		snapshot.docs.forEach(doc => {
 			const data = doc.data();
-			const task: Task = {
-				id: doc.id,
-				title: data.title,
-				comment: data.comment,
-				date: data.date.toDate ? data.date.toDate() : data.date,
-				emoji: data.emoji,
-				isMain: data.isMain,
-				markerColor: data.markerColor,
-				isCompleted: data.isCompleted,
-				completedAt: data.completedAt?.toDate() || null,
-			};
+                        const task: Task = {
+                                id: doc.id,
+                                title: data.title,
+                                comment: data.comment,
+                                date: data.date.toDate ? data.date.toDate() : data.date,
+                                emoji: data.emoji,
+                                isMain: data.isMain,
+                                markerColor: data.markerColor,
+                                isCompleted: data.isCompleted,
+                                completedAt: data.completedAt?.toDate() || null,
+                                time: typeof data.time === "number" ? data.time : null,
+                        };
 
 			const key = this.getDateKey(task.date);
 			if (!groupedTasks.has(key)) {
