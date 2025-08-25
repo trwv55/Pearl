@@ -196,15 +196,20 @@ class TaskStore {
 	}
 
 	// идикатор наличия задач
-	hasTasksForDate(date: Date): boolean {
-		const key = this.getDateKey(date);
-		const tasks = this.taskCache.get(key);
-		return !!tasks && tasks.length > 0;
-	}
+        hasTasksForDate(date: Date): boolean {
+                const key = this.getDateKey(date);
+                const tasks = this.taskCache.get(key);
+                return !!tasks && tasks.length > 0;
+        }
 
-	get mainTasks(): TaskMain[] {
-		return this.tasks.filter(isTaskMain);
-	}
+       getTasksForDate(date: Date): Task[] {
+               const key = this.getDateKey(date);
+               return this.taskCache.get(key) ?? [];
+       }
+
+        get mainTasks(): TaskMain[] {
+                return this.tasks.filter(isTaskMain);
+        }
 
 	get routineTasks(): TaskRoutine[] {
 		return this.tasks.filter(isTaskRoutine);
