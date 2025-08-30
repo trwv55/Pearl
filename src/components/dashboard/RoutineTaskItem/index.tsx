@@ -6,6 +6,8 @@ import { taskStore } from "@/entities/task/store";
 import { toast } from "sonner";
 import { userStore } from "@/entities/user/store";
 import { useSwipeable } from "react-swipeable";
+import { statsStore } from "@/entities/stats/store";
+import { startOfWeek } from "date-fns";
 
 interface RoutineTaskItemProps {
 	task: Task;
@@ -38,16 +40,18 @@ export const RoutineTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isDraggi
 	}, [isDragging, canSwipe]);
 
 	const handleCheck = useCallback(
-		async (e: { target: { checked: boolean | ((prevState: boolean) => boolean) } }) => {
-			setIsChecked(e.target.checked);
-			if (!uid) {
-				toast.error("Нет данных пользователя");
-				return;
-			}
-			await taskStore.toggleCompletion(uid, task.id);
-		},
-		[uid],
-	);
+                async (e: { target: { checked: boolean | ((prevState: boolean) => boolean) } }) => {
+                        setIsChecked(e.target.checked);
+                        if (!uid) {
+                                toast.error("Нет данных пользователя");
+                                return;
+                        }
+                        await taskStore.toggleCompletion(uid, task.id);
+                        const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
+                        statsStore.fetchWeekStats(uid, weekStart);
+                },
+                [uid, taskStore.selectedDate],
+        );
 
         const handleDeleteClick = () => {
                 onDelete?.(task.id);
