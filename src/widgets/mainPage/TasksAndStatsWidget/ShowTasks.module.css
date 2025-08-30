@@ -1,0 +1,28 @@
+.dotsWrap {
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+	margin-top: 20px;
+}
+
+.dot {
+	width: 7px;
+	height: 7px;
+	border-radius: 100%;
+	background-color: #ae96ff;
+	transition: background-color 0.2s;
+}
+
+.dotActive {
+    background-color: #3d00cb;
+}
+
+.closeLine {
+    width: 61px;
+    height: 5px;
+    background-color: #3D00CB;
+	opacity: 0.25;
+    border-radius: 50px;
+    cursor: pointer;
+}
+
