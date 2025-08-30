@@ -94,10 +94,12 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksP
 				<div className="flex">
 					{/* Слайд 1 */}
 					<div className="flex-[0_0_100%]">{firstSlide}</div>
-					{/* Слайд 2 (пока пустой) */}
-					<div className="flex-[0_0_100%] px-4">2 слайд</div>
-				</div>
-			</div>
+                                        {/* Слайд 2 */}
+                                        <div className="flex-[0_0_100%] px-4">
+                                                <WeeklyStats />
+                                        </div>
+                                </div>
+                        </div>
 
 			{/* 🔵 Точки переключения */}
 			{showDots && (

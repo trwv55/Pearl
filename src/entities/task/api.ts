@@ -69,6 +69,32 @@ export const getTasksByDate = async (userId: string, date: Date) => {
         });
 };
 
+export const getTasksForRange = async (userId: string, startDate: Date, endDate: Date): Promise<Task[]> => {
+        const q = query(
+                collection(db, "users", userId, "tasks"),
+                where("date", ">=", startOfDay(startDate)),
+                where("date", "<", startOfDay(addDays(endDate, 1))),
+        );
+
+        const snapshot = await getDocs(q);
+
+        return snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                        id: doc.id,
+                        title: data.title,
+                        comment: data.comment,
+                        date: data.date.toDate ? data.date.toDate() : data.date,
+                        emoji: data.emoji,
+                        isMain: data.isMain,
+                        markerColor: data.markerColor,
+                        isCompleted: data.isCompleted,
+                        completedAt: data.completedAt?.toDate() || null,
+                        time: typeof data.time === "number" ? data.time : null,
+                } as Task;
+        });
+};
+
 export const deleteTask = async (userId: string, taskId: string) => {
 	await deleteDoc(doc(db, "users", userId, "tasks", taskId));
 };
