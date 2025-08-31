@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import AutoHeight from "embla-carousel-auto-height";
 import { EmptyTaskState } from "../shared/EmptyTaskState";
 import type { TaskMain } from "@/entities/task/types";
 import { MainTaskStack } from "@/components/dashboard/MainTaskStack";
@@ -14,7 +15,7 @@ interface ShowMainTasksProps {
 }
 
 export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksProps) => {
-	const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
+	const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false }, [AutoHeight()]);
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
 	const [isStackExpanded, setIsStackExpanded] = useState(false); // Флаг открытия стопки главных задач
@@ -23,6 +24,12 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksP
 	useEffect(() => {
 		setIsStackExpanded(false);
 	}, [taskStore.selectedDate]);
+
+	// автоматически передвигает dots при переключении слайдов
+	useEffect(() => {
+		if (!emblaApi) return;
+		emblaApi.reInit();
+	}, [emblaApi, isStackExpanded, tasks.length]);
 
 	// инициализация слайдера
 	useEffect(() => {
@@ -91,7 +98,7 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksP
 	return (
 		<div className="w-full">
 			<div className="overflow-hidden" ref={emblaRef}>
-				<div className="flex">
+				<div className="flex items-start">
 					{/* Слайд 1 */}
 					<div className="flex-[0_0_100%]">{firstSlide}</div>
 					{/* Слайд 2 */}
