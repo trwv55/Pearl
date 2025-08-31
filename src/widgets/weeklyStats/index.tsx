@@ -7,16 +7,16 @@ import { userStore } from "@/entities/user/store";
 import { taskStore } from "@/entities/task/store";
 
 export const WeeklyStats = observer(() => {
-        useEffect(() => {
-                if (!userStore.user) return;
-                const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
-                statsStore.fetchWeekStats(userStore.user.uid, weekStart);
-        }, [userStore.user, taskStore.selectedDate]);
+	useEffect(() => {
+		if (!userStore.user) return;
+		const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
+		statsStore.fetchWeekStats(userStore.user.uid, weekStart);
+	}, [userStore.user, taskStore.selectedDate]);
 
 	const stats = statsStore.weekStats;
 	if (!stats) return null;
 
-        return (
+	return (
 		<div>
 			<ul>
 				{stats.days.map(day => (

@@ -1,12 +1,12 @@
 import { useEffect, useState, useMemo } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import styles from "./ShowTasks.module.css";
 import { EmptyTaskState } from "../shared/EmptyTaskState";
 import type { TaskMain } from "@/entities/task/types";
 import { MainTaskStack } from "@/components/dashboard/MainTaskStack";
 import { taskStore } from "@/entities/task/store";
 import { observer } from "mobx-react-lite";
 import { WeeklyStats } from "@/widgets/weeklyStats";
+import styles from "./TasksAndStatsWidget.module.css";
 
 interface ShowMainTasksProps {
 	tasks: TaskMain[];
@@ -94,12 +94,12 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksP
 				<div className="flex">
 					{/* Слайд 1 */}
 					<div className="flex-[0_0_100%]">{firstSlide}</div>
-                                        {/* Слайд 2 */}
-                                        <div className="flex-[0_0_100%] px-4">
-                                                <WeeklyStats />
-                                        </div>
-                                </div>
-                        </div>
+					{/* Слайд 2 */}
+					<div className="flex-[0_0_100%] px-4">
+						<WeeklyStats />
+					</div>
+				</div>
+			</div>
 
 			{/* 🔵 Точки переключения */}
 			{showDots && (
