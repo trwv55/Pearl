@@ -19,11 +19,11 @@ export const WeeklyStats = observer(() => {
 	return (
 		<div>
 			<ul>
-				{stats.days.map(day => (
-					<li key={day.date.toDateString()}>
-						{format(day.date, "EEEE", { locale: ru })}: {day.isCompleted ? "✅" : "❌"}
-					</li>
-				))}
+                                {stats.days.map(day => (
+                                        <li key={day.date.toDateString()}>
+                                                {format(day.date, "EEEE", { locale: ru })}: {day.completedMainTasksCount}/3 {day.isCompleted ? "✅" : "❌"}
+                                        </li>
+                                ))}
 			</ul>
 			<div>completed: {stats.completedDaysCount}</div>
 		</div>
