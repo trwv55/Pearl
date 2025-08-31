@@ -6,6 +6,7 @@ import { getTasksForRange } from "@/entities/task/api";
 interface DayStats {
     date: Date;
     isCompleted: boolean;
+    completedMainTasksCount: number;
 }
 
 export interface WeekStats {
@@ -37,8 +38,9 @@ class StatsStore {
             const key = format(date, "yyyy-MM-dd");
             const dayTasks = tasksByDate.get(key) ?? [];
             const mainTasks = dayTasks.filter(t => t.isMain);
-            const isCompleted = mainTasks.length === 3 && mainTasks.every(t => t.isCompleted);
-            days.push({ date, isCompleted });
+            const completedMainTasksCount = mainTasks.filter(t => t.isCompleted).length;
+            const isCompleted = mainTasks.length === 3 && completedMainTasksCount === 3;
+            days.push({ date, isCompleted, completedMainTasksCount });
         }
 
         const completedDaysCount = days.filter(d => d.isCompleted).length;
