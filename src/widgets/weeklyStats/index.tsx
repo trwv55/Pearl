@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { observer } from "mobx-react-lite";
-import { startOfWeek, format } from "date-fns";
+import { startOfWeek, format, isSameDay } from "date-fns";
 import { ru } from "date-fns/locale";
 import { statsStore } from "@/entities/stats/store";
 import { userStore } from "@/entities/user/store";
@@ -13,20 +13,19 @@ export const WeeklyStats = observer(() => {
 		statsStore.fetchWeekStats(userStore.user.uid, weekStart);
 	}, [userStore.user, taskStore.selectedDate]);
 
-	const stats = statsStore.weekStats;
-	if (!stats) return null;
+        const stats = statsStore.weekStats;
+        if (!stats) return null;
 
-	return (
-		<div>
-			<ul>
-				{stats.days.map(day => (
-					<li key={day.date.toDateString()}>
-						{format(day.date, "EEEE", { locale: ru })}: {day.completedMainTasksCount}/3{" "}
-						{day.isCompleted ? "✅" : "❌"}
-					</li>
-				))}
-			</ul>
-			<div>completed: {stats.completedDaysCount}</div>
-		</div>
-	);
+        const currentDay = stats.days.find(day => isSameDay(day.date, taskStore.selectedDate));
+        if (!currentDay) return null;
+
+        return (
+                <div>
+                        <div>
+                                {format(currentDay.date, "EEEE", { locale: ru })}: {currentDay.completedMainTasksCount}/3{" "}
+                                {currentDay.isCompleted ? "✅" : "❌"}
+                        </div>
+                        <div>completed: {stats.completedDaysCount}</div>
+                </div>
+        );
 });
