@@ -6,8 +6,9 @@ import type { TaskMain } from '@/entities/task/types';
 import { MainTaskStack } from '@/components/dashboard/MainTaskStack';
 import { taskStore } from '@/entities/task/store';
 import { observer } from 'mobx-react-lite';
-import { WeeklyStats } from '@/widgets/weeklyStats';
+import { WeeklyStats } from '@/widgets/WeeklyStats';
 import styles from './TasksAndStatsWidget.module.css';
+import { statsStore } from '@/entities/stats/store';
 
 interface ShowMainTasksProps {
 	tasks: TaskMain[];
@@ -29,7 +30,7 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksP
 	useEffect(() => {
 		if (!emblaApi) return;
 		emblaApi.reInit();
-	}, [emblaApi, isStackExpanded, tasks.length]);
+	}, [emblaApi, isStackExpanded, tasks.length, statsStore.weekStats]);
 
 	// инициализация слайдера
 	useEffect(() => {
@@ -102,7 +103,7 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksP
 					{/* Слайд 1 */}
 					<div className="flex-[0_0_100%]">{firstSlide}</div>
 					{/* Слайд 2 */}
-					<div className="flex-[0_0_100%] px-4">
+					<div className="flex-[0_0_100%]">
 						<WeeklyStats />
 					</div>
 				</div>

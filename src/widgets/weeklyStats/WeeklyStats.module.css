@@ -1,0 +1,72 @@
+.card {
+	border-radius: 24px;
+	padding: 20px 0;
+  }
+  
+  /* .header {
+	font-weight: 700;
+	margin-bottom: 12px;
+  } */
+  
+  .content {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 20px;
+	align-items: start;
+}
+  
+  .left { 
+	display: grid; 
+	gap: 10px; 
+}
+  
+  .row { 
+	display: flex;
+	flex-direction: column; 
+	align-items: baseline; 
+
+
+}
+  .label { 
+	color: #1f1f1f; 
+	font-size: 18px; 
+
+}
+  .valuePrimary { 
+	font-size: 28px; font-weight: 800; color: #4C1DFF; 
+}
+
+  .valueSecondary { 
+	font-size: 24px; font-weight: 700; color: #1b79e2; 
+}
+  
+  .rings {
+	position: relative;
+	width: 176px;
+	height: 176px;
+  }
+  
+  .innerRing {
+	position: absolute;
+	left: 20px;  /* разница (176-136)/2 */
+	top: 20px;
+	pointer-events: none;
+  }
+  
+  .emoji {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 72px;
+	height: 72px;
+	transform: translate(-50%, -50%);
+	display: grid;
+	place-items: center;
+	font-size: 44px;
+	background: white;
+	border-radius: 50%;
+	box-shadow:
+	  0 2px 6px rgba(0,0,0,0.06),
+	  inset 0 0 0 8px #fff; /* «бортик» как в макете */
+  }
+  
