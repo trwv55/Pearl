@@ -1,8 +1,8 @@
-import { ShowMainTasks } from "@/widgets/mainPage/ShowMainTasks";
 import styles from "../shared/styles/TasksTop.module.css";
 import { MainTasksCount } from "@/widgets/mainPage/shared/tasksCount/MainTasksCount";
 import { observer } from "mobx-react-lite";
 import { taskStore } from "@/entities/task/store";
+import { TasksAndStatsWidget } from "@/widgets/mainPage/TasksAndStatsWidget";
 
 export const MainTasks: React.FC = observer(() => {
 	return (
@@ -11,7 +11,7 @@ export const MainTasks: React.FC = observer(() => {
 				<h2>Главные задачи</h2>
 				<MainTasksCount current={taskStore.mainTasks.length} max={3} />
 			</div>
-			<ShowMainTasks tasks={taskStore.mainTasks} showDots />
+			<TasksAndStatsWidget tasks={taskStore.mainTasks} showDots />
 		</div>
 	);
 });

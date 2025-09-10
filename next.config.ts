@@ -1,8 +1,8 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
-const withPWA = require("next-pwa")({
-	dest: "public",
-	disable: process.env.NODE_ENV === "development",
+const withPWA = require('next-pwa')({
+	dest: 'public',
+	disable: process.env.NODE_ENV === 'development',
 });
 
 const nextConfig: NextConfig = {
@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
 		config.module.rules.push({
 			test: /\.svg$/,
 			issuer: /\.[jt]sx?$/,
-			use: ["@svgr/webpack"],
+			use: ['@svgr/webpack'],
 		});
 		return config;
 	},
@@ -20,6 +20,6 @@ const nextConfig: NextConfig = {
 
 export default withPWA({
 	...nextConfig,
-	dest: "public",
-	disable: process.env.NODE_ENV === "development",
+	dest: 'public',
+	disable: process.env.NODE_ENV === 'development',
 });

@@ -7,6 +7,8 @@ import styles from "./MainTaskStack.module.css";
 import { userStore } from "@/entities/user/store";
 import { taskStore } from "@/entities/task/store";
 import { toast } from "sonner";
+import { statsStore } from "@/entities/stats/store";
+import { startOfWeek } from "date-fns";
 
 interface MainTaskStackProps {
 	tasks: (TaskMain | null)[];
@@ -83,10 +85,12 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 				toast.error("Нет данных пользователя");
 				return;
 			}
-			await taskStore.toggleCompletion(uid, task.id);
-		},
-		[uid],
-	);
+                        await taskStore.toggleCompletion(uid, task.id);
+                        const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
+                        statsStore.fetchWeekStats(uid, weekStart);
+                },
+                [uid, taskStore.selectedDate],
+        );
 
 	// ——— целевые высоты
 	const expandedHeight = 300;

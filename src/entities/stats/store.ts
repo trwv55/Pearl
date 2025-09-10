@@ -1,58 +1,54 @@
-import { makeAutoObservable, autorun, runInAction } from "mobx";
-import { addDays } from "date-fns";
-import { taskStore } from "@/entities/task/store";
-
-import type { Task } from "@/entities/task/types";
+import { makeAutoObservable, runInAction } from 'mobx';
+import { addDays, format } from 'date-fns';
+import type { Task } from '@/entities/task/types';
+import { getTasksForRange } from '@/entities/task/api';
 
 interface DayStats {
-    date: Date;
-    isCompleted: boolean;
+	date: Date;
+	isCompleted: boolean;
+	completedMainTasksCount: number;
 }
 
 export interface WeekStats {
-    days: DayStats[];
-    completedDaysCount: number;
+	days: DayStats[];
+	completedDaysCount: number;
 }
 
 class StatsStore {
-    weekStats: WeekStats | null = null;
-    private weekStart: Date | null = null;
-    private userId: string | null = null;
+	weekStats: WeekStats | null = null;
+	constructor() {
+		makeAutoObservable(this);
+	}
 
-    constructor() {
-        makeAutoObservable(this);
+	async fetchWeekStats(userId: string, weekStart: Date) {
+		const tasks = await getTasksForRange(userId, weekStart, addDays(weekStart, 6));
 
-        autorun(() => {
-            if (!this.userId || !this.weekStart) return;
-            const stats = this.computeWeekStats();
-            runInAction(() => {
-                this.weekStats = stats;
-            });
-        });
-    }
+		const tasksByDate = new Map<string, Task[]>();
+		tasks.forEach((task) => {
+			const key = format(task.date, 'yyyy-MM-dd');
+			if (!tasksByDate.has(key)) {
+				tasksByDate.set(key, []);
+			}
+			tasksByDate.get(key)!.push(task);
+		});
 
-    private computeWeekStats(): WeekStats {
-        const days: DayStats[] = [];
-        const start = this.weekStart!;
-        for (let i = 0; i < 7; i++) {
-            const date = addDays(start, i);
-            const tasks: Task[] = taskStore.getTasksForDate(date);
-            const mainTasks = tasks.filter(t => t.isMain);
-            const isCompleted = mainTasks.length === 3 && mainTasks.every(t => t.isCompleted);
-            days.push({ date, isCompleted });
-        }
-        const completedDaysCount = days.filter(d => d.isCompleted).length;
-        return { days, completedDaysCount };
-    }
+		const days: DayStats[] = [];
+		for (let i = 0; i < 7; i++) {
+			const date = addDays(weekStart, i);
+			const key = format(date, 'yyyy-MM-dd');
+			const dayTasks = tasksByDate.get(key) ?? [];
+			const mainTasks = dayTasks.filter((t) => t.isMain);
+			const completedMainTasksCount = mainTasks.filter((t) => t.isCompleted).length;
+			const isCompleted = mainTasks.length === 3 && completedMainTasksCount === 3;
+			days.push({ date, isCompleted, completedMainTasksCount });
+		}
 
-    async fetchWeekStats(userId: string, weekStart: Date) {
-        this.userId = userId;
-        this.weekStart = weekStart;
-        await taskStore.fetchTasksForRange(userId, weekStart, addDays(weekStart, 6));
-        runInAction(() => {
-            this.weekStats = this.computeWeekStats();
-        });
-    }
+		const completedDaysCount = days.filter((d) => d.isCompleted).length;
+
+		runInAction(() => {
+			this.weekStats = { days, completedDaysCount };
+		});
+	}
 }
 
 export const statsStore = new StatsStore();

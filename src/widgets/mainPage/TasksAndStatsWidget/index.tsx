@@ -1,12 +1,14 @@
-import { useEffect, useState, useMemo } from "react";
-import useEmblaCarousel from "embla-carousel-react";
-import styles from "./ShowTasks.module.css";
-import { EmptyTaskState } from "../shared/EmptyTaskState";
-import type { TaskMain } from "@/entities/task/types";
-import { MainTaskStack } from "@/components/dashboard/MainTaskStack";
-import { taskStore } from "@/entities/task/store";
-import { observer } from "mobx-react-lite";
-import { WeeklyStats } from "@/widgets/weeklyStats";
+import { useEffect, useState, useMemo } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
+import AutoHeight from 'embla-carousel-auto-height';
+import { EmptyTaskState } from '../shared/EmptyTaskState';
+import type { TaskMain } from '@/entities/task/types';
+import { MainTaskStack } from '@/components/dashboard/MainTaskStack';
+import { taskStore } from '@/entities/task/store';
+import { observer } from 'mobx-react-lite';
+import { WeeklyStats } from '@/widgets/WeeklyStats';
+import styles from './TasksAndStatsWidget.module.css';
+import { statsStore } from '@/entities/stats/store';
 
 interface ShowMainTasksProps {
 	tasks: TaskMain[];
@@ -14,7 +16,7 @@ interface ShowMainTasksProps {
 }
 
 export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksProps) => {
-	const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
+	const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false }, [AutoHeight()]);
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
 	const [isStackExpanded, setIsStackExpanded] = useState(false); // Флаг открытия стопки главных задач
@@ -24,6 +26,12 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksP
 		setIsStackExpanded(false);
 	}, [taskStore.selectedDate]);
 
+	// автоматически передвигает dots при переключении слайдов
+	useEffect(() => {
+		if (!emblaApi) return;
+		emblaApi.reInit();
+	}, [emblaApi, isStackExpanded, tasks.length, statsStore.weekStats]);
+
 	// инициализация слайдера
 	useEffect(() => {
 		if (!emblaApi) return;
@@ -31,11 +39,11 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksP
 		const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap());
 
 		setScrollSnaps(emblaApi.scrollSnapList());
-		emblaApi.on("select", onSelect);
+		emblaApi.on('select', onSelect);
 		onSelect();
 
 		return () => {
-			emblaApi.off("select", onSelect);
+			emblaApi.off('select', onSelect);
 		};
 	}, [emblaApi]);
 
@@ -91,11 +99,13 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksP
 	return (
 		<div className="w-full">
 			<div className="overflow-hidden" ref={emblaRef}>
-				<div className="flex">
+				<div className="flex items-start">
 					{/* Слайд 1 */}
 					<div className="flex-[0_0_100%]">{firstSlide}</div>
-					{/* Слайд 2 (пока пустой) */}
-					<div className="flex-[0_0_100%] px-4">2 слайд</div>
+					{/* Слайд 2 */}
+					<div className="flex-[0_0_100%]">
+						<WeeklyStats />
+					</div>
 				</div>
 			</div>
 
@@ -106,7 +116,7 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksP
 						<button
 							key={index}
 							onClick={() => emblaApi && emblaApi.scrollTo(index)}
-							className={`${styles.dot} ${selectedIndex === index ? styles.dotActive : ""}`}
+							className={`${styles.dot} ${selectedIndex === index ? styles.dotActive : ''}`}
 						/>
 					))}
 				</div>
