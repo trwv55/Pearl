@@ -58,7 +58,6 @@ export const WeeklyStats = observer(() => {
                                                 gradientStops={[
                                                         { offset: 0, color: '#86D6FF' },
                                                         { offset: 0.5, color: '#4CB4FF' },
-                                                        { offset: 1, color: '#1F7DFF' },
                                                 ]}
                                                 endCapBorderColor="rgba(255, 255, 255, 0.85)"
                                         />
@@ -73,7 +72,7 @@ export const WeeklyStats = observer(() => {
                                                 gradientStops={[
                                                         { offset: 0, color: '#E1CCFF' },
                                                         { offset: 0.5, color: '#A26DFF' },
-                                                        { offset: 1, color: '#623BFF' },
+
                                                 ]}
                                                 endCapBorderColor="rgba(255, 255, 255, 0.9)"
                                         />

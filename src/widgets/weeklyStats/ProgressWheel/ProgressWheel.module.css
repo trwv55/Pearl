@@ -12,10 +12,3 @@
         height: 100%;
 }
 
-.progress {
-        transition-property: stroke-dashoffset;
-}
-
-.endCap {
-        transition: transform 0.3s ease;
-}
