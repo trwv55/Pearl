@@ -6,7 +6,6 @@ import { statsStore } from '@/entities/stats/store';
 import { userStore } from '@/entities/user/store';
 import { taskStore } from '@/entities/task/store';
 import styles from './WeeklyStats.module.css';
-import { RadialRing } from './RadialRing';
 
 const emojiByTasks: Record<number, string> = {
 	0: '😞',
@@ -52,32 +51,10 @@ export const WeeklyStats = observer(() => {
 
 				<div className={styles.rings}>
 					{/* Внешнее кольцо — «сегодня» */}
-					<RadialRing
-						value={dayProgress}
-						size={176}
-						stroke={14}
-						startAngle={-80}
-						gradientStops={[
-							{ offset: '0%', color: '#5E2EF4' },
-							{ offset: '100%', color: '#7D5CFF' },
-						]}
-						trackColor="rgba(0,0,0,0.12)"
-					/>
+					<div className={styles.outerRing}></div>
 
 					{/* Внутреннее кольцо — «неделя» */}
-					<div className={styles.innerRing}>
-						<RadialRing
-							value={weekProgress}
-							size={136}
-							stroke={14}
-							startAngle={-90}
-							gradientStops={[
-								{ offset: '0%', color: '#5FC6FF' },
-								{ offset: '100%', color: '#4AA8FF' },
-							]}
-							trackColor="rgba(0,0,0,0.08)"
-						/>
-					</div>
+					<div className={styles.innerRing}></div>
 
 					<div className={styles.emoji}>{emoji}</div>
 				</div>
