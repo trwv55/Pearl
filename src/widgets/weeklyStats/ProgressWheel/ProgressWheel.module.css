@@ -1,0 +1,21 @@
+.root {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        overflow: visible;
+}
+
+.svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+}
+
+.progress {
+        transition-property: stroke-dashoffset;
+}
+
+.endCap {
+        transition: transform 0.3s ease;
+}
