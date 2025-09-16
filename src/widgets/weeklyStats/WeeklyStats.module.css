@@ -41,17 +41,18 @@
 }
   
   .rings {
-	position: relative;
-	width: 186px;
-	height: 176px;
+        position: relative;
+        width: 186px;
+        height: 186px;
   }
-  
+
+  .outerRing,
   .innerRing {
-	position: absolute;
-	left: 20px;  /* разница (176-136)/2 */
-	top: 20px;
-	pointer-events: none;
-	padding: 5px 5px;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
   }
   
   .emoji {

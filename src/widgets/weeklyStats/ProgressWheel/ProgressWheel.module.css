@@ -1,0 +1,26 @@
+.root {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        overflow: visible;
+}
+
+.svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+}
+
+.endCap {
+        transition: transform 0.3s ease;
+}
+
+.maskCircle {
+        transition-property: stroke-dashoffset;
+}
+
+.gradient {
+        width: 100%;
+        height: 100%;
+}
