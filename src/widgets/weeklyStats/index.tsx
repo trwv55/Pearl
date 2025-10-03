@@ -6,6 +6,7 @@ import { statsStore } from '@/entities/stats/store';
 import { userStore } from '@/entities/user/store';
 import { taskStore } from '@/entities/task/store';
 import styles from './WeeklyStats.module.css';
+import { ProgressWheel } from './ProgressWheel';
 
 const emojiByTasks: Record<number, string> = {
 	0: '😞',
@@ -28,10 +29,7 @@ export const WeeklyStats = observer(() => {
 	if (!currentDay) return null;
 
 	const dayCompleted = currentDay.completedMainTasksCount;
-	const dayProgress = dayCompleted / 3;
-
 	const weekCompleted = stats.days.reduce((acc, d) => acc + d.completedMainTasksCount, 0);
-	const weekProgress = Math.min(1, weekCompleted / 21);
 
 	const emoji = emojiByTasks[dayCompleted] ?? '😐';
 
@@ -40,21 +38,46 @@ export const WeeklyStats = observer(() => {
 			<div className={styles.content}>
 				<div className={styles.left}>
 					<div className={styles.row}>
-						<span className={styles.label}>Сегодня</span>
-						<span className={styles.valuePrimary}>{dayCompleted}/3</span>
+						<div className={styles.label}>Сегодня</div>
+						<div className={styles.valuePrimary}>
+							<span>{dayCompleted}</span>/3
+						</div>
 					</div>
 					<div className={styles.row}>
-						<span className={styles.label}>Эта неделя</span>
-						<span className={styles.valueSecondary}>{weekCompleted}/21</span>
+						<div className={styles.label}>Эта неделя</div>
+						<div className={styles.valueSecondary}>
+							<span>{weekCompleted}</span>/21
+						</div>
 					</div>
 				</div>
 
 				<div className={styles.rings}>
-					{/* Внешнее кольцо — «сегодня» */}
-					<div className={styles.outerRing}></div>
+					<ProgressWheel
+						className={styles.outerRing}
+						radius={88}
+						strokeWidth={21}
+						value={dayCompleted}
+						total={3}
+						trackColor="rgba(82, 97, 128, 0.18)"
+						gradientStops={[
+							{ offset: 0, color: '#3D00CB' },
+							{ offset: 0.75, color: '#AE96FF' },
+						]}
+					/>
 
-					{/* Внутреннее кольцо — «неделя» */}
-					<div className={styles.innerRing}></div>
+					<ProgressWheel
+						className={styles.innerRing}
+						radius={62}
+						strokeWidth={21}
+						value={weekCompleted}
+						total={21}
+						trackColor="rgba(82, 97, 128, 0.16)"
+						gradientStops={[
+							{ offset: 0, color: '#2688EB' },
+							{ offset: 0.75, color: '#96DAFF' },
+						]}
+						endCapBorderColor="rgba(255, 255, 255, 0.9)"
+					/>
 
 					<div className={styles.emoji}>{emoji}</div>
 				</div>
