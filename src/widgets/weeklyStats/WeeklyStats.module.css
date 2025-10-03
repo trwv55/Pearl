@@ -1,64 +1,71 @@
 .card {
 	border-radius: 24px;
 	padding: 20px 0;
-  }
+}
   
-  /* .header {
-	font-weight: 700;
-	margin-bottom: 12px;
-  } */
-  
-  .content {
+.content {
 	display: grid;
 	grid-template-columns: 1fr auto;
 	gap: 20px;
 	align-items: start;
 }
   
-  .left { 
+.left { 
 	display: grid; 
 	gap: 10px; 
 }
   
-  .row { 
+.row { 
 	display: flex;
 	flex-direction: column; 
 	align-items: baseline; 
-
-
-}
-  .label { 
-	color: #1f1f1f; 
-	font-size: 18px; 
-
-}
-  .valuePrimary { 
-	font-size: 28px; font-weight: 800; color: #4C1DFF; 
 }
 
-  .valueSecondary { 
-	font-size: 24px; font-weight: 700; color: #1b79e2; 
+.label { 
+	font-weight: 400;
+	font-size: 16px;
+	line-height: 256%;
+	letter-spacing: 0.02em;
+	color: #000;
+
+}
+
+.valuePrimary, .valueSecondary { 
+	font-size: 24px;
+	line-height: 0%;
+	letter-spacing: 0.02em;
+	color: #3d00cb;
+	font-weight: 300;
+	margin-top: 10px;
+
+	span {
+		font-weight: 900;
+	}
+}
+
+.valueSecondary { 
+	color: #1b79e2; 
 }
   
-  .rings {
-        position: relative;
-        width: 186px;
-        height: 186px;
-  }
+.rings {
+    position: relative;
+    width: 186px;
+    height: 186px;
+}
 
-  .outerRing,
-  .innerRing {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-  }
+.outerRing,
+.innerRing {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
   
-  .emoji {
+.emoji {
 	position: absolute;
 	left: 50%;
-	top: 50%;
+	top: 48%;
 	width: 81px;
 	height: 81px;
 	transform: translate(-50%, -50%);

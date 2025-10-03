@@ -29,59 +29,58 @@ export const WeeklyStats = observer(() => {
 	if (!currentDay) return null;
 
 	const dayCompleted = currentDay.completedMainTasksCount;
-        const weekCompleted = stats.days.reduce((acc, d) => acc + d.completedMainTasksCount, 0);
+	const weekCompleted = stats.days.reduce((acc, d) => acc + d.completedMainTasksCount, 0);
 
-        const emoji = emojiByTasks[dayCompleted] ?? '😐';
+	const emoji = emojiByTasks[dayCompleted] ?? '😐';
 
 	return (
 		<div className={styles.card}>
 			<div className={styles.content}>
 				<div className={styles.left}>
 					<div className={styles.row}>
-						<span className={styles.label}>Сегодня</span>
-						<span className={styles.valuePrimary}>{dayCompleted}/3</span>
+						<div className={styles.label}>Сегодня</div>
+						<div className={styles.valuePrimary}>
+							<span>{dayCompleted}</span>/3
+						</div>
 					</div>
 					<div className={styles.row}>
-						<span className={styles.label}>Эта неделя</span>
-						<span className={styles.valueSecondary}>{weekCompleted}/21</span>
+						<div className={styles.label}>Эта неделя</div>
+						<div className={styles.valueSecondary}>
+							<span>{weekCompleted}</span>/21
+						</div>
 					</div>
 				</div>
 
-                                <div className={styles.rings}>
-                                        <ProgressWheel
-                                                className={styles.outerRing}
-                                                radius={88}
-                                                strokeWidth={16}
-                                                value={dayCompleted}
-                                                total={3}
-                                                trackColor="rgba(82, 97, 128, 0.18)"
-                                                gradientStops={[
-                                                        { offset: 0, color: '#86D6FF' },
-                                                        { offset: 0.5, color: '#4CB4FF' },
-                                                        { offset: 0.5, color: '#1F7DFF' },
-                                                        { offset: 1, color: '#86D6FF' },
-                                                ]}
-                                                endCapBorderColor="rgba(255, 255, 255, 0.85)"
-                                        />
+				<div className={styles.rings}>
+					<ProgressWheel
+						className={styles.outerRing}
+						radius={88}
+						strokeWidth={21}
+						value={dayCompleted}
+						total={3}
+						trackColor="rgba(82, 97, 128, 0.18)"
+						gradientStops={[
+							{ offset: 0, color: '#3D00CB' },
+							{ offset: 0.75, color: '#AE96FF' },
+						]}
+					/>
 
-                                        <ProgressWheel
-                                                className={styles.innerRing}
-                                                radius={68}
-                                                strokeWidth={12}
-                                                value={weekCompleted}
-                                                total={21}
-                                                trackColor="rgba(82, 97, 128, 0.16)"
-                                                gradientStops={[
-                                                        { offset: 0, color: '#E1CCFF' },
-                                                        { offset: 0.5, color: '#A26DFF' },
-                                                        { offset: 0.5, color: '#623BFF' },
-                                                        { offset: 1, color: '#E1CCFF' },
-                                                ]}
-                                                endCapBorderColor="rgba(255, 255, 255, 0.9)"
-                                        />
+					<ProgressWheel
+						className={styles.innerRing}
+						radius={62}
+						strokeWidth={21}
+						value={weekCompleted}
+						total={21}
+						trackColor="rgba(82, 97, 128, 0.16)"
+						gradientStops={[
+							{ offset: 0, color: '#2688EB' },
+							{ offset: 0.75, color: '#96DAFF' },
+						]}
+						endCapBorderColor="rgba(255, 255, 255, 0.9)"
+					/>
 
-                                        <div className={styles.emoji}>{emoji}</div>
-                                </div>
+					<div className={styles.emoji}>{emoji}</div>
+				</div>
 			</div>
 		</div>
 	);
