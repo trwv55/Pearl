@@ -59,9 +59,11 @@ export const WeeklyStats = observer(() => {
 						value={dayCompleted}
 						total={3}
 						trackColor="rgba(82, 97, 128, 0.18)"
+						overshootDegrees={0}
 						gradientStops={[
-							{ offset: 0, color: '#3D00CB' },
-							{ offset: 0.75, color: '#AE96FF' },
+							{ offset: 0, color: '#AE96FF' },
+							{ offset: 0.75, color: '#3D00CB' },
+							{ offset: 1, color: '#AE96FF' },
 						]}
 					/>
 
@@ -72,11 +74,12 @@ export const WeeklyStats = observer(() => {
 						value={weekCompleted}
 						total={21}
 						trackColor="rgba(82, 97, 128, 0.16)"
+						overshootDegrees={0}
 						gradientStops={[
 							{ offset: 0, color: '#2688EB' },
 							{ offset: 0.75, color: '#96DAFF' },
+							{ offset: 1, color: '#2688EB' },
 						]}
-						endCapBorderColor="rgba(255, 255, 255, 0.9)"
 					/>
 
 					<div className={styles.emoji}>{emoji}</div>

@@ -194,7 +194,7 @@ export const ProgressWheel = ({
 							fill="none"
 							stroke="white"
 							strokeWidth={strokeWidth}
-							strokeLinecap="round"
+							// strokeLinecap="square"
 							strokeDasharray={circumference}
 							strokeDashoffset={dashOffset}
 							transform={`rotate(${startAngle} ${clampedRadius} ${clampedRadius})`}
@@ -221,20 +221,6 @@ export const ProgressWheel = ({
 						<div className={styles.gradient} style={{ background: gradient }} />
 					</foreignObject>
 				</g>
-
-				<circle cx={startX} cy={startY} r={strokeWidth / 2} fill={startColor} />
-
-				{/* {showEndCap && (
-					<circle
-						className={styles.endCap}
-						cx={endX}
-						cy={endY}
-						r={strokeWidth / 2}
-						fill={endColor}
-						stroke={endCapBorderColor}
-						strokeWidth={endCapBorderWidth}
-					/>
-				)} */}
 			</svg>
 		</div>
 	);
