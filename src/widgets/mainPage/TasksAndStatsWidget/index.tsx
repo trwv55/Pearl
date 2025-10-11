@@ -6,7 +6,7 @@ import type { TaskMain } from "@/entities/task/types";
 import { MainTaskStack } from "@/components/dashboard/MainTaskStack";
 import { taskStore } from "@/entities/task/store";
 import { observer } from "mobx-react-lite";
-import WeeklyStats from "@/widgets/WeeklyStats";
+import WeeklyStats from "../../WeeklyStats";
 import styles from "./TasksAndStatsWidget.module.css";
 import { statsStore } from "@/entities/stats/store";
 
