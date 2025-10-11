@@ -44,7 +44,7 @@ jobs:
       # 5️⃣ Подтягиваем конфигурацию и переменные окружения из Vercel
       #    ⚙️ Важно: здесь берутся env из Vercel Environment = "Preview"
       - name: Pull Vercel environment (preview)
-        run: vercel pull --yes --environment=preview --token "$VERCEL_TOKEN" --project-id "$VERCEL_PROJECT_ID" --org-id "$VERCEL_ORG_ID"
+        run: vercel pull --yes --environment=preview --token "$VERCEL_TOKEN"
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
