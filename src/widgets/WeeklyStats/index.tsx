@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { observer } from "mobx-react-lite";
-import { startOfWeek, format, isSameDay } from "date-fns";
-import { ru } from "date-fns/locale";
+import { startOfWeek, isSameDay } from "date-fns";
 import { statsStore } from "@/entities/stats/store";
 import { userStore } from "@/entities/user/store";
 import { taskStore } from "@/entities/task/store";
