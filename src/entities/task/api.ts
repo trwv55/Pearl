@@ -1,18 +1,20 @@
+"use client";
+
 import {
-	addDoc,
-	collection,
-	deleteDoc,
-	doc,
-	getDocs,
-	query,
-	runTransaction,
-	serverTimestamp,
-	setDoc,
-	where,
-	getDoc,
+        addDoc,
+        collection,
+        deleteDoc,
+        doc,
+        getDocs,
+        query,
+        runTransaction,
+        serverTimestamp,
+        setDoc,
+        where,
+        getDoc,
 } from "firebase/firestore";
 import { addDays, startOfDay } from "date-fns";
-import { db } from "@/lib/firebase";
+import { getFirebaseDb } from "@/lib/firebase";
 import { Task } from "./types";
 
 export interface TaskPayload {
@@ -27,7 +29,8 @@ export interface TaskPayload {
 
 export const addTask = async (userId: string, payload: TaskPayload) => {
 	const { title, comment, date, emoji, isMain, markerColor, time } = payload;
-	const ref = doc(collection(db, "users", userId, "tasks"));
+        const db = getFirebaseDb();
+        const ref = doc(collection(db, "users", userId, "tasks"));
 	const id = ref.id;
 
 	await setDoc(ref, {
@@ -50,7 +53,8 @@ export const addTask = async (userId: string, payload: TaskPayload) => {
 export const getTasksByDate = async (userId: string, date: Date) => {
 	const start = startOfDay(date);
 	const end = addDays(start, 1);
-	const q = query(collection(db, "users", userId, "tasks"), where("date", ">=", start), where("date", "<", end));
+        const db = getFirebaseDb();
+        const q = query(collection(db, "users", userId, "tasks"), where("date", ">=", start), where("date", "<", end));
 	const snapshot = await getDocs(q);
 	return snapshot.docs.map(doc => {
 		const data = doc.data();
@@ -70,6 +74,7 @@ export const getTasksByDate = async (userId: string, date: Date) => {
 };
 
 export const getTasksForRange = async (userId: string, startDate: Date, endDate: Date): Promise<Task[]> => {
+        const db = getFirebaseDb();
         const q = query(
                 collection(db, "users", userId, "tasks"),
                 where("date", ">=", startOfDay(startDate)),
@@ -96,11 +101,13 @@ export const getTasksForRange = async (userId: string, startDate: Date, endDate:
 };
 
 export const deleteTask = async (userId: string, taskId: string) => {
-	await deleteDoc(doc(db, "users", userId, "tasks", taskId));
+        const db = getFirebaseDb();
+        await deleteDoc(doc(db, "users", userId, "tasks", taskId));
 };
 
 export const toggleTaskCompletion = async (userId: string, taskId: string) => {
-	const taskRef = doc(db, "users", userId, "tasks", taskId);
+        const db = getFirebaseDb();
+        const taskRef = doc(db, "users", userId, "tasks", taskId);
 
 	try {
 		// Выполняем транзакцию для безопасного обновления

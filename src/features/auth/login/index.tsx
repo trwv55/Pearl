@@ -6,7 +6,7 @@ import { LoginEmail } from "@/components/auth/login/LoginEmail";
 import { AuthLayout } from "../layout/AuthLayout";
 import { LoginPassword } from "@/components/auth/login/LoginPassword";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { getFirebaseAuth } from "@/lib/firebase";
 import { userStore } from "@/entities/user/store";
 import { toast } from "sonner";
 import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
@@ -26,10 +26,10 @@ export const Login = () => {
 
 	const handleEmailChange = useCallback((email: string) => setFormData(prev => ({ ...prev, email })), []);
 
-	const handleFinish = useCallback(
-		async (password: string) => {
-			try {
-				const cred = await signInWithEmailAndPassword(auth, formData.email, password);
+        const handleFinish = useCallback(
+                async (password: string) => {
+                        try {
+                                const cred = await signInWithEmailAndPassword(getFirebaseAuth(), formData.email, password);
 				userStore.setUser(cred.user);
 
 				if (typeof window !== "undefined" && !localStorage.getItem("splashShown")) {
