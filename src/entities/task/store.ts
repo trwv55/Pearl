@@ -1,5 +1,7 @@
+"use client";
+
 import { makeAutoObservable, runInAction } from "mobx";
-import { db } from "@/lib/firebase";
+import { getFirebaseDb } from "@/lib/firebase";
 import { format, addDays, startOfDay } from "date-fns";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { deleteTask as deleteTaskApi, toggleTaskCompletion } from "@/entities/task/api";
@@ -52,10 +54,11 @@ class TaskStore {
 		}
 	}
 
-	async fetchTasks(userId: string, date: Date = this.selectedDate) {
-		const start = startOfDay(date);
-		const end = addDays(start, 1);
-		const q = query(collection(db, "users", userId, "tasks"), where("date", ">=", start), where("date", "<", end));
+        async fetchTasks(userId: string, date: Date = this.selectedDate) {
+                const db = getFirebaseDb();
+                const start = startOfDay(date);
+                const end = addDays(start, 1);
+                const q = query(collection(db, "users", userId, "tasks"), where("date", ">=", start), where("date", "<", end));
 		const snapshot = await getDocs(q);
                 const tasks: Task[] = snapshot.docs.map(doc => {
                         const data = doc.data();
@@ -84,10 +87,11 @@ class TaskStore {
 		});
 	}
 
-	async fetchTasksForRange(userId: string, startDate: Date, endDate: Date) {
-		const q = query(
-			collection(db, "users", userId, "tasks"),
-			where("date", ">=", startOfDay(startDate)),
+        async fetchTasksForRange(userId: string, startDate: Date, endDate: Date) {
+                const db = getFirebaseDb();
+                const q = query(
+                        collection(db, "users", userId, "tasks"),
+                        where("date", ">=", startOfDay(startDate)),
 			where("date", "<", startOfDay(addDays(endDate, 1))),
 		);
 
@@ -131,7 +135,7 @@ class TaskStore {
 	}
 
 	// --- Удаление с Undo ---
-	async deleteWithUndo(userId: string, task: Task, delayMs = 4000) {
+        async deleteWithUndo(userId: string, task: Task, delayMs = 4000) {
 		// если уже есть ожидающее удаление этой задачи — ничего не делаем
 		if (this.pending.has(task.id)) return;
 
@@ -145,7 +149,7 @@ class TaskStore {
 			this.pending.delete(task.id);
 			if (cancelled) return;
 			try {
-				await deleteTaskApi(userId, task.id);
+                                await deleteTaskApi(userId, task.id);
 				// если хочешь быть на 100% консистентным с сервером:
 				// await this.reloadCurrentDay(userId);
 			} catch (e) {
