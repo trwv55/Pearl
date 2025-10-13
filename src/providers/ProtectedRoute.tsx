@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { userStore } from "@/entities/user/store";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { getFirebaseAuth } from "@/lib/firebase";
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         const router = useRouter();
         const [loading, setLoading] = useState(true);
 
         useEffect(() => {
+                const auth = getFirebaseAuth();
                 const unsubscribe = onAuthStateChanged(auth, user => {
                         userStore.setUser(user);
                         if (!user) {
