@@ -3,7 +3,8 @@
 	height: 100vh;
 	padding: 40px 20px;
 	background: var(--bg-register); */
-	min-height: 100dvh;
+
+	/* min-height: 100dvh;
   	height: 100svh;    
   	padding: 40px 20px; 
   	box-sizing: border-box;
@@ -13,5 +14,23 @@
   	justify-content: space-between;
 
   	background: var(--bg-register);
-  	overflow: auto; 
+  	overflow: auto;  */
+
+	position: relative;
+	min-height: 100dvh; 
+	padding: 40px 20px;
+	box-sizing: border-box;
 }
+
+.wrap::before {
+	content: "";
+	position: fixed;     
+	inset: 0;
+	background: var(--bg-register);
+	z-index: -1;
+	pointer-events: none;
+  }
+
+
+  
+  
