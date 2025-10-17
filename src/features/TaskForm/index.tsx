@@ -26,9 +26,9 @@ const TaskForm = observer(() => {
 	const [isMain, setIsMain] = useState<boolean>(taskStore.mainTasks.length < 3);
 	const [date, setDate] = useState<Date>(taskStore.selectedDate);
 	const [comment, setComment] = useState("");
-        const [markerColor, setMarkerColor] = useState<string>("#3d00cb");
-        const [emoji, setEmoji] = useState("");
-        const [time, setTime] = useState<string>("");
+	const [markerColor, setMarkerColor] = useState<string>("#3d00cb");
+	const [emoji, setEmoji] = useState("");
+	const [time, setTime] = useState<string>("");
 
 	useEffect(() => {
 		if (taskStore.mainTasks.length >= 3) {
@@ -53,23 +53,23 @@ const TaskForm = observer(() => {
 
 		const finalEmoji = emoji && emoji.trim() ? emoji : DEFAULT_EMOJI;
 
-                try {
-                        const timeInMinutes = time
-                                ? (() => {
-                                          const [h, m] = time.split(":");
-                                          return parseInt(h, 10) * 60 + parseInt(m, 10);
-                                  })()
-                                : null;
+		try {
+			const timeInMinutes = time
+				? (() => {
+						const [h, m] = time.split(":");
+						return parseInt(h, 10) * 60 + parseInt(m, 10);
+				  })()
+				: null;
 
-                        await addTask(userStore.user.uid, {
-                                title,
-                                comment,
-                                date,
-                                emoji: finalEmoji,
-                                isMain,
-                                markerColor,
-                                time: timeInMinutes,
-                        });
+			await addTask(userStore.user.uid, {
+				title,
+				comment,
+				date,
+				emoji: finalEmoji,
+				isMain,
+				markerColor,
+				time: timeInMinutes,
+			});
 			if (userStore.user) {
 				taskStore.setSelectedDate(date); // устанавливаем выбранную дату как активную
 				await taskStore.fetchTasks(userStore.user.uid, taskStore.selectedDate); // подгружаем задачи на выбранную дату
@@ -88,7 +88,7 @@ const TaskForm = observer(() => {
 				<StepTitle value={title} onChange={setTitle} error={titleError} onErrorClear={() => setTitleError(false)} />
 			</div>
 			<StepIsMainTask value={isMain} onChange={setIsMain} />
-                        <StepCalendar value={date} onChange={setDate} onTimeChange={setTime} />
+			<StepCalendar value={date} onChange={setDate} onTimeChange={setTime} />
 			<div>
 				<StepCount stepNumber={4} totalSteps={6} label="Нужен комментарий?" />
 				<StepTitle note="Если нет, то оставь это поле пустым" value={comment} onChange={setComment} />
@@ -103,7 +103,7 @@ const TaskForm = observer(() => {
 			</div>
 			<Button variant="mainDashboard" size="start" onClick={handleSubmit}>
 				Готово
-				<Image src={Icon} alt="icon" width="10" height="10" className="w-5 h-5 shrink-0" />
+				<Image src="/arrow.svg" alt="icon" width="10" height="10" className="w-5 h-5 shrink-0" />
 			</Button>
 		</div>
 	);

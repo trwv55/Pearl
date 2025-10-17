@@ -1,6 +1,17 @@
 .wrap {
-	width: 100%;
+	/* width: 100%;
 	height: 100vh;
 	padding: 40px 20px;
-	background: var(--bg-register);
-  }
+	background: var(--bg-register); */
+	min-height: 100dvh;
+  	height: 100svh;    
+  	padding: 40px 20px calc(40px + env(safe-area-inset-bottom)); 
+  	box-sizing: border-box;
+
+  	display: flex;
+  	flex-direction: column;
+  	justify-content: space-between;
+
+  	background: var(--bg-register);
+  	overflow: auto; 
+}

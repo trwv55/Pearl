@@ -1,7 +1,6 @@
 import React from "react";
 import Image from "next/image";
 import styles from "./MainPageTopBar.module.css";
-import logoUrl from "../../../../public/logo-main.svg";
 import { userStore } from "@/entities/user/store";
 
 interface MainPageTopBarProps {
@@ -10,7 +9,11 @@ interface MainPageTopBarProps {
 	logoHeight?: number;
 }
 
-export const MainPageTopBar: React.FC<MainPageTopBarProps> = ({ logoAlt = "Логотип", logoWidth = 40, logoHeight = 40 }) => {
+export const MainPageTopBar: React.FC<MainPageTopBarProps> = ({
+	logoAlt = "Логотип",
+	logoWidth = 40,
+	logoHeight = 40,
+}) => {
 	const name = userStore.displayName;
 
 	return (
@@ -21,7 +24,14 @@ export const MainPageTopBar: React.FC<MainPageTopBarProps> = ({ logoAlt = "Ло�
 				<span>{name}</span>
 			</h1>
 			<div className={styles.logoContainer}>
-				<Image src={logoUrl} alt={logoAlt} width={logoWidth} height={logoHeight} className={styles.logo} priority />
+				<Image
+					src="/logo-main.svg"
+					alt={logoAlt}
+					width={logoWidth}
+					height={logoHeight}
+					className={styles.logo}
+					priority
+				/>
 			</div>
 		</header>
 	);

@@ -24,8 +24,8 @@ export const Register = () => {
 	const [showSplash, setShowSplash] = useState(false);
 	const router = useRouter();
 
-	const goNext = useCallback(() => setStep(prev => prev + 1), []);
-	const goBack = useCallback(() => setStep(prev => Math.max(0, prev - 1)), []);
+	const goNext = useCallback(() => setStep((prev) => prev + 1), []);
+	const goBack = useCallback(() => setStep((prev) => Math.max(0, prev - 1)), []);
 
 	const handleFinish = useCallback(async () => {
 		if (formData.password !== formData.confirmPassword) {
@@ -52,15 +52,19 @@ export const Register = () => {
 	}, [formData, router]);
 
 	const steps = [
-		<RegisterEmail onChange={email => setFormData(prev => ({ ...prev, email }))} onNext={goNext} />,
-		<RegisterPassword onChange={password => setFormData(prev => ({ ...prev, password }))} onNext={goNext} onPrev={goBack} />,
-		<RegisterConfirmPassword
-			password={formData.password}
-			onChange={confirmPassword => setFormData(prev => ({ ...prev, confirmPassword }))}
+		<RegisterEmail onChange={(email) => setFormData((prev) => ({ ...prev, email }))} onNext={goNext} />,
+		<RegisterPassword
+			onChange={(password) => setFormData((prev) => ({ ...prev, password }))}
 			onNext={goNext}
 			onPrev={goBack}
 		/>,
-		<RegisterName onChange={name => setFormData(prev => ({ ...prev, name }))} onNext={goNext} onPrev={goBack} />,
+		<RegisterConfirmPassword
+			password={formData.password}
+			onChange={(confirmPassword) => setFormData((prev) => ({ ...prev, confirmPassword }))}
+			onNext={goNext}
+			onPrev={goBack}
+		/>,
+		<RegisterName onChange={(name) => setFormData((prev) => ({ ...prev, name }))} onNext={goNext} onPrev={goBack} />,
 		<RegisterNotifications onFinish={handleFinish} onPrev={goBack} />,
 	];
 

@@ -21,15 +21,15 @@ export const Login = () => {
 	const [showSplash, setShowSplash] = useState(false);
 	const router = useRouter();
 
-	const goNext = useCallback(() => setStep(prev => prev + 1), []);
-	const goBack = useCallback(() => setStep(prev => Math.max(0, prev - 1)), []);
+	const goNext = useCallback(() => setStep((prev) => prev + 1), []);
+	const goBack = useCallback(() => setStep((prev) => Math.max(0, prev - 1)), []);
 
-	const handleEmailChange = useCallback((email: string) => setFormData(prev => ({ ...prev, email })), []);
+	const handleEmailChange = useCallback((email: string) => setFormData((prev) => ({ ...prev, email })), []);
 
-        const handleFinish = useCallback(
-                async (password: string) => {
-                        try {
-                                const cred = await signInWithEmailAndPassword(getFirebaseAuth(), formData.email, password);
+	const handleFinish = useCallback(
+		async (password: string) => {
+			try {
+				const cred = await signInWithEmailAndPassword(getFirebaseAuth(), formData.email, password);
 				userStore.setUser(cred.user);
 
 				if (typeof window !== "undefined" && !localStorage.getItem("splashShown")) {
