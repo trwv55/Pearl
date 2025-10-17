@@ -1,18 +1,17 @@
-import { useEffect } from 'react';
-import { observer } from 'mobx-react-lite';
-import { startOfWeek, format, isSameDay } from 'date-fns';
-import { ru } from 'date-fns/locale';
-import { statsStore } from '@/entities/stats/store';
-import { userStore } from '@/entities/user/store';
-import { taskStore } from '@/entities/task/store';
-import styles from './WeeklyStats.module.css';
-import { ProgressWheel } from './ProgressWheel';
+import { useEffect } from "react";
+import { observer } from "mobx-react-lite";
+import { startOfWeek, isSameDay } from "date-fns";
+import { statsStore } from "@/entities/stats/store";
+import { userStore } from "@/entities/user/store";
+import { taskStore } from "@/entities/task/store";
+import styles from "./WeeklyStats.module.css";
+import { ProgressWheel } from "./ProgressWheel";
 
 const emojiByTasks: Record<number, string> = {
-	0: '😞',
-	1: '😐',
-	2: '😊',
-	3: '🥳',
+	0: "😞",
+	1: "😐",
+	2: "😊",
+	3: "🥳",
 };
 
 export const WeeklyStats = observer(() => {
@@ -31,7 +30,7 @@ export const WeeklyStats = observer(() => {
 	const dayCompleted = currentDay.completedMainTasksCount;
 	const weekCompleted = stats.days.reduce((acc, d) => acc + d.completedMainTasksCount, 0);
 
-	const emoji = emojiByTasks[dayCompleted] ?? '😐';
+	const emoji = emojiByTasks[dayCompleted] ?? "😐";
 
 	return (
 		<div className={styles.card}>
@@ -59,9 +58,11 @@ export const WeeklyStats = observer(() => {
 						value={dayCompleted}
 						total={3}
 						trackColor="rgba(82, 97, 128, 0.18)"
+						overshootDegrees={0}
 						gradientStops={[
-							{ offset: 0, color: '#3D00CB' },
-							{ offset: 0.75, color: '#AE96FF' },
+							{ offset: 0, color: "#AE96FF" },
+							{ offset: 0.75, color: "#3D00CB" },
+							{ offset: 1, color: "#AE96FF" },
 						]}
 					/>
 
@@ -72,11 +73,12 @@ export const WeeklyStats = observer(() => {
 						value={weekCompleted}
 						total={21}
 						trackColor="rgba(82, 97, 128, 0.16)"
+						overshootDegrees={0}
 						gradientStops={[
-							{ offset: 0, color: '#2688EB' },
-							{ offset: 0.75, color: '#96DAFF' },
+							{ offset: 0, color: "#2688EB" },
+							{ offset: 0.75, color: "#96DAFF" },
+							{ offset: 1, color: "#2688EB" },
 						]}
-						endCapBorderColor="rgba(255, 255, 255, 0.9)"
 					/>
 
 					<div className={styles.emoji}>{emoji}</div>
@@ -85,3 +87,5 @@ export const WeeklyStats = observer(() => {
 		</div>
 	);
 });
+
+export default WeeklyStats;

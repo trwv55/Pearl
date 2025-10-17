@@ -1,14 +1,14 @@
-import { useEffect, useState, useMemo } from 'react';
-import useEmblaCarousel from 'embla-carousel-react';
-import AutoHeight from 'embla-carousel-auto-height';
-import { EmptyTaskState } from '../shared/EmptyTaskState';
-import type { TaskMain } from '@/entities/task/types';
-import { MainTaskStack } from '@/components/dashboard/MainTaskStack';
-import { taskStore } from '@/entities/task/store';
-import { observer } from 'mobx-react-lite';
-import { WeeklyStats } from '@/widgets/WeeklyStats';
-import styles from './TasksAndStatsWidget.module.css';
-import { statsStore } from '@/entities/stats/store';
+import { useEffect, useState, useMemo } from "react";
+import useEmblaCarousel from "embla-carousel-react";
+import AutoHeight from "embla-carousel-auto-height";
+import { EmptyTaskState } from "../shared/EmptyTaskState";
+import type { TaskMain } from "@/entities/task/types";
+import { MainTaskStack } from "@/components/dashboard/MainTaskStack";
+import { taskStore } from "@/entities/task/store";
+import { observer } from "mobx-react-lite";
+import WeeklyStats from "../../WeeklyStats";
+import styles from "./TasksAndStatsWidget.module.css";
+import { statsStore } from "@/entities/stats/store";
 
 interface ShowMainTasksProps {
 	tasks: TaskMain[];
@@ -39,11 +39,11 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksP
 		const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap());
 
 		setScrollSnaps(emblaApi.scrollSnapList());
-		emblaApi.on('select', onSelect);
+		emblaApi.on("select", onSelect);
 		onSelect();
 
 		return () => {
-			emblaApi.off('select', onSelect);
+			emblaApi.off("select", onSelect);
 		};
 	}, [emblaApi]);
 
@@ -116,7 +116,7 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksP
 						<button
 							key={index}
 							onClick={() => emblaApi && emblaApi.scrollTo(index)}
-							className={`${styles.dot} ${selectedIndex === index ? styles.dotActive : ''}`}
+							className={`${styles.dot} ${selectedIndex === index ? styles.dotActive : ""}`}
 						/>
 					))}
 				</div>

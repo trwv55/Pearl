@@ -2,11 +2,12 @@
 
 import { useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { getFirebaseAuth } from "@/lib/firebase";
 import { userStore } from "@/entities/user/store";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         useEffect(() => {
+                const auth = getFirebaseAuth();
                 const unsubscribe = onAuthStateChanged(auth, user => {
                         userStore.setUser(user);
                 });
