@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { startBackText } from "@/features/auth/lib/classNames";
 import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
-import { emailSchema } from "../../lib/yupShemas";
+import { emailSchema } from "../../../lib/yupShemas";
 
 interface StepEmailProps {
 	onChange: (value: string) => void;

@@ -2,11 +2,11 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LoginEmail } from "@/components/auth/login/LoginEmail";
+import { LoginEmail } from "@/features/auth/ui/login/LoginEmail";
 import { AuthLayout } from "../layout/AuthLayout";
-import { LoginPassword } from "@/components/auth/login/LoginPassword";
+import { LoginPassword } from "@/features/auth/ui/login/LoginPassword";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { getFirebaseAuth } from "@/lib/firebase";
+import { getFirebaseAuth } from "@/shared/lib/firebase";
 import { userStore } from "@/entities/user/store";
 import { toast } from "sonner";
 import SplashScreen from "@/shared/ui/TopBar/SplashScreen";

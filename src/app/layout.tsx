@@ -1,4 +1,4 @@
-import { AuthProvider } from "@/providers/AuthProvider";
+import { AuthProvider } from "@/app/providers/AuthProvider";
 import { Toaster } from "sonner";
 import "./globals.css";
 

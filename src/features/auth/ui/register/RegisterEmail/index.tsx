@@ -2,25 +2,25 @@
 
 import { Button } from "@/shared/ui/button";
 import { AuthBack } from "@/shared/assets/icons/AuthBack";
+import { useRouter } from "next/navigation";
 import { startBackText } from "@/features/auth/lib/classNames";
 import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
-import { passwordSchema } from "../../lib/yupShemas";
-import { useRouter } from "next/navigation";
+import { emailSchema } from "../../../lib/yupShemas";
 
 interface StepEmailProps {
-	onNext: (value: string) => void;
-	onPrev: () => void;
+	onChange: (value: string) => void;
+	onNext: () => void;
 }
 
-export const LoginPassword = memo(({ onNext, onPrev }: StepEmailProps) => {
+export const RegisterEmail = memo(({ onChange, onNext }: StepEmailProps) => {
 	const router = useRouter();
-	const [localPassword, setLocalPassword] = useState("");
+	const [localEmail, setLocalEmail] = useState("");
 	const [error, setError] = useState(false);
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
-			setLocalPassword(e.target.value);
+			setLocalEmail(e.target.value);
 			if (error) setError(false);
 		},
 		[error],
@@ -28,9 +28,10 @@ export const LoginPassword = memo(({ onNext, onPrev }: StepEmailProps) => {
 
 	const handleNext = async () => {
 		try {
-			await passwordSchema.validate({ password: localPassword });
+			await emailSchema.validate({ email: localEmail });
 			setError(false);
-			onNext(localPassword);
+			onChange(localEmail);
+			onNext();
 		} catch {
 			setError(true);
 		}
@@ -44,24 +45,23 @@ export const LoginPassword = memo(({ onNext, onPrev }: StepEmailProps) => {
 					Назад
 				</Button>
 			</div>
-			<div className={`${startBackText} mt-[40px]`}>Шаг 2/2</div>
+			<div className={`${startBackText} mt-[40px]`}>Шаг 1/5</div>
 			<AuthInput
-				type="password"
-				title="Теперь вспомни пароль"
-				icon="🔐️"
-				placeholder="Пароль"
-				value={localPassword}
+				title="Укажи свой email"
+				icon="✉️"
+				placeholder="Email"
+				value={localEmail}
 				onChange={handleInputChange}
+				errorTitle="Неверный email"
 				error={error}
-				errorTitle="Неверный пароль"
 			/>
 			<div className="mt-auto">
 				<Button variant="start" size="start" onClick={handleNext}>
-					Готово
+					Далее
 				</Button>
 			</div>
 		</div>
 	);
 });
 
-LoginPassword.displayName = "LoginPassword";
+RegisterEmail.displayName = "RegisterEmail";
