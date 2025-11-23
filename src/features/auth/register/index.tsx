@@ -7,7 +7,6 @@ import { RegisterEmail } from "@/features/auth/ui/register/RegisterEmail";
 import { RegisterPassword } from "@/features/auth/ui/register/RegisterPassword";
 import { RegisterConfirmPassword } from "@/features/auth/ui/register/RegisterConfirmPassword";
 import { RegisterName } from "@/features/auth/ui/register/RegisterName";
-import { RegisterNotifications } from "@/features/auth/ui/register/RegisterNotifications";
 import { registerUser } from "@/shared/lib/auth/register";
 import { toast } from "sonner";
 import { userStore } from "@/entities/user/store";
@@ -64,8 +63,11 @@ export const Register = () => {
 			onNext={goNext}
 			onPrev={goBack}
 		/>,
-		<RegisterName onChange={(name) => setFormData((prev) => ({ ...prev, name }))} onNext={goNext} onPrev={goBack} />,
-		<RegisterNotifications onFinish={handleFinish} onPrev={goBack} />,
+		<RegisterName
+			onChange={(name) => setFormData((prev) => ({ ...prev, name }))}
+			onNext={handleFinish}
+			onPrev={goBack}
+		/>,
 	];
 
 	return (
