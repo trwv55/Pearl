@@ -5,16 +5,15 @@ import { AuthBack } from "@/shared/assets/icons/AuthBack";
 import { startBackText } from "@/features/auth/lib/classNames";
 import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
-import { passwordSchema } from "../../lib/yupShemas";
+import { passwordSchema } from "../../../lib/yupShemas";
 import { useRouter } from "next/navigation";
 
-interface Props {
-	onChange: (value: string) => void;
-	onNext: () => void;
+interface StepEmailProps {
+	onNext: (value: string) => void;
 	onPrev: () => void;
 }
 
-export const RegisterPassword = memo(({ onChange, onNext, onPrev }: Props) => {
+export const LoginPassword = memo(({ onNext, onPrev }: StepEmailProps) => {
 	const router = useRouter();
 	const [localPassword, setLocalPassword] = useState("");
 	const [error, setError] = useState(false);
@@ -31,8 +30,7 @@ export const RegisterPassword = memo(({ onChange, onNext, onPrev }: Props) => {
 		try {
 			await passwordSchema.validate({ password: localPassword });
 			setError(false);
-			onChange(localPassword);
-			onNext();
+			onNext(localPassword);
 		} catch {
 			setError(true);
 		}
@@ -46,10 +44,10 @@ export const RegisterPassword = memo(({ onChange, onNext, onPrev }: Props) => {
 					Назад
 				</Button>
 			</div>
-			<div className={`${startBackText} mt-[40px]`}>Шаг 2/5</div>
+			<div className={`${startBackText} mt-[40px]`}>Шаг 2/2</div>
 			<AuthInput
 				type="password"
-				title="Теперь придумай пароль"
+				title="Теперь вспомни пароль"
 				icon="🔐️"
 				placeholder="Пароль"
 				value={localPassword}
@@ -59,11 +57,11 @@ export const RegisterPassword = memo(({ onChange, onNext, onPrev }: Props) => {
 			/>
 			<div className="mt-auto">
 				<Button variant="start" size="start" onClick={handleNext}>
-					Далее
+					Готово
 				</Button>
 			</div>
 		</div>
 	);
 });
 
-RegisterPassword.displayName = "RegisterPassword";
+LoginPassword.displayName = "LoginPassword";

@@ -14,7 +14,7 @@ import {
         getDoc,
 } from "firebase/firestore";
 import { addDays, startOfDay } from "date-fns";
-import { getFirebaseDb } from "@/lib/firebase";
+import { getFirebaseDb } from "@/shared/lib/firebase";
 import { Task } from "./types";
 
 export interface TaskPayload {

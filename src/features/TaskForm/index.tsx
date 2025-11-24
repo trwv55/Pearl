@@ -4,18 +4,18 @@ import { useState, useEffect } from "react";
 import { addTask } from "@/entities/task/api";
 import { userStore } from "@/entities/user/store";
 import { taskStore } from "@/entities/task/store";
-import StepCalendar from "@/components/taskForm/StepCalendar";
-import { StepCount } from "@/components/taskForm/StepCount";
-import StepIsMainTask from "@/components/taskForm/StepIsMainTask";
-import StepTitle from "@/components/taskForm/StepTitle";
-import MarkerSelect from "@/components/taskForm/MarkerSelect";
+import StepCalendar from "@/features/TaskForm/ui/StepCalendar";
+import { StepCount } from "@/features/TaskForm/ui/StepCount";
+import StepIsMainTask from "@/features/TaskForm/ui/StepIsMainTask";
+import StepTitle from "@/features/TaskForm/ui/StepTitle";
+import MarkerSelect from "@/features/TaskForm/ui/MarkerSelect";
 import { Button } from "@/shared/ui/button";
 import Icon from "../../../public/arrow.svg";
 import Image from "next/image";
 import { observer } from "mobx-react-lite";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import StepEmoji from "@/components/taskForm/StepEmoji";
+import StepEmoji from "@/features/TaskForm/ui/StepEmoji";
 
 const DEFAULT_EMOJI = "🐚";
 

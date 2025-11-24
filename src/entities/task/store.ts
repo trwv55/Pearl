@@ -1,7 +1,7 @@
 "use client";
 
 import { makeAutoObservable, runInAction } from "mobx";
-import { getFirebaseDb } from "@/lib/firebase";
+import { getFirebaseDb } from "@/shared/lib/firebase";
 import { format, addDays, startOfDay } from "date-fns";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { deleteTask as deleteTaskApi, toggleTaskCompletion } from "@/entities/task/api";

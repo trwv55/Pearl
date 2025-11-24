@@ -1,6 +1,6 @@
 "use client";
 import { toast } from "sonner";
-import { UndoToast } from "@/components/dashboard/shared/ui/UndoToast";
+import { UndoToast } from "@/features/dashboard/ui/shared/ui/UndoToast";
 
 export function showUndoToast({
 	title = "Задача удалена",

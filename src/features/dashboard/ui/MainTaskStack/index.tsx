@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import type { Task, TaskMain } from "@/entities/task/types";
-import { MainTaskItem } from "@/components/dashboard/MainTaskItem";
+import { MainTaskItem } from "@/features/dashboard/ui/MainTaskItem";
 import { EmptyTaskState } from "@/widgets/mainPage/shared/EmptyTaskState";
 import styles from "./MainTaskStack.module.css";
 import { userStore } from "@/entities/user/store";

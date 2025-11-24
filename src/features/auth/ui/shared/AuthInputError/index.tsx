@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import styles from "../AuthInput/AuthInput.module.css";
 
 type AuthInputProps = {

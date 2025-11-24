@@ -3,15 +3,16 @@
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthLayout } from "../layout/AuthLayout";
-import { RegisterEmail } from "@/components/auth/register/RegisterEmail";
-import { RegisterPassword } from "@/components/auth/register/RegisterPassword";
-import { RegisterConfirmPassword } from "@/components/auth/register/RegisterConfirmPassword";
-import { RegisterName } from "@/components/auth/register/RegisterName";
-import { RegisterNotifications } from "@/components/auth/register/RegisterNotifications";
-import { registerUser } from "@/lib/auth/register";
+import { RegisterEmail } from "@/features/auth/ui/register/RegisterEmail";
+import { RegisterPassword } from "@/features/auth/ui/register/RegisterPassword";
+import { RegisterConfirmPassword } from "@/features/auth/ui/register/RegisterConfirmPassword";
+import { RegisterName } from "@/features/auth/ui/register/RegisterName";
+import { registerUser } from "@/shared/lib/auth/register";
 import { toast } from "sonner";
 import { userStore } from "@/entities/user/store";
 import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
+import { getFirebaseAuth } from "@/shared/lib/firebase";
+import { RegisterNotifications } from "../ui/register/RegisterNotifications";
 
 export const Register = () => {
 	const [step, setStep] = useState(0);
