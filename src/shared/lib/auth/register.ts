@@ -5,8 +5,7 @@ import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { getFirebaseAuth, getFirebaseDb } from "../firebase";
 
 export const registerUser = async (email: string, password: string, name?: string) => {
-	const auth = getFirebaseAuth();
-	const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+	const userCredential = await createUserWithEmailAndPassword(getFirebaseAuth(), email, password);
 
 	// обновляем профиль если передали имя
 	if (name && name.trim().length > 0) {
