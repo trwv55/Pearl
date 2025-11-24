@@ -12,21 +12,14 @@ export const registerUser = async (email: string, password: string, name?: strin
 		await updateProfile(userCredential.user, {
 			displayName: name,
 		});
-		// Перезагружаем пользователя, чтобы получить обновленный displayName
-		await userCredential.user.reload();
 	}
 
 	// создаем документ профиля пользователя в Firestore
-	try {
-		await setDoc(doc(getFirebaseDb(), "users", userCredential.user.uid), {
-			email,
-			name: name ?? "",
-			createdAt: serverTimestamp(),
-		});
-	} catch (firestoreError) {
-		console.warn("Не удалось создать документ пользователя в Firestore:", firestoreError);
-	}
+	await setDoc(doc(getFirebaseDb(), "users", userCredential.user.uid), {
+		email,
+		name: name ?? "",
+		createdAt: serverTimestamp(),
+	});
 
-	// Возвращаем актуального пользователя из auth.currentUser, чтобы гарантировать обновленный displayName
-	return auth.currentUser || userCredential.user;
+	return userCredential.user;
 };

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { userStore } from "@/entities/user/store";
 import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
 import { getFirebaseAuth } from "@/shared/lib/firebase";
+import { RegisterNotifications } from "../ui/register/RegisterNotifications";
 
 export const Register = () => {
 	const [step, setStep] = useState(0);
@@ -21,8 +22,6 @@ export const Register = () => {
 		confirmPassword: "",
 		name: "",
 	});
-
-	console.log("formData", formData);
 	const [showSplash, setShowSplash] = useState(false);
 	const router = useRouter();
 
@@ -37,17 +36,7 @@ export const Register = () => {
 		}
 		try {
 			const user = await registerUser(formData.email, formData.password, formData.name);
-			console.log("user", user);
 			userStore.setUser(user);
-
-			// Дополнительно обновляем пользователя после небольшой задержки,
-			// чтобы убедиться, что onAuthStateChanged обновил данные с displayName
-			setTimeout(() => {
-				const auth = getFirebaseAuth();
-				if (auth.currentUser) {
-					userStore.setUser(auth.currentUser);
-				}
-			}, 100);
 
 			if (typeof window !== "undefined" && !localStorage.getItem("splashShown")) {
 				setShowSplash(true);
@@ -76,11 +65,8 @@ export const Register = () => {
 			onNext={goNext}
 			onPrev={goBack}
 		/>,
-		<RegisterName
-			onChange={(name) => setFormData((prev) => ({ ...prev, name }))}
-			onNext={handleFinish}
-			onPrev={goBack}
-		/>,
+		<RegisterName onChange={(name) => setFormData((prev) => ({ ...prev, name }))} onNext={goNext} onPrev={goBack} />,
+		<RegisterNotifications onFinish={handleFinish} onPrev={goBack} />,
 	];
 
 	return (

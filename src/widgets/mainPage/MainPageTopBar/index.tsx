@@ -12,7 +12,6 @@ interface MainPageTopBarProps {
 
 export const MainPageTopBar: React.FC<MainPageTopBarProps> = observer(
 	({ logoAlt = "Логотип", logoWidth = 40, logoHeight = 40 }) => {
-		console.log("userStore", userStore);
 		const name = userStore.displayName;
 
 		return (
