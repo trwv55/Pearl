@@ -8,6 +8,7 @@ import { userStore } from "@/entities/user/store";
 import { useSwipeable } from "react-swipeable";
 import { statsStore } from "@/entities/stats/store";
 import { startOfWeek } from "date-fns";
+import { viewTask } from "@/features/dashboard/lib/viewTaskApi";
 
 interface RoutineTaskItemProps {
 	task: Task;
@@ -40,23 +41,28 @@ export const RoutineTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isDraggi
 	}, [isDragging, canSwipe]);
 
 	const handleCheck = useCallback(
-                async (e: { target: { checked: boolean | ((prevState: boolean) => boolean) } }) => {
-                        setIsChecked(e.target.checked);
-                        if (!uid) {
-                                toast.error("Нет данных пользователя");
-                                return;
-                        }
-                        await taskStore.toggleCompletion(uid, task.id);
-                        const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
-                        statsStore.fetchWeekStats(uid, weekStart);
-                },
-                [uid, taskStore.selectedDate],
-        );
+		async (e: { target: { checked: boolean | ((prevState: boolean) => boolean) } }) => {
+			setIsChecked(e.target.checked);
+			if (!uid) {
+				toast.error("Нет данных пользователя");
+				return;
+			}
+			await taskStore.toggleCompletion(uid, task.id);
+			const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
+			statsStore.fetchWeekStats(uid, weekStart);
+		},
+		[uid, taskStore.selectedDate],
+	);
 
-        const handleDeleteClick = () => {
-                onDelete?.(task.id);
-                setShowDelete(false);
-        };
+	const handleDeleteClick = () => {
+		onDelete?.(task.id);
+		setShowDelete(false);
+	};
+
+	const handleTaskClick = useCallback(async () => {
+		if (!uid) return;
+		await viewTask(uid, task.id);
+	}, [uid, task.id]);
 
 	return (
 		<div className={styles.swipeWrap} {...(canSwipe ? swipeHandlers : {})}>
@@ -79,7 +85,8 @@ export const RoutineTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isDraggi
 					[styles.swiped]: showDelete, // сдвиг контента влево при показе delete
 				})}
 				// эта директива снижает конфликты с жестами: вертикальный скролл остаётся системным
-				style={{ touchAction: "pan-y", userSelect: "none" }}
+				style={{ touchAction: "pan-y", userSelect: "none", cursor: "pointer" }}
+				onClick={handleTaskClick}
 			>
 				<div className={styles.taskItemContent}>
 					<div className={styles.taskItemContentLeft}>

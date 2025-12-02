@@ -1,9 +1,11 @@
 import clsx from "clsx";
 import { useSwipeable } from "react-swipeable";
 import type { Task, TaskMain } from "@/entities/task/types";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getTaskBackground } from "@/shared/lib/taskBackground";
 import styles from "./MainTaskItem.module.css";
+import { userStore } from "@/entities/user/store";
+import { viewTask } from "@/features/dashboard/lib/viewTaskApi";
 
 interface RoutineTaskItemProps {
 	task: TaskMain;
@@ -24,6 +26,7 @@ const formatTime = (minutes: number) => {
 export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded, onDelete, onComplete }) => {
 	const [isChecked, setIsChecked] = useState(task.isCompleted);
 	const [showDelete, setShowDelete] = useState(false);
+	const uid = userStore.user?.uid;
 
 	// Синхронизируем чекбокс с бэкендом
 	useEffect(() => {
@@ -53,6 +56,11 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 		onComplete?.(task);
 	};
 
+	const handleTaskClick = useCallback(async () => {
+		if (!uid) return;
+		await viewTask(uid, task.id);
+	}, [uid, task.id]);
+
 	return (
 		<div className={styles.swipeWrap} {...(isExpanded ? swipeHandlers : {})}>
 			<button
@@ -71,7 +79,9 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 				})}
 				style={{
 					background: getTaskBackground(task.markerColor),
+					cursor: "pointer",
 				}}
+				onClick={handleTaskClick}
 			>
 				<div className={styles.taskItemContent}>
 					<div className={styles.emojiWrap}>
