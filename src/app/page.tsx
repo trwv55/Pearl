@@ -15,12 +15,19 @@ import { useEffect } from "react";
 import { addDays, startOfDay } from "date-fns";
 
 const Home = observer(() => {
-	const handleLogout = () => {
-		logout();
+	const handleLogout = async () => {
+		try {
+			await logout();
+		} catch (error) {
+			console.error("Ошибка при выходе:", error);
+		}
 	};
 
 	useEffect(() => {
 		if (userStore.user) {
+			// Очищаем кеш задач при смене пользователя
+			// taskStore.clearCache();
+
 			const today = startOfDay(new Date());
 			const start = addDays(today, -15);
 			const end = addDays(today, 15);

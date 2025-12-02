@@ -5,11 +5,9 @@ import { useRouter } from "next/navigation";
 import { LoginEmail } from "@/features/auth/ui/login/LoginEmail";
 import { AuthLayout } from "../layout/AuthLayout";
 import { LoginPassword } from "@/features/auth/ui/login/LoginPassword";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { getFirebaseAuth } from "@/shared/lib/firebase";
 import { userStore } from "@/entities/user/store";
-import { toast } from "sonner";
 import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
+import { loginUser, isLoginSuccess } from "../lib/loginApi";
 
 export const Login = () => {
 	const [step, setStep] = useState(0);
@@ -28,9 +26,10 @@ export const Login = () => {
 
 	const handleFinish = useCallback(
 		async (password: string) => {
-			try {
-				const cred = await signInWithEmailAndPassword(getFirebaseAuth(), formData.email, password);
-				userStore.setUser(cred.user);
+			const result = await loginUser(formData.email, password);
+
+			if (isLoginSuccess(result)) {
+				userStore.setUser(result.user);
 
 				if (typeof window !== "undefined" && !localStorage.getItem("splashShown")) {
 					setShowSplash(true);
@@ -39,23 +38,12 @@ export const Login = () => {
 				} else {
 					router.push("/");
 				}
-			} catch (err: unknown) {
-				console.error("Login error:", err);
-
-				let message = "Ошибка входа. Попробуйте ещё раз.";
-				const error = err as { code?: string };
-
-				if (error.code === "auth/user-not-found") {
-					message = "Пользователь не найден";
-				} else if (error.code === "auth/wrong-password") {
-					message = "Неверный пароль";
-				}
-
-				setError(message);
-				toast.error(message);
+			} else {
+				// Устанавливаем ошибку только если она не null (для других ошибок, не 400)
+				setError(result.error || null);
 			}
 		},
-		[formData.email, formData.password, router],
+		[formData.email, router],
 	);
 
 	return (
