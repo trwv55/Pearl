@@ -8,7 +8,6 @@ import { userStore } from "@/entities/user/store";
 import { useSwipeable } from "react-swipeable";
 import { statsStore } from "@/entities/stats/store";
 import { startOfWeek } from "date-fns";
-import { viewTask } from "@/features/dashboard/lib/viewTaskApi";
 
 interface RoutineTaskItemProps {
 	task: Task;
@@ -61,7 +60,7 @@ export const RoutineTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isDraggi
 
 	const handleTaskClick = useCallback(async () => {
 		if (!uid) return;
-		await viewTask(uid, task.id);
+		// await viewTask(uid, task.id);
 	}, [uid, task.id]);
 
 	return (

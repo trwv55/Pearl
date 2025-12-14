@@ -34,17 +34,16 @@ export const fetchTaskById = async (userId: string, taskId: string): Promise<Vie
  * @param userId - ID пользователя
  * @param taskId - ID задачи
  */
-export const viewTask = async (userId: string, taskId: string): Promise<void> => {
-	if (!userId) {
-		console.error("Нет данных пользователя");
-		return;
-	}
+// export const viewTask = async (userId: string, taskId: string): Promise<void> => {
+// 	if (!userId) {
+// 		console.error("Нет данных пользователя");
+// 		return;
+// 	}
 
-	try {
-		const result = await fetchTaskById(userId, taskId);
-		console.log("Результат запроса к Firebase для задачи:", result);
-	} catch (error) {
-		console.error("Ошибка при получении задачи из Firebase:", error);
-	}
-};
-
+// 	try {
+// 		const result = await fetchTaskById(userId, taskId);
+// 		console.log("Результат запроса к Firebase для задачи:", result);
+// 	} catch (error) {
+// 		console.error("Ошибка при получении задачи из Firebase:", error);
+// 	}
+// };

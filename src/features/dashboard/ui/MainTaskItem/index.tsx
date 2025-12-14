@@ -4,8 +4,7 @@ import type { Task, TaskMain } from "@/entities/task/types";
 import { useCallback, useEffect, useState } from "react";
 import { getTaskBackground } from "@/shared/lib/taskBackground";
 import styles from "./MainTaskItem.module.css";
-import { userStore } from "@/entities/user/store";
-import { viewTask } from "@/features/dashboard/lib/viewTaskApi";
+import { useTaskViewPopup } from "@/features/dashboard/hooks/useTaskViewPopup";
 
 interface RoutineTaskItemProps {
 	task: TaskMain;
@@ -26,7 +25,7 @@ const formatTime = (minutes: number) => {
 export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded, onDelete, onComplete }) => {
 	const [isChecked, setIsChecked] = useState(task.isCompleted);
 	const [showDelete, setShowDelete] = useState(false);
-	const uid = userStore.user?.uid;
+	const { openTask } = useTaskViewPopup();
 
 	// Синхронизируем чекбокс с бэкендом
 	useEffect(() => {
@@ -56,10 +55,12 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 		onComplete?.(task);
 	};
 
-	const handleTaskClick = useCallback(async () => {
-		if (!uid) return;
-		await viewTask(uid, task.id);
-	}, [uid, task.id]);
+	const handleOpen = useCallback(() => {
+		// Открываем попап только если стопка открыта
+		if (isExpanded) {
+			openTask(task);
+		}
+	}, [openTask, task, isExpanded]);
 
 	return (
 		<div className={styles.swipeWrap} {...(isExpanded ? swipeHandlers : {})}>
@@ -79,9 +80,8 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 				})}
 				style={{
 					background: getTaskBackground(task.markerColor),
-					cursor: "pointer",
 				}}
-				onClick={handleTaskClick}
+				onClick={handleOpen}
 			>
 				<div className={styles.taskItemContent}>
 					<div className={styles.emojiWrap}>
@@ -97,6 +97,7 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 								checked={isChecked}
 								// onChange={e => setIsChecked(e.target.checked)}
 								onChange={handleChange}
+								onClick={(event) => event.stopPropagation()}
 							/>
 						</div>
 					</div>
