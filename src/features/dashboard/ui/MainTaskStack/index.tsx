@@ -74,7 +74,11 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 			onExpandChange?.(false);
 			if (!isControlled) setUncontrolledExpanded(false);
 
-			taskStore.deleteWithUndo(uid, full);
+			const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
+			// Обновляем статистику после фактического удаления из Firebase
+			taskStore.deleteWithUndo(uid, full, 4000, () => {
+				statsStore.fetchWeekStats(uid, weekStart);
+			});
 		},
 		[tasks, isControlled, onExpandChange, uid],
 	);

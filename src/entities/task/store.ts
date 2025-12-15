@@ -149,7 +149,7 @@ class TaskStore {
 	}
 
 	// --- Удаление с Undo ---
-	async deleteWithUndo(userId: string, task: Task, delayMs = 4000) {
+	async deleteWithUndo(userId: string, task: Task, delayMs = 4000, onDeleted?: () => void) {
 		// если уже есть ожидающее удаление этой задачи — ничего не делаем
 		if (this.pending.has(task.id)) return;
 
@@ -164,6 +164,10 @@ class TaskStore {
 			if (cancelled) return;
 			try {
 				await deleteTaskApi(userId, task.id);
+				// Вызываем callback после успешного удаления
+				if (onDeleted) {
+					onDeleted();
+				}
 				// если хочешь быть на 100% консистентным с сервером:
 				// await this.reloadCurrentDay(userId);
 			} catch (e) {

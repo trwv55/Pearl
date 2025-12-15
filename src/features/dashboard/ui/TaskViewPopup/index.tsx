@@ -79,7 +79,11 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 			return;
 		}
 
-		taskStore.deleteWithUndo(uid, task);
+		const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
+		// Обновляем статистику после фактического удаления из Firebase
+		taskStore.deleteWithUndo(uid, task, 4000, () => {
+			statsStore.fetchWeekStats(uid, weekStart);
+		});
 		onClose();
 	}, [task, onClose]);
 
