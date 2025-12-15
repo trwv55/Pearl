@@ -12,6 +12,10 @@ const withPWAPlugin = withPWA({
 const nextConfig: NextConfig = {
 	reactStrictMode: true,
 
+	// Явно указываем, что используем webpack для сборки
+	// (так как у нас есть настройки для SVGR и алиасов)
+	turbopack: {},
+
 	webpack: (config) => {
 		// Алиас на src, чтобы @/... резолвился в CI
 		config.resolve.alias["@"] = path.resolve(__dirname, "src");
