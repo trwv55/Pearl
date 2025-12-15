@@ -33,7 +33,7 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 
 	useEffect(() => {
 		if (isControlled) return;
-		const ids = tasks.map(t => t?.id).join(",");
+		const ids = tasks.map((t) => t?.id).join(",");
 		if (prevTasksRef.current !== ids) {
 			setUncontrolledExpanded(false);
 			prevTasksRef.current = ids;
@@ -68,7 +68,7 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 				toast.error("Нет данных пользователя");
 				return;
 			}
-			const full = tasks.find(t => t?.id === taskId);
+			const full = tasks.find((t) => t?.id === taskId);
 			if (!full) return;
 			// сразу сворачиваем стопку у родителя
 			onExpandChange?.(false);
@@ -85,12 +85,12 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 				toast.error("Нет данных пользователя");
 				return;
 			}
-                        await taskStore.toggleCompletion(uid, task.id);
-                        const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
-                        statsStore.fetchWeekStats(uid, weekStart);
-                },
-                [uid, taskStore.selectedDate],
-        );
+			await taskStore.toggleCompletion(uid, task.id);
+			const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
+			statsStore.fetchWeekStats(uid, weekStart);
+		},
+		[uid, taskStore.selectedDate],
+	);
 
 	// ——— целевые высоты
 	const expandedHeight = 300;
@@ -143,12 +143,7 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 							ref={index === 0 ? firstItemRef : undefined}
 						>
 							{task ? (
-								<MainTaskItem
-									task={task}
-									isExpanded={isExpanded}
-									onDelete={handleDelete}
-									onComplete={handleComplete}
-								/>
+								<MainTaskItem task={task} isExpanded={isExpanded} onDelete={handleDelete} onComplete={handleComplete} />
 							) : (
 								<EmptyTaskState>
 									<span>Будущая</span>&nbsp; задача

@@ -2,7 +2,7 @@
 import DaysSwitcher from "@/widgets/mainPage/DaySwitcher";
 import { MainPageTopBar } from "@/widgets/mainPage/MainPageTopBar";
 import { CreateTaskBtn } from "@/widgets/mainPage/shared/CreateTaskBtn";
-import { SwitcherModeBtn } from "@/widgets/mainPage/shared/SwitcherModeBtn";
+// import { SwitcherModeBtn } from "@/widgets/mainPage/shared/SwitcherModeBtn";
 import { MainTasks } from "@/features/dashboard/MainTasks";
 import { RoutineTasks } from "@/features/dashboard/RoutineTasks";
 import { MainPageLayout } from "@/app/layouts/MainPageLayout";
@@ -58,7 +58,7 @@ const Home = observer(() => {
 					</div>
 					<div className="flex flex-col justify-between items-center">
 						<CreateTaskBtn />
-						<SwitcherModeBtn />
+						{/* <SwitcherModeBtn /> */}
 						<button onClick={handleLogout}>Logout</button>
 					</div>
 				</div>

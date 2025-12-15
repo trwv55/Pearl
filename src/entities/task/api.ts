@@ -10,6 +10,7 @@ import {
 	runTransaction,
 	serverTimestamp,
 	setDoc,
+	updateDoc,
 	where,
 	getDoc,
 } from "firebase/firestore";
@@ -103,6 +104,87 @@ export const getTasksForRange = async (userId: string, startDate: Date, endDate:
 export const deleteTask = async (userId: string, taskId: string) => {
 	const db = getFirebaseDb();
 	await deleteDoc(doc(db, "users", userId, "tasks", taskId));
+};
+
+export const getTaskById = async (userId: string, taskId: string): Promise<Task | null> => {
+	const db = getFirebaseDb();
+	const taskRef = doc(db, "users", userId, "tasks", taskId);
+
+	try {
+		const taskDoc = await getDoc(taskRef);
+		if (!taskDoc.exists()) {
+			return null;
+		}
+
+		const data = taskDoc.data();
+		return {
+			id: taskDoc.id,
+			title: data.title,
+			comment: data.comment,
+			date: data.date.toDate ? data.date.toDate() : data.date,
+			emoji: data.emoji,
+			isMain: data.isMain,
+			markerColor: data.markerColor,
+			isCompleted: data.isCompleted,
+			completedAt: data.completedAt?.toDate() || null,
+			time: typeof data.time === "number" ? data.time : null,
+		} as Task;
+	} catch (e) {
+		console.error("Ошибка при получении задачи: ", e);
+		throw e;
+	}
+};
+
+export const updateTask = async (userId: string, taskId: string, payload: Partial<TaskPayload>) => {
+	const db = getFirebaseDb();
+	const taskRef = doc(db, "users", userId, "tasks", taskId);
+
+	try {
+		// Проверяем существование задачи
+		const taskDoc = await getDoc(taskRef);
+		if (!taskDoc.exists()) {
+			throw new Error("Задача не найдена");
+		}
+
+		// Подготавливаем данные для обновления
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const updateData: any = {
+			updatedAt: serverTimestamp(),
+		};
+
+		if (payload.title !== undefined) updateData.title = payload.title;
+		if (payload.comment !== undefined) updateData.comment = payload.comment;
+		if (payload.date !== undefined) updateData.date = payload.date;
+		if (payload.emoji !== undefined) updateData.emoji = payload.emoji;
+		if (payload.isMain !== undefined) updateData.isMain = payload.isMain;
+		if (payload.markerColor !== undefined) updateData.markerColor = payload.markerColor;
+		if (payload.time !== undefined) updateData.time = payload.time;
+
+		await updateDoc(taskRef, updateData);
+
+		// Получаем обновленные данные
+		const updatedDoc = await getDoc(taskRef);
+		if (!updatedDoc.exists()) {
+			throw new Error("Задача не найдена после обновления");
+		}
+
+		const data = updatedDoc.data();
+		return {
+			id: updatedDoc.id,
+			title: data.title,
+			comment: data.comment,
+			date: data.date.toDate ? data.date.toDate() : data.date,
+			emoji: data.emoji,
+			isMain: data.isMain,
+			markerColor: data.markerColor,
+			isCompleted: data.isCompleted,
+			completedAt: data.completedAt?.toDate() || null,
+			time: typeof data.time === "number" ? data.time : null,
+		} as Task;
+	} catch (e) {
+		console.error("Ошибка при обновлении задачи: ", e);
+		throw e;
+	}
 };
 
 export const toggleTaskCompletion = async (userId: string, taskId: string) => {
