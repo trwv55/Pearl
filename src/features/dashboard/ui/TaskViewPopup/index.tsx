@@ -10,6 +10,11 @@ import { TaskComment } from "@/shared/assets/icons/TaskComment";
 import { TaskGradientEllipse } from "@/shared/assets/icons/TaskGradientEllipse";
 import buttonStyles from "@/shared/ui/button.module.css";
 import styles from "./TaskViewPopup.module.css";
+import { userStore } from "@/entities/user/store";
+import { taskStore } from "@/entities/task/store";
+import { statsStore } from "@/entities/stats/store";
+import { startOfWeek } from "date-fns";
+import { toast } from "sonner";
 
 interface TaskViewPopupProps {
 	task: Task | null;
@@ -41,14 +46,42 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 		if (!task || task.time === null) return null;
 		// Предполагаем, что задача длится 1 час, если нет данных о длительности
 		const endTime = task.time + 60;
-		const hours = Math.floor(endTime / 60)
-			.toString()
-			.padStart(2, "0");
+		const hours = (Math.floor(endTime / 60) % 24).toString().padStart(2, "0");
 		const minutes = (endTime % 60).toString().padStart(2, "0");
 		return `${hours}:${minutes}`;
 	}, [task]);
 
 	const gradientColor = useMemo(() => task?.markerColor || "#96C937", [task?.markerColor]);
+
+	const handleComplete = useCallback(async () => {
+		if (!task) return;
+		const uid = userStore.user?.uid;
+		if (!uid) {
+			toast.error("Нет данных пользователя");
+			return;
+		}
+
+		try {
+			await taskStore.toggleCompletion(uid, task.id);
+			const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
+			statsStore.fetchWeekStats(uid, weekStart);
+			onClose();
+		} catch (error) {
+			console.error("Ошибка при выполнении задачи:", error);
+		}
+	}, [task, onClose]);
+
+	const handleDelete = useCallback(() => {
+		if (!task) return;
+		const uid = userStore.user?.uid;
+		if (!uid) {
+			toast.error("Нет данных пользователя");
+			return;
+		}
+
+		taskStore.deleteWithUndo(uid, task);
+		onClose();
+	}, [task, onClose]);
 
 	const actionIcons = useMemo(
 		() => [
@@ -162,8 +195,15 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 				<div className={styles.actionIcons}>
 					{actionIcons.map((action, index) => {
 						const IconComponent = action.icon;
+						const isDelete = action.label === "Удалить";
 						return (
-							<button key={index} type="button" className={styles.actionIconButton} aria-label={action.label}>
+							<button
+								key={index}
+								type="button"
+								className={styles.actionIconButton}
+								aria-label={action.label}
+								onClick={isDelete ? handleDelete : undefined}
+							>
 								<div
 									className={styles.actionIconWrapper}
 									style={{ "--icon-color": action.color } as React.CSSProperties}
@@ -174,16 +214,18 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 						);
 					})}
 				</div>
-				<footer className={styles.footer}>
-					<button
-						type="button"
-						onClick={onClose}
-						className={buttonStyles.mainDashboardButton}
-						aria-label="Задача выполнена"
-					>
-						Выполнена
-					</button>
-				</footer>
+				{!task.isCompleted && (
+					<footer className={styles.footer}>
+						<button
+							type="button"
+							onClick={handleComplete}
+							className={buttonStyles.mainDashboardButton}
+							aria-label="Задача выполнена"
+						>
+							Выполнена
+						</button>
+					</footer>
+				)}
 			</section>
 		</div>
 	);

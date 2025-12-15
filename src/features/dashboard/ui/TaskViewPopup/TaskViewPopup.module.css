@@ -198,5 +198,6 @@
     display: flex;
     justify-content: center;
     padding-top: 6px;
+	margin: 0 20px;
 }
 
