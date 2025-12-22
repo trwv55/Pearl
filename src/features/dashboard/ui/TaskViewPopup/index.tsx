@@ -160,8 +160,8 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 						color={gradientColor}
 						uniqueId={task?.id || "default"}
 					/>
-					<div className={styles.handleArea}>
-						<div className={styles.handle} onPointerDown={handlePointerDown} />
+					<div className={styles.handleArea} onPointerDown={handlePointerDown}>
+						<button className={styles.handle} />
 					</div>
 				</div>
 				<div className={styles.header}>
