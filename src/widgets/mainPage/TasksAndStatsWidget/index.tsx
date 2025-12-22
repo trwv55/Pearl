@@ -3,7 +3,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import AutoHeight from "embla-carousel-auto-height";
 import { EmptyTaskState } from "../shared/EmptyTaskState";
 import type { TaskMain } from "@/entities/task/types";
-import { MainTaskStack } from "@/components/dashboard/MainTaskStack";
+import { MainTaskStack } from "@/features/dashboard/ui/MainTaskStack";
 import { taskStore } from "@/entities/task/store";
 import { observer } from "mobx-react-lite";
 import WeeklyStats from "../../WeeklyStats";

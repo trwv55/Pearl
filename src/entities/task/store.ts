@@ -1,7 +1,7 @@
 "use client";
 
 import { makeAutoObservable, runInAction } from "mobx";
-import { getFirebaseDb } from "@/lib/firebase";
+import { getFirebaseDb } from "@/shared/lib/firebase";
 import { format, addDays, startOfDay } from "date-fns";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { deleteTask as deleteTaskApi, toggleTaskCompletion } from "@/entities/task/api";
@@ -32,13 +32,13 @@ class TaskStore {
 
 	// Убрать задачу локально (UI-оптимизм) + обновить кэш
 	private removeLocal(taskId: string) {
-		this.tasks = this.tasks.filter(t => t.id !== taskId);
+		this.tasks = this.tasks.filter((t) => t.id !== taskId);
 		this.syncCacheForSelectedDate();
 	}
 
 	// Вернуть задачу локально (для Undo) + обновить кэш
 	private addLocal(task: Task) {
-		const next = this.tasks.filter(t => t.id !== task.id);
+		const next = this.tasks.filter((t) => t.id !== task.id);
 		this.tasks = [task, ...next];
 		this.syncCacheForSelectedDate();
 	}
@@ -54,88 +54,102 @@ class TaskStore {
 		}
 	}
 
-        async fetchTasks(userId: string, date: Date = this.selectedDate) {
-                const db = getFirebaseDb();
-                const start = startOfDay(date);
-                const end = addDays(start, 1);
-                const q = query(collection(db, "users", userId, "tasks"), where("date", ">=", start), where("date", "<", end));
-		const snapshot = await getDocs(q);
-                const tasks: Task[] = snapshot.docs.map(doc => {
-                        const data = doc.data();
-                        return {
-                                id: doc.id,
-                                title: data.title,
-                                comment: data.comment,
-                                date: data.date.toDate ? data.date.toDate() : data.date,
-                                emoji: data.emoji,
-                                isMain: data.isMain,
-                                markerColor: data.markerColor,
-                                isCompleted: data.isCompleted,
-                                completedAt: data.completedAt?.toDate() || null,
-                                time: typeof data.time === "number" ? data.time : null,
-                        };
-                });
+	async fetchTasks(userId: string, date: Date = this.selectedDate) {
+		try {
+			const db = getFirebaseDb();
+			const start = startOfDay(date);
+			const end = addDays(start, 1);
+			const q = query(collection(db, "users", userId, "tasks"), where("date", ">=", start), where("date", "<", end));
+			const snapshot = await getDocs(q);
+			const tasks: Task[] = snapshot.docs.map((doc) => {
+				const data = doc.data();
+				return {
+					id: doc.id,
+					title: data.title,
+					comment: data.comment,
+					date: data.date.toDate ? data.date.toDate() : data.date,
+					emoji: data.emoji,
+					isMain: data.isMain,
+					markerColor: data.markerColor,
+					isCompleted: data.isCompleted,
+					completedAt: data.completedAt?.toDate() || null,
+					time: typeof data.time === "number" ? data.time : null,
+				};
+			});
 
-		runInAction(() => {
-			const key = this.getDateKey(date);
-			this.taskCache.set(key, tasks);
-
-			// Если дата совпадает с выбранной — обновляем отображение
-			if (this.getDateKey(this.selectedDate) === key) {
-				this.tasks = tasks;
-			}
-		});
-	}
-
-        async fetchTasksForRange(userId: string, startDate: Date, endDate: Date) {
-                const db = getFirebaseDb();
-                const q = query(
-                        collection(db, "users", userId, "tasks"),
-                        where("date", ">=", startOfDay(startDate)),
-			where("date", "<", startOfDay(addDays(endDate, 1))),
-		);
-
-		const snapshot = await getDocs(q);
-		const groupedTasks: Map<string, Task[]> = new Map();
-
-		snapshot.docs.forEach(doc => {
-			const data = doc.data();
-                        const task: Task = {
-                                id: doc.id,
-                                title: data.title,
-                                comment: data.comment,
-                                date: data.date.toDate ? data.date.toDate() : data.date,
-                                emoji: data.emoji,
-                                isMain: data.isMain,
-                                markerColor: data.markerColor,
-                                isCompleted: data.isCompleted,
-                                completedAt: data.completedAt?.toDate() || null,
-                                time: typeof data.time === "number" ? data.time : null,
-                        };
-
-			const key = this.getDateKey(task.date);
-			if (!groupedTasks.has(key)) {
-				groupedTasks.set(key, []);
-			}
-			groupedTasks.get(key)!.push(task);
-		});
-
-		runInAction(() => {
-			groupedTasks.forEach((tasks, key) => {
+			runInAction(() => {
+				const key = this.getDateKey(date);
 				this.taskCache.set(key, tasks);
+
+				// Если дата совпадает с выбранной — обновляем отображение
 				if (this.getDateKey(this.selectedDate) === key) {
 					this.tasks = tasks;
 				}
 			});
-		});
+		} catch (error) {
+			console.error("Ошибка при загрузке задач:", error);
+		}
+	}
+
+	async fetchTasksForRange(userId: string, startDate: Date, endDate: Date) {
+		try {
+			const db = getFirebaseDb();
+			const q = query(
+				collection(db, "users", userId, "tasks"),
+				where("date", ">=", startOfDay(startDate)),
+				where("date", "<", startOfDay(addDays(endDate, 1))),
+			);
+
+			const snapshot = await getDocs(q);
+			const groupedTasks: Map<string, Task[]> = new Map();
+
+			snapshot.docs.forEach((doc) => {
+				const data = doc.data();
+				const task: Task = {
+					id: doc.id,
+					title: data.title,
+					comment: data.comment,
+					date: data.date.toDate ? data.date.toDate() : data.date,
+					emoji: data.emoji,
+					isMain: data.isMain,
+					markerColor: data.markerColor,
+					isCompleted: data.isCompleted,
+					completedAt: data.completedAt?.toDate() || null,
+					time: typeof data.time === "number" ? data.time : null,
+				};
+
+				const key = this.getDateKey(task.date);
+				if (!groupedTasks.has(key)) {
+					groupedTasks.set(key, []);
+				}
+				groupedTasks.get(key)!.push(task);
+			});
+
+			runInAction(() => {
+				groupedTasks.forEach((tasks, key) => {
+					this.taskCache.set(key, tasks);
+					if (this.getDateKey(this.selectedDate) === key) {
+						this.tasks = tasks;
+					}
+				});
+			});
+		} catch (error) {
+			console.error("Ошибка при загрузке задач за диапазон:", error);
+		}
 	}
 
 	async reloadCurrentDay(userId: string) {
 		await this.fetchTasks(userId, this.selectedDate);
 	}
 
+	// Очистить кеш задач (используется при смене пользователя)
+	clearCache() {
+		this.taskCache.clear();
+		this.tasks = [];
+	}
+
 	// --- Удаление с Undo ---
-        async deleteWithUndo(userId: string, task: Task, delayMs = 4000) {
+	async deleteWithUndo(userId: string, task: Task, delayMs = 4000, onDeleted?: () => void) {
 		// если уже есть ожидающее удаление этой задачи — ничего не делаем
 		if (this.pending.has(task.id)) return;
 
@@ -149,12 +163,16 @@ class TaskStore {
 			this.pending.delete(task.id);
 			if (cancelled) return;
 			try {
-                                await deleteTaskApi(userId, task.id);
+				await deleteTaskApi(userId, task.id);
+				// Вызываем callback после успешного удаления
+				if (onDeleted) {
+					onDeleted();
+				}
 				// если хочешь быть на 100% консистентным с сервером:
 				// await this.reloadCurrentDay(userId);
 			} catch (e) {
 				runInAction(() => this.addLocal(task));
-				console.error(e);
+				console.error("Ошибка при удалении задачи:", e);
 				toast.error("Не удалось удалить задачу");
 			}
 		}, delayMs);
@@ -181,7 +199,7 @@ class TaskStore {
 
 			runInAction(() => {
 				// Обновляем задачу в текущем списке
-				const taskIndex = this.tasks.findIndex(t => t.id === taskId);
+				const taskIndex = this.tasks.findIndex((t) => t.id === taskId);
 				if (taskIndex !== -1) {
 					this.tasks[taskIndex] = {
 						...this.tasks[taskIndex],
@@ -194,7 +212,7 @@ class TaskStore {
 				this.syncCacheForSelectedDate();
 			});
 		} catch (e) {
-			console.error(e);
+			console.error("Ошибка при обновлении статуса задачи:", e);
 			toast.error("Не удалось обновить статус задачи");
 
 			// Перезагружаем данные для актуального состояния
@@ -203,20 +221,20 @@ class TaskStore {
 	}
 
 	// идикатор наличия задач
-        hasTasksForDate(date: Date): boolean {
-                const key = this.getDateKey(date);
-                const tasks = this.taskCache.get(key);
-                return !!tasks && tasks.length > 0;
-        }
+	hasTasksForDate(date: Date): boolean {
+		const key = this.getDateKey(date);
+		const tasks = this.taskCache.get(key);
+		return !!tasks && tasks.length > 0;
+	}
 
-       getTasksForDate(date: Date): Task[] {
-               const key = this.getDateKey(date);
-               return this.taskCache.get(key) ?? [];
-       }
+	getTasksForDate(date: Date): Task[] {
+		const key = this.getDateKey(date);
+		return this.taskCache.get(key) ?? [];
+	}
 
-        get mainTasks(): TaskMain[] {
-                return this.tasks.filter(isTaskMain);
-        }
+	get mainTasks(): TaskMain[] {
+		return this.tasks.filter(isTaskMain);
+	}
 
 	get routineTasks(): TaskRoutine[] {
 		return this.tasks.filter(isTaskRoutine);

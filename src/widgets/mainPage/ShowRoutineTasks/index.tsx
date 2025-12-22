@@ -3,7 +3,7 @@ import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from 
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import type { Task } from "@/entities/task/types";
 import { useCallback, useEffect, useState } from "react";
-import { SortableRoutineTaskItem } from "@/components/dashboard/SortableRoutineTaskItem";
+import { SortableRoutineTaskItem } from "@/features/dashboard/ui/SortableRoutineTaskItem";
 import { userStore } from "@/entities/user/store";
 import { taskStore } from "@/entities/task/store";
 import { toast } from "sonner";

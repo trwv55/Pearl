@@ -2,25 +2,32 @@
 import DaysSwitcher from "@/widgets/mainPage/DaySwitcher";
 import { MainPageTopBar } from "@/widgets/mainPage/MainPageTopBar";
 import { CreateTaskBtn } from "@/widgets/mainPage/shared/CreateTaskBtn";
-import { SwitcherModeBtn } from "@/widgets/mainPage/shared/SwitcherModeBtn";
+// import { SwitcherModeBtn } from "@/widgets/mainPage/shared/SwitcherModeBtn";
 import { MainTasks } from "@/features/dashboard/MainTasks";
 import { RoutineTasks } from "@/features/dashboard/RoutineTasks";
-import { MainPageLayout } from "@/layouts/MainPageLayout";
-import { ProtectedRoute } from "@/providers/ProtectedRoute";
+import { MainPageLayout } from "@/app/layouts/MainPageLayout";
+import { ProtectedRoute } from "@/app/providers/ProtectedRoute";
 import { observer } from "mobx-react-lite";
-import { logout } from "@/lib/auth/logout";
+import { logout } from "@/shared/lib/auth/logout";
 import { taskStore } from "@/entities/task/store";
 import { userStore } from "@/entities/user/store";
 import { useEffect } from "react";
 import { addDays, startOfDay } from "date-fns";
 
 const Home = observer(() => {
-	const handleLogout = () => {
-		logout();
+	const handleLogout = async () => {
+		try {
+			await logout();
+		} catch (error) {
+			console.error("Ошибка при выходе:", error);
+		}
 	};
 
 	useEffect(() => {
 		if (userStore.user) {
+			// Очищаем кеш задач при смене пользователя
+			// taskStore.clearCache();
+
 			const today = startOfDay(new Date());
 			const start = addDays(today, -15);
 			const end = addDays(today, 15);
@@ -51,7 +58,7 @@ const Home = observer(() => {
 					</div>
 					<div className="flex flex-col justify-between items-center">
 						<CreateTaskBtn />
-						<SwitcherModeBtn />
+						{/* <SwitcherModeBtn /> */}
 						<button onClick={handleLogout}>Logout</button>
 					</div>
 				</div>

@@ -1,6 +1,23 @@
 .wrap {
+	position: relative;
+	height: 100dvh; 
 	width: 100%;
-	height: 100vh;
 	padding: 40px 20px;
+	box-sizing: border-box;
+	display: flex;
+  	flex-direction: column;           
+  	justify-content: space-between;
+}
+
+.wrap::before {
+	content: "";
+	position: fixed;     
+	inset: 0;
 	background: var(--bg-register);
+	z-index: -1;
+	pointer-events: none;
   }
+
+
+  
+  

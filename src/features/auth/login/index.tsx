@@ -2,14 +2,12 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LoginEmail } from "@/components/auth/login/LoginEmail";
+import { LoginEmail } from "@/features/auth/ui/login/LoginEmail";
 import { AuthLayout } from "../layout/AuthLayout";
-import { LoginPassword } from "@/components/auth/login/LoginPassword";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { getFirebaseAuth } from "@/lib/firebase";
+import { LoginPassword } from "@/features/auth/ui/login/LoginPassword";
 import { userStore } from "@/entities/user/store";
-import { toast } from "sonner";
 import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
+import { loginUser, isLoginSuccess } from "../lib/loginApi";
 
 export const Login = () => {
 	const [step, setStep] = useState(0);
@@ -21,16 +19,17 @@ export const Login = () => {
 	const [showSplash, setShowSplash] = useState(false);
 	const router = useRouter();
 
-	const goNext = useCallback(() => setStep(prev => prev + 1), []);
-	const goBack = useCallback(() => setStep(prev => Math.max(0, prev - 1)), []);
+	const goNext = useCallback(() => setStep((prev) => prev + 1), []);
+	const goBack = useCallback(() => setStep((prev) => Math.max(0, prev - 1)), []);
 
-	const handleEmailChange = useCallback((email: string) => setFormData(prev => ({ ...prev, email })), []);
+	const handleEmailChange = useCallback((email: string) => setFormData((prev) => ({ ...prev, email })), []);
 
-        const handleFinish = useCallback(
-                async (password: string) => {
-                        try {
-                                const cred = await signInWithEmailAndPassword(getFirebaseAuth(), formData.email, password);
-				userStore.setUser(cred.user);
+	const handleFinish = useCallback(
+		async (password: string) => {
+			const result = await loginUser(formData.email, password);
+
+			if (isLoginSuccess(result)) {
+				userStore.setUser(result.user);
 
 				if (typeof window !== "undefined" && !localStorage.getItem("splashShown")) {
 					setShowSplash(true);
@@ -39,23 +38,12 @@ export const Login = () => {
 				} else {
 					router.push("/");
 				}
-			} catch (err: unknown) {
-				console.error("Login error:", err);
-
-				let message = "Ошибка входа. Попробуйте ещё раз.";
-				const error = err as { code?: string };
-
-				if (error.code === "auth/user-not-found") {
-					message = "Пользователь не найден";
-				} else if (error.code === "auth/wrong-password") {
-					message = "Неверный пароль";
-				}
-
-				setError(message);
-				toast.error(message);
+			} else {
+				// Устанавливаем ошибку только если она не null (для других ошибок, не 400)
+				setError(result.error || null);
 			}
 		},
-		[formData.email, formData.password, router],
+		[formData.email, router],
 	);
 
 	return (

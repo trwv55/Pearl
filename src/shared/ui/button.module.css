@@ -1,0 +1,27 @@
+.mainDashboardButton {
+	background: linear-gradient(135deg, #ae96ff 0%, #3d00cb 60%);
+	border-radius: 20px;
+	height: 57px;
+	padding: 0;
+	width: 100%;
+	font-size: 24px;
+	font-weight: 900;
+	letter-spacing: -0.04em;
+	text-align: center;
+	color: var(--flowkit-white);
+	font-family: "Onest", sans-serif;
+	cursor: pointer;
+	border: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: opacity 0.2s ease;
+}
+
+.mainDashboardButton:hover {
+	opacity: 0.9;
+}
+
+.mainDashboardButton:active {
+	opacity: 0.8;
+}
