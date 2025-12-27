@@ -66,23 +66,6 @@
     font-size: 36px;
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
 }
-.handleArea {
-    display: flex;
-    justify-content: center;
-    padding: 16px 0 16px;
-    cursor: pointer;
-	position: relative;
-	z-index: 1;
-	width: 100%;
-}
-.handle {
-    width: 64px;
-    height: 4px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.9);
-    position: relative;
-    display: block;
-}
 .header {
     margin: 0;
     padding: 0 20px;
