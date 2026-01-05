@@ -14,7 +14,7 @@ function StepCalendar({ value, onChange, onTimeChange }: Props) {
 		<div className={styles.wrap}>
 			<div className={styles.labelWrap}>
 				<div className={styles.label}>
-					<span>Шаг 3/6: </span>
+					<span>3/6-6/6 </span>
 					Когда это произойдет?
 				</div>
 			</div>

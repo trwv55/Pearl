@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { isSameDay } from "date-fns";
 import { updateTask } from "@/entities/task/api";
 import type { Task } from "@/entities/task/types";
+import { isTaskMain } from "@/entities/task/types";
 import { userStore } from "@/entities/user/store";
 import { taskStore } from "@/entities/task/store";
 import StepCalendar from "@/features/TaskForm/ui/StepCalendar";
@@ -36,6 +38,41 @@ const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 					.padStart(2, "0")}:${(task.time % 60).toString().padStart(2, "0")}`
 			: "",
 	);
+	const [isLoadingTasks, setIsLoadingTasks] = useState(false);
+
+	// Загружаем задачи для выбранной даты при изменении даты
+	useEffect(() => {
+		if (!userStore.user) return;
+
+		const loadTasksForDate = async () => {
+			setIsLoadingTasks(true);
+			try {
+				await taskStore.fetchTasks(userStore.user!.uid, date);
+
+				// После загрузки задач проверяем, нужно ли автоматически переключить на "НЕ главная"
+				const dateChanged = !isSameDay(date, task.date);
+				if (dateChanged) {
+					const tasksForNewDate = taskStore.getTasksForDate(date);
+					const mainTasksForNewDate = tasksForNewDate.filter(isTaskMain);
+					const MAX_MAIN_TASKS = 3;
+
+					// Если на новой дате уже максимум главных задач - автоматически переключаем на не главную
+					if (mainTasksForNewDate.length >= MAX_MAIN_TASKS) {
+						setIsMain((currentIsMain) => {
+							// Переключаем только если сейчас главная
+							return currentIsMain ? false : currentIsMain;
+						});
+					}
+				}
+			} catch (error) {
+				console.error("Ошибка при загрузке задач для даты:", error);
+			} finally {
+				setIsLoadingTasks(false);
+			}
+		};
+
+		loadTasksForDate();
+	}, [date]);
 
 	const handleSubmit = async () => {
 		if (!title.trim()) {
@@ -67,9 +104,24 @@ const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 				time: timeInMinutes,
 			});
 
-			// Обновляем задачи в сторе
+			// Обновляем задачи в сторе и кеше для всех затронутых дат
 			if (userStore.user) {
-				await taskStore.fetchTasks(userStore.user.uid, taskStore.selectedDate);
+				const dateChanged = !isSameDay(date, task.date);
+				const datesToUpdate = new Set<Date>();
+
+				// Всегда обновляем выбранную дату в сторе
+				datesToUpdate.add(taskStore.selectedDate);
+
+				// Всегда обновляем новую дату задачи
+				datesToUpdate.add(date);
+
+				// Если дата изменилась, обновляем также исходную дату
+				if (dateChanged) {
+					datesToUpdate.add(task.date);
+				}
+
+				// Загружаем задачи для всех затронутых дат параллельно
+				await Promise.all(Array.from(datesToUpdate).map((d) => taskStore.fetchTasks(userStore.user!.uid, d)));
 			}
 
 			toast.success("Задача обновлена");
@@ -86,7 +138,14 @@ const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 				<StepCount stepNumber={1} totalSteps={7} label="Что нужно сделать?" />
 				<StepTitle value={title} onChange={setTitle} error={titleError} onErrorClear={() => setTitleError(false)} />
 			</div>
-			<StepIsMainTask value={isMain} onChange={setIsMain} />
+			<StepIsMainTask
+				value={isMain}
+				onChange={setIsMain}
+				originalIsMain={task.isMain}
+				date={date}
+				originalDate={task.date}
+				isLoading={isLoadingTasks}
+			/>
 			<StepCalendar value={date} onChange={setDate} onTimeChange={setTime} />
 			<div>
 				<StepCount stepNumber={4} totalSteps={7} label="Нужен комментарий?" />

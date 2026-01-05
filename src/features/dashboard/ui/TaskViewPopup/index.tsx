@@ -203,13 +203,15 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 						</div>
 					)}
 				</div>
-				<div className={styles.commentSection}>
-					<div className={styles.commentHeader}>
-						<TaskComment className={styles.commentIcon} />
-						<span className={styles.commentTitle}>Комментарий:</span>
+				{task.comment && task.comment.trim() && (
+					<div className={styles.commentSection}>
+						<div className={styles.commentHeader}>
+							<TaskComment className={styles.commentIcon} />
+							<span className={styles.commentTitle}>Комментарий:</span>
+						</div>
+						<div className={styles.commentText}>{task.comment}</div>
 					</div>
-					<div className={styles.commentText}>{task.comment || "Описание отсутствует"}</div>
-				</div>
+				)}
 				<div className={styles.actionIcons}>
 					{actionIcons.map((action, index) => {
 						const IconComponent = action.icon;

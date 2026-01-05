@@ -11,7 +11,7 @@ export const StepCount = ({ stepNumber, totalSteps = 7, label }: StepCountProps)
 		<div className={styles.labelWrap}>
 			<div className={styles.label}>
 				<span>
-					Шаг {stepNumber}/{totalSteps}:{" "}
+					{stepNumber}/{totalSteps}-{totalSteps}/{totalSteps}{" "}
 				</span>
 				{label}
 			</div>
