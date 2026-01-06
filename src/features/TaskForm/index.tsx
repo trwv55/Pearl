@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { addTask } from "@/entities/task/api";
 import { userStore } from "@/entities/user/store";
 import { taskStore } from "@/entities/task/store";
+import { useTaskDateSync } from "@/features/TaskForm/hooks/useTaskDateSync";
 import StepCalendar from "@/features/TaskForm/ui/StepCalendar";
 import { StepCount } from "@/features/TaskForm/ui/StepCount";
 import StepIsMainTask from "@/features/TaskForm/ui/StepIsMainTask";
 import StepTitle from "@/features/TaskForm/ui/StepTitle";
 import MarkerSelect from "@/features/TaskForm/ui/MarkerSelect";
 import { Button } from "@/shared/ui/button";
-import Icon from "../../../public/arrow.svg";
 import Image from "next/image";
 import { observer } from "mobx-react-lite";
 import { toast } from "sonner";
@@ -30,11 +30,17 @@ const TaskForm = observer(() => {
 	const [emoji, setEmoji] = useState("");
 	const [time, setTime] = useState<string>("");
 
-	useEffect(() => {
-		if (taskStore.mainTasks.length >= 3) {
-			setIsMain(false);
-		}
-	}, [taskStore.mainTasks.length]);
+	// Используем хук для синхронизации задач при изменении даты
+	const { isLoadingTasks } = useTaskDateSync(date, {
+		onAutoSwitch: (shouldSwitch) => {
+			if (shouldSwitch) {
+				setIsMain((currentIsMain) => {
+					// Переключаем только если сейчас главная
+					return currentIsMain ? false : currentIsMain;
+				});
+			}
+		},
+	});
 
 	const handleSubmit = async () => {
 		if (!title.trim()) {
@@ -87,7 +93,7 @@ const TaskForm = observer(() => {
 				<StepCount stepNumber={1} totalSteps={6} label="Что нужно сделать?" />
 				<StepTitle value={title} onChange={setTitle} error={titleError} onErrorClear={() => setTitleError(false)} />
 			</div>
-			<StepIsMainTask value={isMain} onChange={setIsMain} />
+			<StepIsMainTask value={isMain} onChange={setIsMain} date={date} isLoading={isLoadingTasks} />
 			<StepCalendar value={date} onChange={setDate} onTimeChange={setTime} />
 			<div>
 				<StepCount stepNumber={4} totalSteps={6} label="Нужен комментарий?" />

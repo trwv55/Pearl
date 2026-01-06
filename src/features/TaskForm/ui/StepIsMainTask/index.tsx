@@ -5,6 +5,7 @@ import { observer } from "mobx-react-lite";
 import { isSameDay } from "date-fns";
 import { taskStore } from "@/entities/task/store";
 import { isTaskMain, type Task } from "@/entities/task/types";
+import { MAX_MAIN_TASKS } from "@/features/dashboard/constants";
 import styles from "../shared/styles.module.css";
 import { MainTasksCount } from "@/widgets/mainPage/shared/tasksCount/MainTasksCount";
 
@@ -16,8 +17,6 @@ interface Props {
 	originalDate?: Date; // Исходная дата задачи при редактировании
 	isLoading?: boolean; // Состояние загрузки задач
 }
-
-const MAX_MAIN_TASKS = 3;
 
 function StepIsMainTask({ value, onChange, originalIsMain, date, originalDate, isLoading }: Props) {
 	// Если передана дата, используем задачи для этой даты, иначе используем задачи из стора

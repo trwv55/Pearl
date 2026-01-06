@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { isSameDay } from "date-fns";
 import { updateTask } from "@/entities/task/api";
 import type { Task } from "@/entities/task/types";
-import { isTaskMain } from "@/entities/task/types";
 import { userStore } from "@/entities/user/store";
 import { taskStore } from "@/entities/task/store";
+import { useTaskDateSync } from "@/features/TaskForm/hooks/useTaskDateSync";
 import StepCalendar from "@/features/TaskForm/ui/StepCalendar";
 import { StepCount } from "@/features/TaskForm/ui/StepCount";
 import StepIsMainTask from "@/features/TaskForm/ui/StepIsMainTask";
@@ -23,6 +23,16 @@ interface EditTaskFormProps {
 	onClose: () => void;
 }
 
+// Функция для преобразования времени из минут в строку формата "HH:MM"
+const formatTimeFromMinutes = (minutes: number | null): string => {
+	if (minutes === null) return "";
+	const hours = Math.floor(minutes / 60)
+		.toString()
+		.padStart(2, "0");
+	const mins = (minutes % 60).toString().padStart(2, "0");
+	return `${hours}:${mins}`;
+};
+
 const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 	const [title, setTitle] = useState(task.title);
 	const [titleError, setTitleError] = useState(false);
@@ -31,48 +41,25 @@ const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 	const [comment, setComment] = useState(task.comment || "");
 	const [markerColor, setMarkerColor] = useState<string>(task.markerColor || "#3d00cb");
 	const [emoji, setEmoji] = useState(task.emoji || "");
-	const [time, setTime] = useState<string>(
-		task.time !== null
-			? `${Math.floor(task.time / 60)
-					.toString()
-					.padStart(2, "0")}:${(task.time % 60).toString().padStart(2, "0")}`
-			: "",
-	);
-	const [isLoadingTasks, setIsLoadingTasks] = useState(false);
+	const [time, setTime] = useState<string>("");
 
-	// Загружаем задачи для выбранной даты при изменении даты
+	// Инициализируем время из задачи при монтировании компонента
 	useEffect(() => {
-		if (!userStore.user) return;
+		setTime(formatTimeFromMinutes(task.time));
+	}, [task.time]);
 
-		const loadTasksForDate = async () => {
-			setIsLoadingTasks(true);
-			try {
-				await taskStore.fetchTasks(userStore.user!.uid, date);
-
-				// После загрузки задач проверяем, нужно ли автоматически переключить на "НЕ главная"
-				const dateChanged = !isSameDay(date, task.date);
-				if (dateChanged) {
-					const tasksForNewDate = taskStore.getTasksForDate(date);
-					const mainTasksForNewDate = tasksForNewDate.filter(isTaskMain);
-					const MAX_MAIN_TASKS = 3;
-
-					// Если на новой дате уже максимум главных задач - автоматически переключаем на не главную
-					if (mainTasksForNewDate.length >= MAX_MAIN_TASKS) {
-						setIsMain((currentIsMain) => {
-							// Переключаем только если сейчас главная
-							return currentIsMain ? false : currentIsMain;
-						});
-					}
-				}
-			} catch (error) {
-				console.error("Ошибка при загрузке задач для даты:", error);
-			} finally {
-				setIsLoadingTasks(false);
+	// Используем хук для синхронизации задач при изменении даты
+	const { isLoadingTasks } = useTaskDateSync(date, {
+		originalDate: task.date,
+		onAutoSwitch: (shouldSwitch) => {
+			if (shouldSwitch) {
+				setIsMain((currentIsMain) => {
+					// Переключаем только если сейчас главная
+					return currentIsMain ? false : currentIsMain;
+				});
 			}
-		};
-
-		loadTasksForDate();
-	}, [date]);
+		},
+	});
 
 	const handleSubmit = async () => {
 		if (!title.trim()) {
@@ -121,6 +108,7 @@ const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 				}
 
 				// Загружаем задачи для всех затронутых дат параллельно
+				// (даже если они в кеше, нужно обновить после изменения задачи)
 				await Promise.all(Array.from(datesToUpdate).map((d) => taskStore.fetchTasks(userStore.user!.uid, d)));
 			}
 
@@ -135,7 +123,7 @@ const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 	return (
 		<div className="flex flex-col gap-[40px] w-full pt-[110px]">
 			<div className="z-[2]">
-				<StepCount stepNumber={1} totalSteps={7} label="Что нужно сделать?" />
+				<StepCount stepNumber={1} totalSteps={6} label="Что нужно сделать?" />
 				<StepTitle value={title} onChange={setTitle} error={titleError} onErrorClear={() => setTitleError(false)} />
 			</div>
 			<StepIsMainTask
@@ -146,17 +134,17 @@ const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 				originalDate={task.date}
 				isLoading={isLoadingTasks}
 			/>
-			<StepCalendar value={date} onChange={setDate} onTimeChange={setTime} />
+			<StepCalendar value={date} onChange={setDate} onTimeChange={setTime} time={time} />
 			<div>
-				<StepCount stepNumber={4} totalSteps={7} label="Нужен комментарий?" />
+				<StepCount stepNumber={4} totalSteps={6} label="Нужен комментарий?" />
 				<StepTitle note="Если нет, то оставь это поле пустым" value={comment} onChange={setComment} />
 			</div>
 			<div>
-				<StepCount stepNumber={5} totalSteps={7} label="Выбери маркер" />
+				<StepCount stepNumber={5} totalSteps={6} label="Выбери маркер" />
 				<MarkerSelect value={markerColor} onChange={setMarkerColor} />
 			</div>
 			<div>
-				<StepCount stepNumber={6} totalSteps={7} label="Добавь эмодзи" />
+				<StepCount stepNumber={6} totalSteps={6} label="Добавь эмодзи" />
 				<StepEmoji value={emoji} onChange={setEmoji} rows={1} />
 			</div>
 			<Button variant="mainDashboard" size="start" onClick={handleSubmit}>
