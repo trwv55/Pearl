@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { isSameDay } from "date-fns";
-import { updateTask } from "@/entities/task/api";
+import { addTask } from "@/entities/task/api";
 import type { Task } from "@/entities/task/types";
 import { userStore } from "@/entities/user/store";
 import { taskStore } from "@/entities/task/store";
-import { useTaskDateSync } from "@/features/TaskForm/hooks/useTaskDateSync";
+import { statsStore } from "@/entities/stats/store";
+import { useDuplicateTaskDateSync } from "@/features/dashboard/hooks/useDuplicateTaskDateSync";
+import { startOfWeek } from "date-fns";
 import StepCalendar from "@/features/TaskForm/ui/StepCalendar";
 import { StepCount } from "@/features/TaskForm/ui/StepCount";
 import StepIsMainTask from "@/features/TaskForm/ui/StepIsMainTask";
@@ -17,39 +19,45 @@ import Image from "next/image";
 import { observer } from "mobx-react-lite";
 import { toast } from "sonner";
 import StepEmoji from "@/features/TaskForm/ui/StepEmoji";
+import { MAX_MAIN_TASKS } from "@/features/dashboard/constants";
+import { isTaskMain } from "@/entities/task/types";
 import { formatTimeFromMinutes } from "@/shared/lib/utils";
 
-interface EditTaskFormProps {
+interface DuplicateTaskFormProps {
 	task: Task;
 	onClose: () => void;
 }
 
-const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
+const DuplicateTaskForm = observer(({ task, onClose }: DuplicateTaskFormProps) => {
 	const [title, setTitle] = useState(task.title);
 	const [titleError, setTitleError] = useState(false);
-	const [isMain, setIsMain] = useState(task.isMain);
+	const originalDate = task.date;
 	const [date, setDate] = useState(task.date);
 	const [comment, setComment] = useState(task.comment || "");
 	const [markerColor, setMarkerColor] = useState<string>(task.markerColor || "#3d00cb");
 	const [emoji, setEmoji] = useState(task.emoji || "");
 	const [time, setTime] = useState<string>("");
 
+	// Изначально проверяем лимит главных задач на текущем дне (дата из исходной задачи)
+	// Используем функцию для вычисления начального значения, чтобы оно вычислялось при каждом рендере
+	const getInitialIsMain = () => {
+		const tasksForOriginalDate = taskStore.getTasksForDate(originalDate);
+		const mainTasksForOriginalDate = tasksForOriginalDate.filter(isTaskMain);
+		return mainTasksForOriginalDate.length >= MAX_MAIN_TASKS ? false : task.isMain;
+	};
+
+	const [isMain, setIsMain] = useState(getInitialIsMain);
+
 	// Инициализируем время из задачи при монтировании компонента
 	useEffect(() => {
 		setTime(formatTimeFromMinutes(task.time));
 	}, [task.time]);
 
-	// Используем хук для синхронизации задач при изменении даты
-	const { isLoadingTasks } = useTaskDateSync(date, {
+	// Используем специальный хук для синхронизации задач при изменении даты при дублировании
+	const { isLoadingTasks } = useDuplicateTaskDateSync(date, {
 		originalDate: task.date,
-		onAutoSwitch: (shouldSwitch) => {
-			if (shouldSwitch) {
-				setIsMain((currentIsMain) => {
-					// Переключаем только если сейчас главная
-					return currentIsMain ? false : currentIsMain;
-				});
-			}
-		},
+		originalIsMain: task.isMain,
+		onIsMainChange: setIsMain,
 	});
 
 	const handleSubmit = async () => {
@@ -72,7 +80,7 @@ const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 				  })()
 				: null;
 
-			await updateTask(userStore.user.uid, task.id, {
+			await addTask(userStore.user.uid, {
 				title,
 				comment,
 				date,
@@ -82,32 +90,32 @@ const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 				time: timeInMinutes,
 			});
 
-			// Обновляем задачи в сторе и кеше для всех затронутых дат
+			// Обновляем задачи в сторе для выбранной даты и даты новой задачи
 			if (userStore.user) {
-				const dateChanged = !isSameDay(date, task.date);
 				const datesToUpdate = new Set<Date>();
-
-				// Всегда обновляем выбранную дату в сторе
 				datesToUpdate.add(taskStore.selectedDate);
-
-				// Всегда обновляем новую дату задачи
 				datesToUpdate.add(date);
 
 				// Если дата изменилась, обновляем также исходную дату
-				if (dateChanged) {
+				if (!isSameDay(date, task.date)) {
 					datesToUpdate.add(task.date);
 				}
 
 				// Загружаем задачи для всех затронутых дат параллельно
-				// (даже если они в кеше, нужно обновить после изменения задачи)
 				await Promise.all(Array.from(datesToUpdate).map((d) => taskStore.fetchTasks(userStore.user!.uid, d)));
+
+				// Обновляем статистику, если задача главная (без ожидания)
+				if (isMain) {
+					const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+					statsStore.fetchWeekStats(userStore.user.uid, weekStart);
+				}
 			}
 
-			toast.success("Задача обновлена");
+			toast.success("Задача продублирована");
 			onClose();
 		} catch (e) {
 			console.error(e);
-			toast.error("Не удалось обновить задачу");
+			toast.error("Не удалось продублировать задачу");
 		}
 	};
 
@@ -120,7 +128,7 @@ const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 			<StepIsMainTask
 				value={isMain}
 				onChange={setIsMain}
-				originalIsMain={task.isMain}
+				originalIsMain={undefined}
 				date={date}
 				originalDate={task.date}
 				isLoading={isLoadingTasks}
@@ -146,6 +154,6 @@ const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 	);
 });
 
-EditTaskForm.displayName = "EditTaskForm";
+DuplicateTaskForm.displayName = "DuplicateTaskForm";
 
-export default EditTaskForm;
+export default DuplicateTaskForm;

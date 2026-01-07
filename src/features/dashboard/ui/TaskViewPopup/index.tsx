@@ -18,6 +18,7 @@ import { taskStore } from "@/entities/task/store";
 import { statsStore } from "@/entities/stats/store";
 import { startOfWeek } from "date-fns";
 import { toast } from "sonner";
+import { formatTimeFromMinutes } from "@/shared/lib/utils";
 
 interface TaskViewPopupProps {
 	task: Task | null;
@@ -26,7 +27,7 @@ interface TaskViewPopupProps {
 }
 
 export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, onClose }) => {
-	const { openEditTask } = useTaskViewPopup();
+	const { openEditTask, openDuplicateTask } = useTaskViewPopup();
 	const editTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const dateLabel = useMemo(() => {
@@ -40,12 +41,8 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 	}, [task]);
 
 	const timeLabel = useMemo(() => {
-		if (!task || task.time === null) return "";
-		const hours = Math.floor(task.time / 60)
-			.toString()
-			.padStart(2, "0");
-		const minutes = (task.time % 60).toString().padStart(2, "0");
-		return `${hours}:${minutes}`;
+		if (!task) return "";
+		return formatTimeFromMinutes(task.time);
 	}, [task]);
 
 	const timeEndLabel = useMemo(() => {
@@ -124,9 +121,11 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 	}, []);
 
 	const handleDuplicate = useCallback(() => {
+		if (!task) return;
+
 		onClose();
-		// TODO: Добавить функционал дублирования задачи
-	}, [onClose]);
+		openDuplicateTask(task);
+	}, [task, onClose, openDuplicateTask]);
 
 	const actionIcons = useMemo(
 		() => [
