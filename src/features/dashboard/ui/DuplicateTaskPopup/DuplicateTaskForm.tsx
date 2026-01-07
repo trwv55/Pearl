@@ -38,12 +38,13 @@ const DuplicateTaskForm = observer(({ task, onClose }: DuplicateTaskFormProps) =
 	const [emoji, setEmoji] = useState(task.emoji || "");
 	const [time, setTime] = useState<string>("");
 
-	// Изначально проверяем лимит главных задач на текущем дне (дата из исходной задачи)
-	// Используем функцию для вычисления начального значения, чтобы оно вычислялось при каждом рендере
+	// Изначально проверяем лимит главных задач на текущей дате
+	// Если 3/3 - всегда ставим задачу как не главную
 	const getInitialIsMain = () => {
-		const tasksForOriginalDate = taskStore.getTasksForDate(originalDate);
-		const mainTasksForOriginalDate = tasksForOriginalDate.filter(isTaskMain);
-		return mainTasksForOriginalDate.length >= MAX_MAIN_TASKS ? false : task.isMain;
+		const tasksForDate = taskStore.getTasksForDate(date);
+		const mainTasksForDate = tasksForDate.filter(isTaskMain);
+		// Всегда когда 3/3 - ставим задачу как не главную
+		return mainTasksForDate.length >= MAX_MAIN_TASKS ? false : task.isMain;
 	};
 
 	const [isMain, setIsMain] = useState(getInitialIsMain);

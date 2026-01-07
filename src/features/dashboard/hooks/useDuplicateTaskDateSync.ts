@@ -56,20 +56,17 @@ export const useDuplicateTaskDateSync = (
 			}
 
 			// После загрузки (или если данные уже были в кеше) проверяем лимит главных задач
-			const dateChanged = !isSameDay(date, originalDate);
+			// Всегда проверяем текущую дату, не только при изменении
+			const tasksForCurrentDate = taskStore.getTasksForDate(date);
+			const mainTasksForCurrentDate = tasksForCurrentDate.filter(isTaskMain);
+			const mainTasksCount = mainTasksForCurrentDate.length;
 
-			if (dateChanged) {
-				const tasksForNewDate = taskStore.getTasksForDate(date);
-				const mainTasksForNewDate = tasksForNewDate.filter(isTaskMain);
-				const mainTasksCount = mainTasksForNewDate.length;
-
-				// Если на новой дате уже максимум главных задач - переключаем на false
-				if (mainTasksCount >= MAX_MAIN_TASKS) {
-					onIsMainChangeRef.current(false);
-				} else if (originalIsMainRef.current) {
-					// Если на новой дате есть место и задача изначально была главной - восстанавливаем в true
-					onIsMainChangeRef.current(true);
-				}
+			// Всегда когда 3/3 - ставим задачу как не главную
+			if (mainTasksCount >= MAX_MAIN_TASKS) {
+				onIsMainChangeRef.current(false);
+			} else if (originalIsMainRef.current) {
+				// Если на текущей дате есть место и задача изначально была главной - восстанавливаем в true
+				onIsMainChangeRef.current(true);
 			}
 		};
 
