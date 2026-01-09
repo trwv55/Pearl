@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getTaskBackground } from "@/shared/lib/taskBackground";
 import styles from "./MainTaskItem.module.css";
 import { useTaskViewPopup } from "@/features/dashboard/hooks/useTaskViewPopup";
+import { formatTimeFromMinutes } from "@/shared/lib/utils";
 
 interface RoutineTaskItemProps {
 	task: TaskMain;
@@ -14,18 +15,19 @@ interface RoutineTaskItemProps {
 	onComplete?: (task: Task) => void;
 }
 
-const formatTime = (minutes: number) => {
-	const h = Math.floor(minutes / 60)
-		.toString()
-		.padStart(2, "0");
-	const m = (minutes % 60).toString().padStart(2, "0");
-	return `${h}:${m}`;
-};
-
 export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded, onDelete, onComplete }) => {
 	const [isChecked, setIsChecked] = useState(task.isCompleted);
 	const [showDelete, setShowDelete] = useState(false);
 	const { openTask } = useTaskViewPopup();
+
+	console.log("task.markerColor, title", task.markerColor, task.title);
+	//#ff5e00
+	//#ffa931
+	//#96c937
+	//#2688eb
+	//#3d00cb
+	//#9b41e0
+	//#f480ff
 
 	// Синхронизируем чекбокс с бэкендом
 	useEffect(() => {
@@ -79,7 +81,7 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 					[styles.swiped]: showDelete,
 				})}
 				style={{
-					background: getTaskBackground(task.markerColor),
+					background: getTaskBackground(task.markerColor, isChecked),
 				}}
 				onClick={handleOpen}
 			>
@@ -89,7 +91,7 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 					</div>
 					<div className={styles.title}>{task.title}</div>
 					<div className={styles.right}>
-						{task.time !== null && <div className={styles.time}>{formatTime(task.time)}</div>}
+						{task.time !== null && <div className={styles.time}>{formatTimeFromMinutes(task.time)}</div>}
 						<div className={styles.checkboxWrap}>
 							<input
 								type="checkbox"

@@ -4,11 +4,13 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import type { Task } from "@/entities/task/types";
 import { TaskViewPopup } from "@/features/dashboard/ui/TaskViewPopup";
 import { EditTaskPopup } from "@/features/dashboard/ui/EditTaskPopup";
+import { DuplicateTaskPopup } from "@/features/dashboard/ui/DuplicateTaskPopup";
 
 interface TaskViewPopupContextValue {
 	openTask: (task: Task) => void;
 	closeTask: () => void;
 	openEditTask: (task: Task) => void;
+	openDuplicateTask: (task: Task) => void;
 }
 
 const TaskViewPopupContext = createContext<TaskViewPopupContextValue | null>(null);
@@ -20,8 +22,11 @@ export const TaskViewPopupProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [isVisible, setIsVisible] = useState(false);
 	const [editTask, setEditTask] = useState<Task | null>(null);
 	const [isEditVisible, setIsEditVisible] = useState(false);
+	const [duplicateTask, setDuplicateTask] = useState<Task | null>(null);
+	const [isDuplicateVisible, setIsDuplicateVisible] = useState(false);
 	const closingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const editTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const duplicateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	useEffect(() => {
 		return () => {
@@ -30,6 +35,9 @@ export const TaskViewPopupProvider: React.FC<{ children: React.ReactNode }> = ({
 			}
 			if (editTimerRef.current) {
 				clearTimeout(editTimerRef.current);
+			}
+			if (duplicateTimerRef.current) {
+				clearTimeout(duplicateTimerRef.current);
 			}
 		};
 	}, []);
@@ -74,13 +82,34 @@ export const TaskViewPopupProvider: React.FC<{ children: React.ReactNode }> = ({
 		}, ANIMATION_DURATION);
 	}, []);
 
+	const openDuplicateTask = useCallback((task: Task) => {
+		if (duplicateTimerRef.current) {
+			clearTimeout(duplicateTimerRef.current);
+			duplicateTimerRef.current = null;
+		}
+		setDuplicateTask(task);
+		setIsDuplicateVisible(true);
+	}, []);
+
+	const closeDuplicateTask = useCallback(() => {
+		setIsDuplicateVisible(false);
+		if (duplicateTimerRef.current) {
+			clearTimeout(duplicateTimerRef.current);
+		}
+		duplicateTimerRef.current = setTimeout(() => {
+			setDuplicateTask(null);
+			duplicateTimerRef.current = null;
+		}, ANIMATION_DURATION);
+	}, []);
+
 	const contextValue = useMemo(
 		() => ({
 			openTask,
 			closeTask,
 			openEditTask,
+			openDuplicateTask,
 		}),
-		[openTask, closeTask, openEditTask],
+		[openTask, closeTask, openEditTask, openDuplicateTask],
 	);
 
 	return (
@@ -88,6 +117,7 @@ export const TaskViewPopupProvider: React.FC<{ children: React.ReactNode }> = ({
 			{children}
 			<TaskViewPopup task={currentTask} isVisible={isVisible} onClose={closeTask} />
 			<EditTaskPopup task={editTask} isVisible={isEditVisible} onClose={closeEditTask} />
+			<DuplicateTaskPopup task={duplicateTask} isVisible={isDuplicateVisible} onClose={closeDuplicateTask} />
 		</TaskViewPopupContext.Provider>
 	);
 };

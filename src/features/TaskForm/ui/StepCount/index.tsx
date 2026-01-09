@@ -6,12 +6,12 @@ interface StepCountProps {
 	label: string;
 }
 
-export const StepCount = ({ stepNumber, totalSteps = 7, label }: StepCountProps) => {
+export const StepCount = ({ stepNumber, totalSteps = 6, label }: StepCountProps) => {
 	return (
 		<div className={styles.labelWrap}>
 			<div className={styles.label}>
 				<span>
-					Шаг {stepNumber}/{totalSteps}:{" "}
+					Шаг {stepNumber}/{totalSteps}{" "}
 				</span>
 				{label}
 			</div>
