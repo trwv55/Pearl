@@ -101,7 +101,7 @@
 }
 
 .checked { 
-	opacity: 0.25; 
+	/* opacity убран для checked состояния */
 }
 
 .checkboxWrap {

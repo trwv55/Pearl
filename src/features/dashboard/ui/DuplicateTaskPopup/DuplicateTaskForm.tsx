@@ -105,7 +105,7 @@ const DuplicateTaskForm = observer(({ task, onClose }: DuplicateTaskFormProps) =
 				// Загружаем задачи для всех затронутых дат параллельно
 				await Promise.all(Array.from(datesToUpdate).map((d) => taskStore.fetchTasks(userStore.user!.uid, d)));
 
-				// Обновляем статистику, если задача главная (без ожидания)
+				// Обновляем статистику, если задача главная
 				if (isMain) {
 					const weekStart = startOfWeek(date, { weekStartsOn: 1 });
 					statsStore.fetchWeekStats(userStore.user.uid, weekStart);

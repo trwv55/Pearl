@@ -20,6 +20,15 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 	const [showDelete, setShowDelete] = useState(false);
 	const { openTask } = useTaskViewPopup();
 
+	console.log("task.markerColor, title", task.markerColor, task.title);
+	//#ff5e00
+	//#ffa931
+	//#96c937
+	//#2688eb
+	//#3d00cb
+	//#9b41e0
+	//#f480ff
+
 	// Синхронизируем чекбокс с бэкендом
 	useEffect(() => {
 		setIsChecked(task.isCompleted);
@@ -72,7 +81,7 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 					[styles.swiped]: showDelete,
 				})}
 				style={{
-					background: getTaskBackground(task.markerColor),
+					background: getTaskBackground(task.markerColor, isChecked),
 				}}
 				onClick={handleOpen}
 			>
