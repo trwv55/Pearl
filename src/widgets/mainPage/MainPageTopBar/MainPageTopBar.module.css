@@ -25,6 +25,10 @@
 	width: 53px;
 	height: 41px;
 	position: relative;
+	background: none;
+	border: none;
+	padding: 0;
+	cursor: pointer;
 }
 
 .logo {

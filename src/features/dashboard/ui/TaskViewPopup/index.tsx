@@ -29,6 +29,7 @@ interface TaskViewPopupProps {
 export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, onClose }) => {
 	const { openEditTask, openDuplicateTask } = useTaskViewPopup();
 	const editTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const [isAnimated, setIsAnimated] = useState(false);
 
 	const dateLabel = useMemo(() => {
 		if (!task) return "";
@@ -155,6 +156,21 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 	// Блокировка скролла страницы при открытии попапа
 	useLockBodyScroll(isVisible);
 
+	// Задержка для анимации появления
+	useEffect(() => {
+		if (isVisible && task) {
+			setIsAnimated(false);
+			// Даем браузеру время применить начальное состояние перед анимацией
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					setIsAnimated(true);
+				});
+			});
+		} else {
+			setIsAnimated(false);
+		}
+	}, [isVisible, task]);
+
 	if (!task) {
 		return null;
 	}
@@ -168,7 +184,7 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 				}
 			}}
 		>
-			<section className={clsx(styles.sheet, isVisible && styles.sheetVisible)} role="dialog">
+			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog">
 				<div className={styles.gradientTop}>
 					<TaskGradientEllipse
 						className={styles.gradientEllipse}

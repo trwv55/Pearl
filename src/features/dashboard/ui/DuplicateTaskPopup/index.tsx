@@ -18,6 +18,7 @@ interface DuplicateTaskPopupProps {
 
 export const DuplicateTaskPopup: React.FC<DuplicateTaskPopupProps> = ({ task, isVisible, onClose }) => {
 	const gradientColor = useMemo(() => task?.markerColor || "#3d00cb", [task?.markerColor]);
+	const [isAnimated, setIsAnimated] = React.useState(false);
 
 	useEffect(() => {
 		if (!isVisible) return;
@@ -42,6 +43,21 @@ export const DuplicateTaskPopup: React.FC<DuplicateTaskPopupProps> = ({ task, is
 	// Блокировка скролла страницы при открытии попапа
 	useLockBodyScroll(isVisible);
 
+	// Задержка для анимации появления
+	useEffect(() => {
+		if (isVisible && task) {
+			setIsAnimated(false);
+			// Даем браузеру время применить начальное состояние перед анимацией
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					setIsAnimated(true);
+				});
+			});
+		} else {
+			setIsAnimated(false);
+		}
+	}, [isVisible, task]);
+
 	if (!task) {
 		return null;
 	}
@@ -55,7 +71,7 @@ export const DuplicateTaskPopup: React.FC<DuplicateTaskPopupProps> = ({ task, is
 				}
 			}}
 		>
-			<section className={clsx(styles.sheet, isVisible && styles.sheetVisible)} role="dialog">
+			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog">
 				<div className={styles.gradientTop}>
 					<TaskGradientEllipse
 						className={styles.gradientEllipse}

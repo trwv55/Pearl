@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import type { Task } from "@/entities/task/types";
 import { SheetHandle } from "@/shared/ui/SheetHandle";
 import { TaskGradientEllipse } from "@/shared/assets/icons/TaskGradientEllipse";
+import { PopupGradientBackground } from "@/shared/assets/icons/PopupGradientBackground";
 import { useLockBodyScroll } from "@/shared/hooks/useLockBodyScroll";
 import EditTaskForm from "./EditTaskForm";
 import styles from "./EditTaskPopup.module.css";
@@ -18,6 +19,7 @@ interface EditTaskPopupProps {
 
 export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, onClose }) => {
 	const gradientColor = useMemo(() => task?.markerColor || "#3d00cb", [task?.markerColor]);
+	const [isAnimated, setIsAnimated] = React.useState(false);
 
 	useEffect(() => {
 		if (!isVisible) return;
@@ -42,6 +44,21 @@ export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, o
 	// Блокировка скролла страницы при открытии попапа
 	useLockBodyScroll(isVisible);
 
+	// Задержка для анимации появления
+	useEffect(() => {
+		if (isVisible && task) {
+			setIsAnimated(false);
+			// Даем браузеру время применить начальное состояние перед анимацией
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					setIsAnimated(true);
+				});
+			});
+		} else {
+			setIsAnimated(false);
+		}
+	}, [isVisible, task]);
+
 	if (!task) {
 		return null;
 	}
@@ -55,13 +72,16 @@ export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, o
 				}
 			}}
 		>
-			<section className={clsx(styles.sheet, isVisible && styles.sheetVisible)} role="dialog">
+			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog">
 				<div className={styles.gradientTop}>
+					<PopupGradientBackground className={styles.gradientBackground} />
 					<TaskGradientEllipse
-						className={styles.gradientEllipse}
+						className={styles.taskGradientEllipse}
 						color={gradientColor}
 						uniqueId={task.id || "edit-popup"}
 					/>
+				</div>
+				<div className={styles.top}>
 					<SheetHandle onDragEnd={onClose} />
 				</div>
 				<div className={styles.header}>

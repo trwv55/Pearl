@@ -78,6 +78,10 @@
   --main-accent: #3d00cb;
   --app-bg: #f7f1ee;
   --black: #000;
+
+  /* Popup animations */
+  --popup-transition-duration: 0.25s;
+  --popup-transition-timing: ease;
 }
 
 body {

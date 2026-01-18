@@ -18,8 +18,9 @@
 
 .sheet {
 	width: 100%;
-	background: transparent;
-	border-radius: 28px 28px 0 0;
+	max-width: 540px;
+	background: var(--app-bg);
+	border-radius: 40px 40px 0 0;
 	padding-bottom: 32px;
 	transform: translateY(100%);
 	transition: transform var(--popup-transition-duration) var(--popup-transition-timing);
@@ -35,43 +36,12 @@
 	transform: translateY(0);
 }
 
-.gradientTop {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	width: 100%;
-	height: 100%;
-	overflow: hidden;
-	display: flex;
-	flex-direction: column;
-	justify-content: flex-start;
-	align-items: center;
-	z-index: 1;
+.contentWrapper {
+	position: relative;
 }
 
-.gradientBackground {
-	position: absolute;
-	top: 50%;
-	left: 0;
-	right: 0;
-	transform: translateY(-50%);
-	width: 100%;
-	height: 687px;
-	min-width: 375px;
-	pointer-events: none;
-}
-
-.taskGradientEllipse {
-	position: absolute;
-	top: 0;
-	left: 50%;
-	transform: translateX(-50%);
-	width: 100%;
-	min-width: 375px;
-	height: 230px;
-	pointer-events: none;
-	z-index: 1;
+.contentWrapperBlurred {
+	filter: blur(10px);
 }
 
 .top {
@@ -81,17 +51,16 @@
 	align-items: center;
 	justify-content: flex-start;
 	padding-top: 10px;
-	z-index: 2;
+	z-index: 1;
 }
 
 .header {
-	margin: 0;
 	padding: 0 20px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	margin-top: 60px;
+	margin-top: 20px;
 	position: relative;
 	z-index: 2;
 }
@@ -104,14 +73,46 @@
 	line-height: 100%;
 	letter-spacing: -0.01em;
 	text-align: center;
-	color: white;
+	color: #3d00cb;
 }
 
 .content {
 	flex: 1;
-	padding: 80px 20px 0;
-	padding-top: 0;
-	background: var(--app-bg);
+	padding: 40px 20px 0;
 	position: relative;
+	z-index: 2;
 }
+
+.settingsContainer {
+	background: #ebe6e3;
+	border: 0.5px solid rgba(0, 0, 0, 0.1);
+	border-radius: 10px;
+	width: 100%;
+	margin: 0 auto;
+}
+
+.settingsContainerLast {
+	margin-top: 40px;
+}
+
+
+.divider {
+	height: 6px;
+	width: 90%;
+	margin: 0 auto;
+	position: relative;
+	flex-shrink: 0;
+}
+
+.divider::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 0;
+	right: 0;
+	height: 0.5px;
+	background: rgba(0, 0, 0, 0.1);
+	transform: translateY(-50%);
+}
+
 
