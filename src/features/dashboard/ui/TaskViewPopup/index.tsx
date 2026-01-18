@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import type { Task } from "@/entities/task/types";
 import { Edit, Copy, Trash2 } from "lucide-react";
@@ -8,6 +8,9 @@ import { TaskCalendar } from "@/shared/assets/icons/TaskCalendar";
 import { TaskClock } from "@/shared/assets/icons/TaskClock";
 import { TaskComment } from "@/shared/assets/icons/TaskComment";
 import { TaskGradientEllipse } from "@/shared/assets/icons/TaskGradientEllipse";
+import { SheetHandle } from "@/shared/ui/SheetHandle";
+import { useLockBodyScroll } from "@/shared/hooks/useLockBodyScroll";
+import { useTaskViewPopup } from "@/features/dashboard/hooks/useTaskViewPopup";
 import buttonStyles from "@/shared/ui/button.module.css";
 import styles from "./TaskViewPopup.module.css";
 import { userStore } from "@/entities/user/store";
@@ -15,6 +18,7 @@ import { taskStore } from "@/entities/task/store";
 import { statsStore } from "@/entities/stats/store";
 import { startOfWeek } from "date-fns";
 import { toast } from "sonner";
+import { formatTimeFromMinutes } from "@/shared/lib/utils";
 
 interface TaskViewPopupProps {
 	task: Task | null;
@@ -23,6 +27,10 @@ interface TaskViewPopupProps {
 }
 
 export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, onClose }) => {
+	const { openEditTask, openDuplicateTask } = useTaskViewPopup();
+	const editTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const [isAnimated, setIsAnimated] = useState(false);
+
 	const dateLabel = useMemo(() => {
 		if (!task) return "";
 		return task.date.toLocaleDateString("ru-RU", {
@@ -34,12 +42,8 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 	}, [task]);
 
 	const timeLabel = useMemo(() => {
-		if (!task || task.time === null) return "";
-		const hours = Math.floor(task.time / 60)
-			.toString()
-			.padStart(2, "0");
-		const minutes = (task.time % 60).toString().padStart(2, "0");
-		return `${hours}:${minutes}`;
+		if (!task) return "";
+		return formatTimeFromMinutes(task.time);
 	}, [task]);
 
 	const timeEndLabel = useMemo(() => {
@@ -79,13 +83,50 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 			return;
 		}
 
-		const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
-		// Обновляем статистику после фактического удаления из Firebase
-		taskStore.deleteWithUndo(uid, task, 4000, () => {
-			statsStore.fetchWeekStats(uid, weekStart);
-		});
 		onClose();
+
+		// Выполняем удаление после небольшой задержки для завершения анимации закрытия
+		setTimeout(() => {
+			const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
+			// Обновляем статистику после фактического удаления из Firebase
+			taskStore.deleteWithUndo(uid, task, 4000, () => {
+				statsStore.fetchWeekStats(uid, weekStart);
+			});
+		}, 250);
 	}, [task, onClose]);
+
+	const handleEdit = useCallback(() => {
+		if (!task) return;
+
+		// Очищаем предыдущий таймер, если он существует (защита от множественных кликов)
+		if (editTimerRef.current) {
+			clearTimeout(editTimerRef.current);
+		}
+
+		onClose();
+
+		// Открываем попап редактирования после небольшой задержки для завершения анимации закрытия
+		editTimerRef.current = setTimeout(() => {
+			openEditTask(task);
+			editTimerRef.current = null;
+		}, 250);
+	}, [task, onClose, openEditTask]);
+
+	// Очищаем таймер при размонтировании компонента
+	useEffect(() => {
+		return () => {
+			if (editTimerRef.current) {
+				clearTimeout(editTimerRef.current);
+			}
+		};
+	}, []);
+
+	const handleDuplicate = useCallback(() => {
+		if (!task) return;
+
+		onClose();
+		openDuplicateTask(task);
+	}, [task, onClose, openDuplicateTask]);
 
 	const actionIcons = useMemo(
 		() => [
@@ -96,49 +137,39 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 		[],
 	);
 
-	const startYRef = useRef<number | null>(null);
-	const POINTER_THRESHOLD = 60;
-
-	const handlePointerUp = useCallback(
-		(event: PointerEvent) => {
-			if (startYRef.current === null) return;
-			const delta = event.clientY - startYRef.current;
-			startYRef.current = null;
-			window.removeEventListener("pointerup", handlePointerUp);
-			if (delta >= POINTER_THRESHOLD) {
+	const handleKeyDown = useCallback(
+		(event: KeyboardEvent) => {
+			if (event.key === "Escape") {
 				onClose();
 			}
 		},
 		[onClose],
 	);
 
-	const handlePointerDown = useCallback(
-		(event: React.PointerEvent<HTMLDivElement>) => {
-			startYRef.current = event.clientY;
-			event.currentTarget.setPointerCapture?.(event.pointerId);
-			window.addEventListener("pointerup", handlePointerUp);
-		},
-		[handlePointerUp],
-	);
-
 	useEffect(() => {
 		if (!isVisible) return;
 
-		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.key === "Escape") {
-				onClose();
-			}
-		};
-
 		document.addEventListener("keydown", handleKeyDown);
 		return () => document.removeEventListener("keydown", handleKeyDown);
-	}, [isVisible, onClose]);
+	}, [isVisible, handleKeyDown]);
 
+	// Блокировка скролла страницы при открытии попапа
+	useLockBodyScroll(isVisible);
+
+	// Задержка для анимации появления
 	useEffect(() => {
-		return () => {
-			window.removeEventListener("pointerup", handlePointerUp);
-		};
-	}, [handlePointerUp]);
+		if (isVisible && task) {
+			setIsAnimated(false);
+			// Даем браузеру время применить начальное состояние перед анимацией
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					setIsAnimated(true);
+				});
+			});
+		} else {
+			setIsAnimated(false);
+		}
+	}, [isVisible, task]);
 
 	if (!task) {
 		return null;
@@ -153,16 +184,14 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 				}
 			}}
 		>
-			<section className={clsx(styles.sheet, isVisible && styles.sheetVisible)} role="dialog">
+			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog">
 				<div className={styles.gradientTop}>
 					<TaskGradientEllipse
 						className={styles.gradientEllipse}
 						color={gradientColor}
 						uniqueId={task?.id || "default"}
 					/>
-					<div className={styles.handleArea}>
-						<div className={styles.handle} onPointerDown={handlePointerDown} />
-					</div>
+					<SheetHandle onDragEnd={onClose} />
 				</div>
 				<div className={styles.header}>
 					<div className={styles.gradientAvatar}>
@@ -189,24 +218,28 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 						</div>
 					)}
 				</div>
-				<div className={styles.commentSection}>
-					<div className={styles.commentHeader}>
-						<TaskComment className={styles.commentIcon} />
-						<span className={styles.commentTitle}>Комментарий:</span>
+				{task.comment && task.comment.trim() && (
+					<div className={styles.commentSection}>
+						<div className={styles.commentHeader}>
+							<TaskComment className={styles.commentIcon} />
+							<span className={styles.commentTitle}>Комментарий:</span>
+						</div>
+						<div className={styles.commentText}>{task.comment}</div>
 					</div>
-					<div className={styles.commentText}>{task.comment || "Описание отсутствует"}</div>
-				</div>
+				)}
 				<div className={styles.actionIcons}>
 					{actionIcons.map((action, index) => {
 						const IconComponent = action.icon;
 						const isDelete = action.label === "Удалить";
+						const isEdit = action.label === "Редактировать";
+						const isDuplicate = action.label === "Дублировать";
 						return (
 							<button
 								key={index}
 								type="button"
 								className={styles.actionIconButton}
 								aria-label={action.label}
-								onClick={isDelete ? handleDelete : undefined}
+								onClick={isDelete ? handleDelete : isEdit ? handleEdit : isDuplicate ? handleDuplicate : undefined}
 							>
 								<div
 									className={styles.actionIconWrapper}

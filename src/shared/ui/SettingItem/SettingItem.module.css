@@ -1,0 +1,51 @@
+.settingItem {
+	height: 36px;
+	position: relative;
+	display: flex;
+	align-items: center;
+	padding: 0 10px;
+	cursor: pointer;
+}
+
+.icon {
+	position: absolute;
+	left: 10px;
+	width: 16px;
+	height: 16px;
+	color: #000;
+	flex-shrink: 0;
+}
+
+.iconTop {
+	top: 10px;
+}
+
+.settingLabel {
+	position: absolute;
+	left: 36px;
+	font-family: var(--font-family);
+	font-weight: 400;
+	font-size: 16px;
+	line-height: 100%;
+	color: #000;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.settingValue {
+	position: absolute;
+	right: 10px;
+	font-family: var(--font-family);
+	font-weight: 900;
+	font-size: 16px;
+	line-height: 100%;
+	color: #000;
+	opacity: 0.25;
+	text-align: right;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 170px;
+}
+

@@ -19,30 +19,30 @@ const customFormatters = {
 };
 
 interface Props {
-        value: Date;
-        onChange: (date: Date) => void;
-        onTimeChange?: (time: string) => void;
+	value: Date;
+	onChange: (date: Date) => void;
+	onTimeChange?: (time: string) => void;
+	time?: string;
 }
 
-export const DateTimeSelector = ({ value, onChange, onTimeChange }: Props) => {
-        const [selected, setSelected] = useState<Date>(value);
+export const DateTimeSelector = ({ value, onChange, onTimeChange, time }: Props) => {
+	const [selected, setSelected] = useState<Date>(value);
 	// const [selectedTime, setSelectedTime] = useState<string>(() => {
 	// 	return value.toTimeString().slice(0, 5);
 	// });
-        const [selectedTime, setSelectedTime] = useState<string>("");
+	const [selectedTime, setSelectedTime] = useState<string>(time || "");
 
-        const handleTimeChange = (t: string) => {
-                setSelectedTime(t);
-                onTimeChange?.(t);
-        };
+	const handleTimeChange = (t: string) => {
+		setSelectedTime(t);
+		onTimeChange?.(t);
+	};
 
-	// useEffect(() => {
-	// 	const [h, m] = selectedTime.split(":");
-	// 	const newDate = new Date(selected);
-	// 	newDate.setHours(parseInt(h, 10));
-	// 	newDate.setMinutes(parseInt(m, 10));
-	// 	onChange(newDate);
-	// }, [selected, selectedTime, onChange]);
+	// Обновляем selectedTime при изменении пропа time
+	useEffect(() => {
+		if (time !== undefined) {
+			setSelectedTime(time);
+		}
+	}, [time]);
 
 	useEffect(() => {
 		let next = new Date(selected);
@@ -81,8 +81,8 @@ export const DateTimeSelector = ({ value, onChange, onTimeChange }: Props) => {
 						selected: styles.selectedDay,
 					}}
 				/>
-                                <TimeSelect value={selectedTime} onChange={handleTimeChange} interval={5} placeholderLabel="--:--" />
-                        </CardContent>
-                </Card>
-        );
+				<TimeSelect value={selectedTime} onChange={handleTimeChange} interval={5} placeholderLabel="--:--" />
+			</CardContent>
+		</Card>
+	);
 };
