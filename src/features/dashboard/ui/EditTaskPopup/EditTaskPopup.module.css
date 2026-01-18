@@ -18,7 +18,8 @@
 
 .sheet {
 	width: 100%;
-	background: transparent;
+	max-width: 540px;
+	background: var(--app-bg);
 	border-radius: 28px 28px 0 0;
 	padding-bottom: 32px;
 	transform: translateY(100%);
@@ -41,7 +42,7 @@
 	left: 0;
 	right: 0;
 	width: 100%;
-	height: 100%;
+	height: 230px;
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
@@ -50,38 +51,15 @@
 	z-index: 1;
 }
 
-.gradientBackground {
-	position: absolute;
-	top: 50%;
-	left: 0;
-	right: 0;
-	transform: translateY(-50%);
-	width: 100%;
-	height: 687px;
-	min-width: 375px;
-	pointer-events: none;
-}
-
-.taskGradientEllipse {
+.gradientEllipse {
 	position: absolute;
 	top: 0;
 	left: 50%;
 	transform: translateX(-50%);
 	width: 100%;
 	min-width: 375px;
-	height: 230px;
+	height: 100%;
 	pointer-events: none;
-	z-index: 1;
-}
-
-.top {
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: flex-start;
-	padding-top: 10px;
-	z-index: 2;
 }
 
 .header {
