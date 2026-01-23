@@ -13,7 +13,7 @@ import MarkerSelect from "@/features/TaskForm/ui/MarkerSelect";
 import { Button } from "@/shared/ui/button";
 import Image from "next/image";
 import { observer } from "mobx-react-lite";
-import { toast } from "sonner";
+import { showSuccessToast, showErrorToast } from "@/shared/lib/showToast";
 import { useRouter } from "next/navigation";
 import StepEmoji from "@/features/TaskForm/ui/StepEmoji";
 
@@ -48,12 +48,12 @@ const TaskForm = observer(() => {
 		}
 
 		if (!title.trim() || !date || !markerColor) {
-			toast.error("Заполните обязательные поля");
+			showErrorToast("Заполните обязательные поля");
 			return;
 		}
 
 		if (!userStore.user) {
-			toast.error("Нет данных пользователя");
+			showErrorToast("Нет данных пользователя");
 			return;
 		}
 
@@ -80,10 +80,11 @@ const TaskForm = observer(() => {
 				taskStore.setSelectedDate(date); // устанавливаем выбранную дату как активную
 				await taskStore.fetchTasks(userStore.user.uid, taskStore.selectedDate); // подгружаем задачи на выбранную дату
 			}
+			showSuccessToast("Задача создана");
 			router.back();
 		} catch (e) {
 			console.error(e);
-			toast.error("Не удалось создать задачу");
+			showErrorToast("Ошибка. Попробуй еще раз");
 		}
 	};
 

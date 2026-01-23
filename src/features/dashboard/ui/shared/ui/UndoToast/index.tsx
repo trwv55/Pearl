@@ -21,7 +21,7 @@ export const UndoToast = memo(function UndoToast({ title = "Задача уда�
 			<div className={styles.divider} aria-hidden />
 
 			<button className={styles.undoBtn} type="button" onClick={onUndo} aria-label="Отменить">
-				<img src="/svg/undo-reverse.svg" alt="" className={styles.undoIcon} width={18} height={18} />
+				<img src="/svg/undo-reverse.svg" alt="Отменить удаление" className={styles.undoIcon} width={18} height={18} />
 				Отменить
 			</button>
 		</div>

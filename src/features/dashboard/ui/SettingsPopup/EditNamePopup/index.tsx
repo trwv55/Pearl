@@ -8,6 +8,8 @@ import { SheetHandle } from "@/shared/ui/SheetHandle";
 import { PopupGradientBackground } from "@/shared/assets/icons/PopupGradientBackground";
 import { useLockBodyScroll } from "@/shared/hooks/useLockBodyScroll";
 import { userStore } from "@/entities/user/store";
+import { updateUserName } from "@/shared/lib/auth/updateUserName";
+import { getFirebaseAuth } from "@/shared/lib/firebase";
 import styles from "./EditNamePopup.module.css";
 
 interface EditNamePopupProps {
@@ -19,6 +21,8 @@ interface EditNamePopupProps {
 export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible, onClose, onBack }) => {
 	const [name, setName] = useState("");
 	const [popupHeight, setPopupHeight] = useState<number | null>(null);
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 	const sheetRef = useRef<HTMLElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 
@@ -55,6 +59,46 @@ export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible
 
 	// Блокировка скролла страницы при открытии попапа
 	useLockBodyScroll(isVisible);
+
+	const handleSave = async () => {
+		const trimmedName = name.trim();
+
+		if (!trimmedName) {
+			setError("Имя не может быть пустым");
+			return;
+		}
+
+		if (trimmedName === userStore.displayName) {
+			onClose();
+			return;
+		}
+
+		setIsLoading(true);
+		setError(null);
+
+		try {
+			await updateUserName(trimmedName);
+			// Обновляем userStore с обновленным пользователем
+			const auth = getFirebaseAuth();
+			const updatedUser = auth.currentUser;
+			if (updatedUser) {
+				userStore.updateUser(updatedUser);
+				// Принудительно обновляем для немедленного отображения
+				userStore.forceUpdate();
+			}
+			onClose();
+		} catch (err) {
+			setError(err instanceof Error ? err.message : "Не удалось сохранить имя");
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+		if (event.key === "Enter" && !isLoading) {
+			handleSave();
+		}
+	};
 
 	if (!isVisible) {
 		return null;
@@ -93,12 +137,18 @@ export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible
 						type="text"
 						className={styles.nameInput}
 						value={name}
-						onChange={(e) => setName(e.target.value)}
+						onChange={(e) => {
+							setName(e.target.value);
+							setError(null);
+						}}
+						onKeyDown={handleKeyDown}
 						placeholder="Введите имя"
 						maxLength={50}
+						disabled={isLoading}
 					/>
-					<button className={styles.saveButton} type="button">
-						Сохранить
+					{error && <div className={styles.error}>{error}</div>}
+					<button className={styles.saveButton} type="button" onClick={handleSave} disabled={isLoading || !name.trim()}>
+						{isLoading ? "Сохранение..." : "Сохранить"}
 					</button>
 				</div>
 			</section>

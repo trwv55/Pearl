@@ -6,8 +6,8 @@ import { format, addDays, startOfDay } from "date-fns";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { deleteTask as deleteTaskApi, toggleTaskCompletion } from "@/entities/task/api";
 import { isTaskMain, isTaskRoutine, TaskRoutine, type Task, type TaskMain } from "./types";
-import { toast } from "sonner";
 import { showUndoToast } from "@/shared/lib/showUndoToast";
+import { showErrorToast } from "@/shared/lib/showToast";
 
 class TaskStore {
 	tasks: Task[] = [];
@@ -173,7 +173,7 @@ class TaskStore {
 			} catch (e) {
 				runInAction(() => this.addLocal(task));
 				console.error("Ошибка при удалении задачи:", e);
-				toast.error("Не удалось удалить задачу");
+				showErrorToast("Ошибка. Попробуй еще раз");
 			}
 		}, delayMs);
 
@@ -213,7 +213,7 @@ class TaskStore {
 			});
 		} catch (e) {
 			console.error("Ошибка при обновлении статуса задачи:", e);
-			toast.error("Не удалось обновить статус задачи");
+			showErrorToast("Не удалось обновить статус задачи");
 
 			// Перезагружаем данные для актуального состояния
 			await this.reloadCurrentDay(userId);

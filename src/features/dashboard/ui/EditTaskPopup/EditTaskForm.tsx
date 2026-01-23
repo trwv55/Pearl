@@ -15,7 +15,7 @@ import MarkerSelect from "@/features/TaskForm/ui/MarkerSelect";
 import { Button } from "@/shared/ui/button";
 import Image from "next/image";
 import { observer } from "mobx-react-lite";
-import { toast } from "sonner";
+import { showSuccessToast, showErrorToast } from "@/shared/lib/showToast";
 import StepEmoji from "@/features/TaskForm/ui/StepEmoji";
 import { formatTimeFromMinutes } from "@/shared/lib/utils";
 
@@ -55,12 +55,12 @@ const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 	const handleSubmit = async () => {
 		if (!title.trim()) {
 			setTitleError(true);
-			toast.error("Заполните обязательные поля");
+			showErrorToast("Заполните обязательные поля");
 			return;
 		}
 
 		if (!userStore.user) {
-			toast.error("Нет данных пользователя");
+			showErrorToast("Нет данных пользователя");
 			return;
 		}
 
@@ -103,11 +103,11 @@ const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 				await Promise.all(Array.from(datesToUpdate).map((d) => taskStore.fetchTasks(userStore.user!.uid, d)));
 			}
 
-			toast.success("Задача обновлена");
+			showSuccessToast("Задача обновлена");
 			onClose();
 		} catch (e) {
 			console.error(e);
-			toast.error("Не удалось обновить задачу");
+			showErrorToast("Не удалось обновить задачу");
 		}
 	};
 
