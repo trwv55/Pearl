@@ -17,7 +17,7 @@ import MarkerSelect from "@/features/TaskForm/ui/MarkerSelect";
 import { Button } from "@/shared/ui/button";
 import Image from "next/image";
 import { observer } from "mobx-react-lite";
-import { toast } from "sonner";
+import { showSuccessToast, showErrorToast } from "@/shared/lib/showToast";
 import StepEmoji from "@/features/TaskForm/ui/StepEmoji";
 import { MAX_MAIN_TASKS } from "@/features/dashboard/constants";
 import { isTaskMain } from "@/entities/task/types";
@@ -64,12 +64,12 @@ const DuplicateTaskForm = observer(({ task, onClose }: DuplicateTaskFormProps) =
 	const handleSubmit = async () => {
 		if (!title.trim()) {
 			setTitleError(true);
-			toast.error("Заполните обязательные поля");
+			showErrorToast("Заполните обязательные поля");
 			return;
 		}
 
 		if (!userStore.user) {
-			toast.error("Нет данных пользователя");
+			showErrorToast("Нет данных пользователя");
 			return;
 		}
 
@@ -112,11 +112,11 @@ const DuplicateTaskForm = observer(({ task, onClose }: DuplicateTaskFormProps) =
 				}
 			}
 
-			toast.success("Задача продублирована");
+			showSuccessToast("Задача создана");
 			onClose();
 		} catch (e) {
 			console.error(e);
-			toast.error("Не удалось продублировать задачу");
+			showErrorToast("Ошибка. Попробуй еще раз");
 		}
 	};
 

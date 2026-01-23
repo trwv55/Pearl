@@ -1,0 +1,33 @@
+.wrap {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	margin-left: 4px;
+	width: 98%;
+	height: 57px;
+	border-radius: 20px;
+	overflow: hidden;
+	background: linear-gradient(135deg, #434343 0%, #000 60%); 
+	cursor: pointer;
+}
+
+.wrap.error {
+	background: #fb7877;
+}
+
+.title {
+	font-family: 'Onest', sans-serif;
+	font-size: 16px;
+	font-weight: 400;
+	line-height: normal;
+	color: #ffffff;
+	text-align: center;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	margin: 0;
+	padding: 0 20px;
+}
+

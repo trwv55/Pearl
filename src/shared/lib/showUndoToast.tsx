@@ -12,7 +12,7 @@ export function showUndoToast({
 	onUndo?: () => void;
 }) {
 	const id = toast.custom(
-		t => (
+		(t) => (
 			<UndoToast
 				title={title}
 				onUndo={() => {

@@ -5,8 +5,9 @@
 	gap: 14px;
 	padding: 10px 12px 10px 16px;
 	height: 57px;
-	max-width: 335px;
-	border-radius: 999px;                      /* пилюля */
+	width: 98%;
+	margin-left: 4px;
+	border-radius: 999px;           
 	isolation: isolate;
 	background: linear-gradient(135deg, #434343 0%, #000 60%); 
 	font-weight: 400;
