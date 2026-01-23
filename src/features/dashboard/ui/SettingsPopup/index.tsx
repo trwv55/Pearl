@@ -12,6 +12,7 @@ import { userStore } from "@/entities/user/store";
 import { GiftButton } from "./GiftButton";
 import { LogoutButton } from "./LogoutButton";
 import { EditNamePopup } from "./EditNamePopup";
+import { APP_NAME, APP_VERSION } from "@/shared/lib/version";
 import styles from "./SettingsPopup.module.css";
 
 interface SettingsPopupProps {
@@ -91,6 +92,9 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 							<SettingItem icon={FileText} label="Политика конфиденциальности" value="" />
 						</div>
 						<LogoutButton />
+						<div className={styles.version}>
+							{APP_NAME.charAt(0).toUpperCase() + APP_NAME.slice(1)} {APP_VERSION}
+						</div>
 					</div>
 				</div>
 			</section>

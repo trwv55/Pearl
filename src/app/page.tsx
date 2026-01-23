@@ -8,21 +8,12 @@ import { RoutineTasks } from "@/features/dashboard/RoutineTasks";
 import { MainPageLayout } from "@/app/layouts/MainPageLayout";
 import { ProtectedRoute } from "@/app/providers/ProtectedRoute";
 import { observer } from "mobx-react-lite";
-import { logout } from "@/shared/lib/auth/logout";
 import { taskStore } from "@/entities/task/store";
 import { userStore } from "@/entities/user/store";
 import { useEffect } from "react";
 import { addDays, startOfDay } from "date-fns";
 
 const Home = observer(() => {
-	const handleLogout = async () => {
-		try {
-			await logout();
-		} catch (error) {
-			console.error("Ошибка при выходе:", error);
-		}
-	};
-
 	useEffect(() => {
 		if (userStore.user) {
 			// Очищаем кеш задач при смене пользователя
@@ -59,7 +50,6 @@ const Home = observer(() => {
 					<div className="flex flex-col justify-between items-center">
 						<CreateTaskBtn />
 						{/* <SwitcherModeBtn /> */}
-						<button onClick={handleLogout}>Logout</button>
 					</div>
 				</div>
 			</MainPageLayout>
