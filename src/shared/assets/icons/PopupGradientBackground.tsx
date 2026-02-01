@@ -7,7 +7,7 @@ interface PopupGradientBackgroundProps {
 export const PopupGradientBackground: React.FC<PopupGradientBackgroundProps> = ({ className }) => {
 	return (
 		<svg
-			width="100%"
+			width="90%"
 			height="687"
 			viewBox="0 0 375 687"
 			fill="none"
@@ -43,15 +43,15 @@ export const PopupGradientBackground: React.FC<PopupGradientBackgroundProps> = (
 						type="fractalNoise"
 						baseFrequency="1 1"
 						stitchTiles="stitch"
-						numOctaves={3}
+						numOctaves="3"
 						result="noise"
-						seed={271}
+						seed="271"
 					/>
 					<feColorMatrix in="noise" type="luminanceToAlpha" result="alphaNoise" />
 					<feComponentTransfer in="alphaNoise" result="coloredNoise1">
 						<feFuncA
 							type="discrete"
-							tableValues="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+							tableValues="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
 						/>
 					</feComponentTransfer>
 					<feComposite operator="in" in2="effect1_foregroundBlur_638_68439" in="coloredNoise1" result="noise1Clipped" />
