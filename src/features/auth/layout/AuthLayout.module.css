@@ -1,8 +1,8 @@
 .wrap {
 	position: relative;
-	height: 100dvh;
-	height: 100vh; /* Fallback для старых браузеров */
-	height: -webkit-fill-available; /* Для Safari на iOS */
+	min-height: 100vh;
+	min-height: 100dvh;
+	min-height: -webkit-fill-available;
 	width: 100%;
 	padding: 40px 20px;
 	box-sizing: border-box;
@@ -14,18 +14,15 @@
 .wrap::before {
 	content: "";
 	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	width: 100vw;
-	height: 100vh;
+	inset: 0;
+	width: 100%;
+	height: 100%;
 	/* Fallback для старых браузеров */
 	min-height: 100vh;
-	/* Современные единицы viewport для мобильных */
+	/* Современные единицы viewport */
 	height: 100dvh;
 	min-height: 100dvh;
-	/* Для Safari на iOS - должен быть последним */
+	/* Для Safari на iOS */
 	height: -webkit-fill-available;
 	min-height: -webkit-fill-available;
 	background: var(--bg-register);
@@ -33,7 +30,6 @@
 	pointer-events: none;
 	margin: 0;
 	padding: 0;
-	/* Убеждаемся, что фон покрывает весь экран */
 	transform: translateZ(0);
 	-webkit-transform: translateZ(0);
 }

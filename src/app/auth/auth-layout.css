@@ -1,0 +1,22 @@
+/* Глобальные стили для страниц авторизации */
+/* Применяются через data-атрибут на body */
+[data-auth-page] {
+	margin: 0 !important;
+	padding: 0 !important;
+	height: 100% !important;
+}
+
+html[data-auth-page] {
+	height: 100%;
+	height: 100dvh;
+	height: -webkit-fill-available;
+}
+
+body[data-auth-page] {
+	height: 100%;
+	height: 100dvh;
+	height: -webkit-fill-available;
+	position: fixed;
+	width: 100%;
+}
+
