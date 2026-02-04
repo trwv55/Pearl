@@ -1,6 +1,8 @@
 .wrap {
 	position: relative;
-	height: 100dvh; 
+	height: 100dvh;
+	height: 100vh; /* Fallback для старых браузеров */
+	height: -webkit-fill-available; /* Для Safari на iOS */
 	width: 100%;
 	padding: 40px 20px;
 	box-sizing: border-box;
@@ -18,10 +20,22 @@
 	bottom: 0;
 	width: 100vw;
 	height: 100vh;
+	/* Fallback для старых браузеров */
+	min-height: 100vh;
+	/* Современные единицы viewport для мобильных */
 	height: 100dvh;
+	min-height: 100dvh;
+	/* Для Safari на iOS - должен быть последним */
+	height: -webkit-fill-available;
+	min-height: -webkit-fill-available;
 	background: var(--bg-register);
 	z-index: -1;
 	pointer-events: none;
+	margin: 0;
+	padding: 0;
+	/* Убеждаемся, что фон покрывает весь экран */
+	transform: translateZ(0);
+	-webkit-transform: translateZ(0);
 }
 
 
