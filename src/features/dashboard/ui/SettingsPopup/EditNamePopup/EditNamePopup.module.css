@@ -1,7 +1,7 @@
 .overlay {
 	position: fixed;
 	inset: 0;
-	background: rgba(0, 0, 0, 0.4);
+	/* background: rgba(0, 0, 0, 0.4); */
 	display: flex;
 	align-items: flex-end;
 	justify-content: center;
@@ -18,7 +18,7 @@
 
 .sheet {
 	width: 100%;
-	background: transparent;
+	background: rgba(247, 241, 238, 0.4);
 	border-radius: 40px 40px 0 0;
 	padding-bottom: 32px;
 	overflow: hidden;
@@ -26,6 +26,7 @@
 	display: flex;
 	flex-direction: column;
 	max-height: 90vh;
+	backdrop-filter: blur(10px);
 }
 
 .gradientTop {
@@ -37,14 +38,13 @@
 	height: 100%;
 	overflow: hidden;
 	z-index: 1;
+
 }
 
 .gradientBackground {
 	position: absolute;
-	top: 50%;
+	top: 0;
 	left: 0;
-	right: 0;
-	transform: translateY(-50%);
 	width: 100%;
 	height: 687px;
 	min-width: 375px;
@@ -91,9 +91,9 @@
 
 .backText {
 	font-family: var(--font-family);
-	font-weight: 400;
-	font-size: 16px;
-	line-height: 100%;
+	font-weight: 500;
+	font-size: 20px;
+	letter-spacing: -0.05em;
 	color: #3d00cb;
 }
 
@@ -107,6 +107,7 @@
 	align-items: center;
 	justify-content: flex-start;
 	min-height: 0;
+	overflow-y: auto;
 }
 
 .nameInput {
@@ -136,20 +137,22 @@
 
 .saveButton {
 	width: 100%;
-	height: 56px;
+	height: 36px;
 	margin-top: auto;
 	margin-bottom: 40px;
 	border-radius: 10px;
 	background: #ebe6e3;
 	border: none;
 	font-family: var(--font-family);
-	font-weight: 900;
+	font-weight: 400;
 	font-size: 16px;
-	line-height: 100%;
+	text-align: center;
 	color: #000;
 	cursor: pointer;
 	transition: opacity 0.2s ease;
-	position: relative;
+	position: sticky;
+	bottom: 0;
+	padding-bottom: env(safe-area-inset-bottom, 0);
 	z-index: 2;
 }
 

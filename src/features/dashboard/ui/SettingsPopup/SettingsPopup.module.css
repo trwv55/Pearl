@@ -18,7 +18,7 @@
 
 .sheet {
 	width: 100%;
-	max-width: 540px;
+	/* max-width: 540px; */
 	background: var(--app-bg);
 	border-radius: 40px 40px 0 0;
 	padding-bottom: 32px;

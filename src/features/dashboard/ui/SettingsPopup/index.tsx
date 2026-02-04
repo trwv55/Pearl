@@ -63,11 +63,14 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 				}
 			}}
 		>
-			<section className={clsx(styles.sheet, isVisible && styles.sheetVisible)} role="dialog">
+			<section
+				className={clsx(styles.sheet, isVisible && styles.sheetVisible, isEditNameOpen && styles.sheetBlurred)}
+				role="dialog"
+			>
 				<div className={styles.top}>
 					<SheetHandle onDragEnd={onClose} />
 				</div>
-				<div className={clsx(styles.contentWrapper, isEditNameOpen && styles.contentWrapperBlurred)}>
+				<div className={styles.contentWrapper}>
 					<div className={styles.header}>
 						<h2 className={styles.title}>Настройки</h2>
 					</div>
