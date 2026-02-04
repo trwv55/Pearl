@@ -9,7 +9,7 @@ export const Auth = () => {
 	const router = useRouter();
 
 	return (
-		<div className="flex flex-col items-center justify-between h-full">
+		<div className="flex flex-col items-center justify-between flex-1 w-full">
 			<div className={styles.top}>
 				<div className={styles.title}>
 					День начинается
