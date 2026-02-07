@@ -7,6 +7,7 @@ import { startBackText } from "@/features/auth/lib/classNames";
 import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
 import { emailSchema } from "../../../lib/yupShemas";
+import { ROUTES } from "@/shared/lib/routes";
 
 interface StepEmailProps {
 	value: string;
@@ -38,7 +39,11 @@ export const LoginEmail = memo(({ value, onChange, onNext }: StepEmailProps) => 
 	}, [value, onNext]);
 
 	const handleBack = useCallback(() => {
-		router.back();
+		if (typeof window !== "undefined" && window.history.length > 1) {
+			router.back();
+		} else {
+			router.push(ROUTES.HOME);
+		}
 	}, [router]);
 
 	return (
@@ -56,6 +61,7 @@ export const LoginEmail = memo(({ value, onChange, onNext }: StepEmailProps) => 
 				placeholder="Email"
 				value={value}
 				onChange={handleInputChange}
+				onEnterKey={handleNext}
 				errorTitle="Неверный email"
 				error={error}
 			/>

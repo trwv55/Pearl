@@ -35,6 +35,7 @@ export const Register = () => {
 			setStep(2);
 			return;
 		}
+
 		try {
 			const user = await registerUser(formData.email, formData.password, formData.name);
 			userStore.setUser(user);

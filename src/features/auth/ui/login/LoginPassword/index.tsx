@@ -58,6 +58,7 @@ export const LoginPassword = memo(({ value, onChange, onFinish, onPrev }: StepPa
 				placeholder="Пароль"
 				value={value}
 				onChange={handleInputChange}
+				onEnterKey={handleFinish}
 				error={error}
 				errorTitle="Неверный пароль"
 			/>

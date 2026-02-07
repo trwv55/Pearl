@@ -51,6 +51,7 @@ export const RegisterConfirmPassword = memo(({ onChange, onNext, onPrev, passwor
 				placeholder="Пароль"
 				value={localPassword}
 				onChange={handleInputChange}
+				onEnterKey={handleNext}
 				error={error}
 				errorTitle="Пароли не совпадают"
 			/>

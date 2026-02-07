@@ -3,9 +3,10 @@
 import { Button } from "@/shared/ui/button";
 import { AuthBack } from "@/shared/assets/icons/AuthBack";
 import { startBackText } from "@/features/auth/lib/classNames";
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./RegisterNotifications.module.css";
+import { ROUTES } from "@/shared/lib/routes";
 
 interface Props {
 	onFinish: () => void;
@@ -25,10 +26,18 @@ export const RegisterNotifications = memo(({ onFinish, onPrev }: Props) => {
 		onFinish();
 	};
 
+	const handleBack = useCallback(() => {
+		if (typeof window !== "undefined" && window.history.length > 1) {
+			router.back();
+		} else {
+			router.push(ROUTES.HOME);
+		}
+	}, [router]);
+
 	return (
 		<div className="h-full flex flex-col">
 			<div className="flex justify-between">
-				<Button variant="startBack" onClick={() => router.back()}>
+				<Button variant="startBack" onClick={handleBack}>
 					<AuthBack className="w-[6px] h-[10px]" />
 					Назад
 				</Button>

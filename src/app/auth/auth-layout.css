@@ -1,14 +1,15 @@
 /* Глобальные стили для страниц авторизации */
 /* Применяются автоматически ко всем страницам в /auth */
 /* Этот CSS импортируется только в layout.tsx для /auth, поэтому стили применяются только там */
-html {
+html.auth-page {
 	margin: 0;
 	padding: 0;
 	height: 100%;
 	height: 100vh;
+	background-color: #3d00cb;
 }
 
-body {
+body.auth-page {
 	margin: 0;
 	padding: 0;
 	height: 100%;
