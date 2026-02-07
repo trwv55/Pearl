@@ -2,7 +2,6 @@
 	position: relative;
 	min-height: 100vh;
 	min-height: 100dvh;
-	min-height: -webkit-fill-available;
 	width: 100%;
 	padding: 40px 20px;
 	box-sizing: border-box;
@@ -23,8 +22,6 @@
 	height: 100dvh;
 	min-height: 100dvh;
 	/* Для Safari на iOS */
-	height: -webkit-fill-available;
-	min-height: -webkit-fill-available;
 	background: var(--bg-register);
 	z-index: -1;
 	pointer-events: none;
