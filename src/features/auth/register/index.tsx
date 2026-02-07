@@ -13,6 +13,7 @@ import { userStore } from "@/entities/user/store";
 import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
 import { getFirebaseAuth } from "@/shared/lib/firebase";
 import { RegisterNotifications } from "../ui/register/RegisterNotifications";
+import { ROUTES } from "@/shared/lib/routes";
 
 export const Register = () => {
 	const [step, setStep] = useState(0);
@@ -34,6 +35,7 @@ export const Register = () => {
 			setStep(2);
 			return;
 		}
+
 		try {
 			const user = await registerUser(formData.email, formData.password, formData.name);
 			userStore.setUser(user);
@@ -41,9 +43,9 @@ export const Register = () => {
 			if (typeof window !== "undefined" && !localStorage.getItem("splashShown")) {
 				setShowSplash(true);
 				localStorage.setItem("splashShown", "true");
-				setTimeout(() => router.push("/"), 2000);
+				setTimeout(() => router.push(ROUTES.HOME), 2000);
 			} else {
-				router.push("/");
+				router.push(ROUTES.HOME);
 			}
 		} catch (err: unknown) {
 			console.error("Register error:", err);

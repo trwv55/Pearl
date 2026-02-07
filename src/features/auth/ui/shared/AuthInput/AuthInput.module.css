@@ -6,7 +6,7 @@
 }
 
 .title {
-	font-family: var(--second-family);
+	font-family: var(--font-family);
 	font-weight: 900;
 	font-size: 36px;
 	line-height: 100%;
@@ -18,13 +18,17 @@
 	-webkit-text-fill-color: transparent;
 }
 
+.inputWrapper {
+	position: relative;
+}
+
 .input {
 	background-color: transparent;
   	border: none;
   	border-bottom: 2px solid rgba(255, 255, 255, 0.25);
   	border-radius: 0;
   	box-shadow: none;
-  	font-family: var(--second-family);
+  	font-family: var(--font-family);
 	font-weight: 900;
 	font-size: 36px;
 	line-height: 100%;
@@ -35,6 +39,44 @@
   	width: 100%;
 	height: auto;
 	padding: 10px;
+	transition: border-bottom-color 0.2s ease;
+}
+
+.input:focus {
+	border-bottom-color: rgba(255, 255, 255, 0.6);
+	outline: none;
+}
+
+.inputWithIcon {
+	padding-right: 50px;
+}
+
+.eyeButton {
+	position: absolute;
+	right: 10px;
+	top: 50%;
+	transform: translateY(-50%);
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	padding: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: opacity 0.2s;
+}
+
+.eyeButton:hover:not(.eyeButtonDisabled) {
+	opacity: 0.7;
+}
+
+.eyeButton:active:not(.eyeButtonDisabled) {
+	opacity: 0.5;
+}
+
+.eyeButtonDisabled {
+	cursor: not-allowed;
+	opacity: 0.3;
 }
 
 .error {
@@ -43,7 +85,7 @@
 }
 
 .input::placeholder {
-	font-family: var(--second-family);
+	font-family: var(--font-family);
 	font-weight: 900;
 	font-size: 36px;
 	line-height: 100%;

@@ -7,6 +7,7 @@ import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
 import { passwordSchema } from "../../../lib/yupShemas";
 import { useRouter } from "next/navigation";
+import { ROUTES } from "@/shared/lib/routes";
 
 interface Props {
 	onChange: (value: string) => void;
@@ -38,10 +39,18 @@ export const RegisterPassword = memo(({ onChange, onNext, onPrev }: Props) => {
 		}
 	};
 
+	const handleBack = useCallback(() => {
+		if (typeof window !== "undefined" && window.history.length > 1) {
+			router.back();
+		} else {
+			router.push(ROUTES.HOME);
+		}
+	}, [router]);
+
 	return (
 		<div className="h-full flex flex-col">
 			<div className="flex justify-between">
-				<Button variant="startBack" onClick={() => router.back()}>
+				<Button variant="startBack" onClick={handleBack}>
 					<AuthBack className="w-[6px] h-[10px]" />
 					Назад
 				</Button>
@@ -54,6 +63,7 @@ export const RegisterPassword = memo(({ onChange, onNext, onPrev }: Props) => {
 				placeholder="Пароль"
 				value={localPassword}
 				onChange={handleInputChange}
+				onEnterKey={handleNext}
 				error={error}
 				errorTitle="Неверный пароль"
 			/>

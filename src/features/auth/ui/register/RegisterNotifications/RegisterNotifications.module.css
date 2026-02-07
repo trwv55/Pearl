@@ -1,5 +1,5 @@
 .title {
-	font-family: var(--second-family);
+	font-family: var(--font-family);
 	font-weight: 900;
 	font-size: 36px;
 	line-height: 100%;
@@ -12,7 +12,7 @@
 }
 
 .text {
-	font-family: var(--second-family);
+	font-family: var(--font-family);
 	font-weight: 500;
 	font-size: 20px;
 	letter-spacing: -0.05em;

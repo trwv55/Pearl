@@ -7,40 +7,49 @@ import { startBackText } from "@/features/auth/lib/classNames";
 import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
 import { emailSchema } from "../../../lib/yupShemas";
+import { ROUTES } from "@/shared/lib/routes";
 
 interface StepEmailProps {
+	value: string;
 	onChange: (value: string) => void;
 	onNext: () => void;
 }
 
-export const LoginEmail = memo(({ onChange, onNext }: StepEmailProps) => {
+export const LoginEmail = memo(({ value, onChange, onNext }: StepEmailProps) => {
 	const router = useRouter();
-	const [localEmail, setLocalEmail] = useState("");
 	const [error, setError] = useState(false);
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
-			setLocalEmail(e.target.value);
+			const newValue = e.target.value;
+			onChange(newValue);
 			if (error) setError(false);
 		},
-		[error],
+		[error, onChange],
 	);
 
-	const handleNext = async () => {
+	const handleNext = useCallback(async () => {
 		try {
-			await emailSchema.validate({ email: localEmail });
+			await emailSchema.validate({ email: value });
 			setError(false);
-			onChange(localEmail);
 			onNext();
 		} catch {
 			setError(true);
 		}
-	};
+	}, [value, onNext]);
+
+	const handleBack = useCallback(() => {
+		if (typeof window !== "undefined" && window.history.length > 1) {
+			router.back();
+		} else {
+			router.push(ROUTES.HOME);
+		}
+	}, [router]);
 
 	return (
 		<div className="h-full flex flex-col">
 			<div className="flex justify-between">
-				<Button variant="startBack" onClick={() => router.back()}>
+				<Button variant="startBack" onClick={handleBack}>
 					<AuthBack className="w-[6px] h-[10px]" />
 					Назад
 				</Button>
@@ -50,8 +59,9 @@ export const LoginEmail = memo(({ onChange, onNext }: StepEmailProps) => {
 				title="Введи свой email"
 				icon="✉️"
 				placeholder="Email"
-				value={localEmail}
+				value={value}
 				onChange={handleInputChange}
+				onEnterKey={handleNext}
 				errorTitle="Неверный email"
 				error={error}
 			/>

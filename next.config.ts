@@ -20,11 +20,28 @@ const nextConfig: NextConfig = {
 		// Алиас на src, чтобы @/... резолвился в CI
 		config.resolve.alias["@"] = path.resolve(__dirname, "src");
 
-		// SVGR для импорта .svg как React-компонентов
+		// Находим существующее правило для SVG и модифицируем его
+		const fileLoaderRule = config.module.rules.find((rule: { test?: { test?: (str: string) => boolean } }) =>
+			rule.test?.test?.(".svg"),
+		);
+
+		if (fileLoaderRule) {
+			fileLoaderRule.exclude = /\.svg$/i;
+		}
+
+		// SVGR для импорта .svg как React-компонентов (по умолчанию)
 		config.module.rules.push({
 			test: /\.svg$/,
 			issuer: /\.[jt]sx?$/,
+			resourceQuery: { not: [/url/] }, // исключаем импорты с ?url
 			use: ["@svgr/webpack"],
+		});
+
+		// Статический импорт SVG для использования в Image (с ?url)
+		config.module.rules.push({
+			test: /\.svg$/,
+			resourceQuery: /url/, // импорты с ?url
+			type: "asset/resource",
 		});
 
 		return config;

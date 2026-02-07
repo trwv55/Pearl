@@ -8,38 +8,44 @@ import { memo, useCallback, useState } from "react";
 import { passwordSchema } from "../../../lib/yupShemas";
 import { useRouter } from "next/navigation";
 
-interface StepEmailProps {
-	onNext: (value: string) => void;
+interface StepPasswordProps {
+	value: string;
+	onChange: (value: string) => void;
+	onFinish: () => void;
 	onPrev: () => void;
 }
 
-export const LoginPassword = memo(({ onNext, onPrev }: StepEmailProps) => {
+export const LoginPassword = memo(({ value, onChange, onFinish, onPrev }: StepPasswordProps) => {
 	const router = useRouter();
-	const [localPassword, setLocalPassword] = useState("");
 	const [error, setError] = useState(false);
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
-			setLocalPassword(e.target.value);
+			const newValue = e.target.value;
+			onChange(newValue);
 			if (error) setError(false);
 		},
-		[error],
+		[error, onChange],
 	);
 
-	const handleNext = async () => {
+	const handleFinish = useCallback(async () => {
 		try {
-			await passwordSchema.validate({ password: localPassword });
+			await passwordSchema.validate({ password: value });
 			setError(false);
-			onNext(localPassword);
+			onFinish();
 		} catch {
 			setError(true);
 		}
-	};
+	}, [value, onFinish]);
+
+	const handleBack = useCallback(() => {
+		router.back();
+	}, [router]);
 
 	return (
 		<div className="h-full flex flex-col">
 			<div className="flex justify-between">
-				<Button variant="startBack" onClick={() => router.back()}>
+				<Button variant="startBack" onClick={handleBack}>
 					<AuthBack className="w-[6px] h-[10px]" />
 					Назад
 				</Button>
@@ -50,13 +56,14 @@ export const LoginPassword = memo(({ onNext, onPrev }: StepEmailProps) => {
 				title="Теперь вспомни пароль"
 				icon="🔐️"
 				placeholder="Пароль"
-				value={localPassword}
+				value={value}
 				onChange={handleInputChange}
+				onEnterKey={handleFinish}
 				error={error}
 				errorTitle="Неверный пароль"
 			/>
 			<div className="mt-auto">
-				<Button variant="start" size="start" onClick={handleNext}>
+				<Button variant="start" size="start" onClick={handleFinish}>
 					Готово
 				</Button>
 			</div>

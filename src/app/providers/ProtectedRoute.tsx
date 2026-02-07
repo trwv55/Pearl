@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { userStore } from "@/entities/user/store";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/shared/lib/firebase";
+import { ROUTES } from "@/shared/lib/routes";
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         const router = useRouter();
@@ -15,7 +16,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
                 const unsubscribe = onAuthStateChanged(auth, user => {
                         userStore.setUser(user);
                         if (!user) {
-                                router.replace("/auth");
+                                router.replace(ROUTES.AUTH);
                         }
                         setLoading(false);
                 });
