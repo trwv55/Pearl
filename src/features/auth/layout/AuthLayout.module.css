@@ -16,12 +16,9 @@
 	inset: 0;
 	width: 100%;
 	height: 100%;
-	/* Fallback для старых браузеров */
 	min-height: 100vh;
-	/* Современные единицы viewport */
 	height: 100dvh;
 	min-height: 100dvh;
-	/* Для Safari на iOS */
 	background: var(--bg-register);
 	z-index: -1;
 	pointer-events: none;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, memo } from "react";
 import { useRouter } from "next/navigation";
 import { LoginEmail } from "@/features/auth/ui/login/LoginEmail";
 import { AuthLayout } from "../layout/AuthLayout";
@@ -8,8 +8,9 @@ import { LoginPassword } from "@/features/auth/ui/login/LoginPassword";
 import { userStore } from "@/entities/user/store";
 import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
 import { loginUser, isLoginSuccess } from "../lib/loginApi";
+import { ROUTES } from "@/shared/lib/routes";
 
-export const Login = () => {
+export const Login = memo(() => {
 	const [step, setStep] = useState(0);
 	const [formData, setFormData] = useState({
 		email: "",
@@ -22,35 +23,47 @@ export const Login = () => {
 	const goNext = useCallback(() => setStep((prev) => prev + 1), []);
 	const goBack = useCallback(() => setStep((prev) => Math.max(0, prev - 1)), []);
 
-	const handleEmailChange = useCallback((email: string) => setFormData((prev) => ({ ...prev, email })), []);
+	const handleEmailChange = useCallback((email: string) => {
+		setFormData((prev) => ({ ...prev, email }));
+	}, []);
 
-	const handleFinish = useCallback(
-		async (password: string) => {
-			const result = await loginUser(formData.email, password);
+	const handlePasswordChange = useCallback((password: string) => {
+		setFormData((prev) => ({ ...prev, password }));
+	}, []);
 
-			if (isLoginSuccess(result)) {
-				userStore.setUser(result.user);
+	const handleFinish = useCallback(async () => {
+		const result = await loginUser(formData.email, formData.password);
 
-				if (typeof window !== "undefined" && !localStorage.getItem("splashShown")) {
-					setShowSplash(true);
-					localStorage.setItem("splashShown", "true");
-					setTimeout(() => router.push("/"), 2000);
-				} else {
-					router.push("/");
-				}
+		if (isLoginSuccess(result)) {
+			userStore.setUser(result.user);
+
+			if (typeof window !== "undefined" && !localStorage.getItem("splashShown")) {
+				setShowSplash(true);
+				localStorage.setItem("splashShown", "true");
+				setTimeout(() => router.push(ROUTES.HOME), 2000);
 			} else {
-				// Устанавливаем ошибку только если она не null (для других ошибок, не 400)
-				setError(result.error || null);
+				router.push(ROUTES.HOME);
 			}
-		},
-		[formData.email, router],
-	);
+		} else {
+			// Устанавливаем ошибку только если она не null (для других ошибок, не 400)
+			setError(result.error || null);
+		}
+	}, [formData.email, formData.password, router]);
 
 	return (
 		<AuthLayout>
-			{step === 0 && <LoginEmail onChange={handleEmailChange} onNext={goNext} />}
-			{step === 1 && <LoginPassword onNext={handleFinish} onPrev={goBack} />}
+			{step === 0 && <LoginEmail value={formData.email} onChange={handleEmailChange} onNext={goNext} />}
+			{step === 1 && (
+				<LoginPassword
+					value={formData.password}
+					onChange={handlePasswordChange}
+					onFinish={handleFinish}
+					onPrev={goBack}
+				/>
+			)}
 			{showSplash && <SplashScreen />}
 		</AuthLayout>
 	);
-};
+});
+
+Login.displayName = "Login";

@@ -7,58 +7,65 @@ import { startBackText } from "@/features/auth/lib/classNames";
 import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
 import { emailSchema } from "../../../lib/yupShemas";
+import styles from "./LoginEmail.module.css";
 
 interface StepEmailProps {
+	value: string;
 	onChange: (value: string) => void;
 	onNext: () => void;
 }
 
-export const LoginEmail = memo(({ onChange, onNext }: StepEmailProps) => {
+export const LoginEmail = memo(({ value, onChange, onNext }: StepEmailProps) => {
 	const router = useRouter();
-	const [localEmail, setLocalEmail] = useState("");
 	const [error, setError] = useState(false);
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
-			setLocalEmail(e.target.value);
+			const newValue = e.target.value;
+			onChange(newValue);
 			if (error) setError(false);
 		},
-		[error],
+		[error, onChange],
 	);
 
-	const handleNext = async () => {
+	const handleNext = useCallback(async () => {
 		try {
-			await emailSchema.validate({ email: localEmail });
+			await emailSchema.validate({ email: value });
 			setError(false);
-			onChange(localEmail);
 			onNext();
 		} catch {
 			setError(true);
 		}
-	};
+	}, [value, onNext]);
+
+	const handleBack = useCallback(() => {
+		router.back();
+	}, [router]);
 
 	return (
-		<div className="h-full flex flex-col">
-			<div className="flex justify-between">
-				<Button variant="startBack" onClick={() => router.back()}>
-					<AuthBack className="w-[6px] h-[10px]" />
-					Назад
-				</Button>
-			</div>
-			<div className={`${startBackText} mt-[40px]`}>Шаг 1/2</div>
-			<AuthInput
-				title="Введи свой email"
-				icon="✉️"
-				placeholder="Email"
-				value={localEmail}
-				onChange={handleInputChange}
-				errorTitle="Неверный email"
-				error={error}
-			/>
-			<div className="mt-auto">
-				<Button variant="start" size="start" onClick={handleNext}>
-					Далее
-				</Button>
+		<div className={styles.container}>
+			<div className={styles.content}>
+				<div className="flex justify-between">
+					<Button variant="startBack" onClick={handleBack}>
+						<AuthBack className="w-[6px] h-[10px]" />
+						Назад
+					</Button>
+				</div>
+				<div className={`${startBackText} mt-[40px]`}>Шаг 1/2</div>
+				<AuthInput
+					title="Введи свой email"
+					icon="✉️"
+					placeholder="Email"
+					value={value}
+					onChange={handleInputChange}
+					errorTitle="Неверный email"
+					error={error}
+				/>
+				<div className="mt-auto">
+					<Button variant="start" size="start" onClick={handleNext}>
+						Далее
+					</Button>
+				</div>
 			</div>
 		</div>
 	);

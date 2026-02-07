@@ -4,6 +4,8 @@ import { Button } from "@/shared/ui/button";
 import { useRouter } from "next/navigation";
 import styles from "./auth.module.css";
 import Image from "next/image";
+import pearlLogo from "@/shared/assets/svg/pearl_logo.svg";
+import { ROUTES } from "@/shared/lib/routes";
 
 export const Auth = () => {
 	const router = useRouter();
@@ -18,14 +20,14 @@ export const Auth = () => {
 			</div>
 
 			<div className="flex">
-				<Image src="/pearl-logo.svg" alt="Pearl logo" width={54} height={40} /> <h1 className={styles.name}>Pearl</h1>
+				<Image src={pearlLogo} alt="Pearl logo" width={210} height={45} />
 			</div>
 
 			<div className="w-full flex flex-col gap-2">
-				<Button className="w-full" onClick={() => router.push("/auth/register")} variant="start" size="start">
+				<Button className="w-full" onClick={() => router.push(ROUTES.AUTH_REGISTER)} variant="start" size="start">
 					Начать
 				</Button>
-				<button onClick={() => router.push("/auth/login")} className={styles.hasAccount}>
+				<button onClick={() => router.push(ROUTES.AUTH_LOGIN)} className={styles.hasAccount}>
 					Уже есть аккаунт
 				</button>
 			</div>

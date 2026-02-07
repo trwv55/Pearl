@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "./CreateTaskBtn.module.css";
+import { ROUTES } from "@/shared/lib/routes";
 
 interface CreateTaskBtnProps {
 	date?: Date; // дата приходит, но не отправляем
@@ -12,7 +13,7 @@ export const CreateTaskBtn = ({ date }: CreateTaskBtnProps) => {
 	const router = useRouter();
 
 	const handleClick = () => {
-		router.push("/create");
+		router.push(ROUTES.CREATE);
 	};
 
 	return (
