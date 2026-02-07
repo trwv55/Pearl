@@ -7,7 +7,6 @@ import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
 import { passwordSchema } from "../../../lib/yupShemas";
 import { useRouter } from "next/navigation";
-import styles from "./LoginPassword.module.css";
 
 interface StepPasswordProps {
 	value: string;
@@ -44,30 +43,28 @@ export const LoginPassword = memo(({ value, onChange, onFinish, onPrev }: StepPa
 	}, [router]);
 
 	return (
-		<div className={styles.container}>
-			<div className={styles.content}>
-				<div className="flex justify-between">
-					<Button variant="startBack" onClick={handleBack}>
-						<AuthBack className="w-[6px] h-[10px]" />
-						Назад
-					</Button>
-				</div>
-				<div className={`${startBackText} mt-[40px]`}>Шаг 2/2</div>
-				<AuthInput
-					type="password"
-					title="Теперь вспомни пароль"
-					icon="🔐️"
-					placeholder="Пароль"
-					value={value}
-					onChange={handleInputChange}
-					error={error}
-					errorTitle="Неверный пароль"
-				/>
-				<div className="mt-auto">
-					<Button variant="start" size="start" onClick={handleFinish}>
-						Готово
-					</Button>
-				</div>
+		<div className="h-full flex flex-col">
+			<div className="flex justify-between">
+				<Button variant="startBack" onClick={handleBack}>
+					<AuthBack className="w-[6px] h-[10px]" />
+					Назад
+				</Button>
+			</div>
+			<div className={`${startBackText} mt-[40px]`}>Шаг 2/2</div>
+			<AuthInput
+				type="password"
+				title="Теперь вспомни пароль"
+				icon="🔐️"
+				placeholder="Пароль"
+				value={value}
+				onChange={handleInputChange}
+				error={error}
+				errorTitle="Неверный пароль"
+			/>
+			<div className="mt-auto">
+				<Button variant="start" size="start" onClick={handleFinish}>
+					Готово
+				</Button>
 			</div>
 		</div>
 	);

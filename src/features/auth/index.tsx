@@ -4,8 +4,8 @@ import { Button } from "@/shared/ui/button";
 import { useRouter } from "next/navigation";
 import styles from "./auth.module.css";
 import Image from "next/image";
-import pearlLogo from "@/shared/assets/svg/pearl_logo.svg";
 import { ROUTES } from "@/shared/lib/routes";
+import pearlLogo from "@/shared/assets/svg/pearl_logo.svg?url";
 
 export const Auth = () => {
 	const router = useRouter();
