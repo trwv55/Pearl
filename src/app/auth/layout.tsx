@@ -1,7 +1,7 @@
 "use client";
 
-import "./auth-layout.css";
 import { useEffect } from "react";
+import "./auth-layout.css";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
 	useEffect(() => {
