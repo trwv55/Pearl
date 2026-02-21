@@ -8,16 +8,16 @@ import styles from "./DaysSwitcher.module.css";
 interface DayProps {
 	day: Date;
 	isActive: boolean;
-	isNext: boolean;
+	isToday: boolean;
 	onSelect: () => void;
 }
 
-export const Day = observer(({ day, isActive, isNext, onSelect }: DayProps) => {
+export const Day = observer(({ day, isActive, isToday, onSelect }: DayProps) => {
 	const weekday = format(day, "EEEEEE", { locale: ru }).slice(0, 2);
 	const hasTasks = taskStore.hasTasksForDate(day);
 
 	return (
-		<div className={`${styles.dayColumn} ${isNext ? styles.nextDay : ""} ${isActive ? styles.activeColumn : ""}`}>
+		<div className={`${styles.dayColumn} ${isToday && !isActive ? styles.todayDay : ""} ${isActive ? styles.activeColumn : ""}`}>
 			<motion.button
 				onClick={onSelect}
 				className={`${styles.buttonWrapper} ${isActive ? styles.activeDay : ""}`}

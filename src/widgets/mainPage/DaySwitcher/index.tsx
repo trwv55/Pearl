@@ -150,7 +150,7 @@ export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 							key={day.toDateString()}
 							day={day}
 							isActive={i === activeIndex}
-							isNext={i === activeIndex + 1}
+							isToday={isSameDay(day, new Date())}
 							onSelect={() => handleSelect(i)}
 						/>
 					))}

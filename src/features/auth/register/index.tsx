@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AuthLayout } from "../layout/AuthLayout";
+
 import { RegisterEmail } from "@/features/auth/ui/register/RegisterEmail";
 import { RegisterPassword } from "@/features/auth/ui/register/RegisterPassword";
 import { RegisterConfirmPassword } from "@/features/auth/ui/register/RegisterConfirmPassword";
@@ -72,9 +72,9 @@ export const Register = () => {
 	];
 
 	return (
-		<AuthLayout>
+		<>
 			{steps[step]}
 			{showSplash && <SplashScreen />}
-		</AuthLayout>
+		</>
 	);
 };

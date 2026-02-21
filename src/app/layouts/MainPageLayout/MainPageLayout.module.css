@@ -1,26 +1,9 @@
-html:global(.dash-page) {
-	margin: 0;
-	padding: 0;
-	height: 100%;
-	height: 100vh;
-	background-color: var(--app-bg);
-}
-
-body:global(.dash-page) {
-	margin: 0;
-	padding: 0;
-	height: 100%;
-	height: 100vh;
-	width: 100%;
-	position: relative;
-}
-
 .container {
 	position: relative;
 	width: 100%;
 	min-height: 100vh;
 	min-height: 100dvh;
-	padding: 60px 20px 40px 20px;
+	padding: 30px 20px 40px 20px;
 	box-sizing: border-box;
 }
 

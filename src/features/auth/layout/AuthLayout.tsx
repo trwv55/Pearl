@@ -5,5 +5,5 @@ type Props = {
 };
 
 export const AuthLayout = ({ children }: Props) => {
-	return <div className={styles.wrap}>{children}</div>;
+	return <div className={styles.wrap} data-page="auth">{children}</div>;
 };

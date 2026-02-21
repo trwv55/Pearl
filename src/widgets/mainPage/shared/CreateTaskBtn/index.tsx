@@ -6,7 +6,7 @@ import styles from "./CreateTaskBtn.module.css";
 import { ROUTES } from "@/shared/lib/routes";
 
 interface CreateTaskBtnProps {
-	date?: Date; // дата приходит, но не отправляем
+	date?: Date;
 }
 
 export const CreateTaskBtn = ({ date }: CreateTaskBtnProps) => {

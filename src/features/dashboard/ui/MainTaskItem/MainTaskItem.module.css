@@ -31,6 +31,14 @@
 	position: relative;
 }
 
+.checked .emojiWrap {
+	background: rgba(255, 255, 255, 0.35);
+}
+
+.checked .emoji {
+	opacity: 0.35;
+}
+
 .emoji {
 	font-weight: 300;
 	font-size: 40px;
@@ -100,10 +108,6 @@
 	transition: transform 0.2s; 
 }
 
-.checked { 
-	/* opacity убран для checked состояния */
-}
-
 .checkboxWrap {
 	display: flex;
 	align-items: center;
@@ -141,12 +145,9 @@
 .checkbox:checked::after {
 	content: "";
 	position: absolute;
-	/* top: 25%;
-	left: 12%; */
 	inset: 4px;
 	top: 6px;
 	left: 3px;
-	/* background: url("/svg/checked-transparent.svg"); */
 	background-image: url("data:image/svg+xml,%3Csvg width='18' height='13' viewBox='0 0 18 13' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.293 0.293091C16.6835 -0.0974334 17.3165 -0.0974331 17.707 0.293091C18.0974 0.683627 18.0975 1.31668 17.707 1.70715L6.70703 12.7072C6.31656 13.0976 5.6835 13.0975 5.29297 12.7072L0.292969 7.70715C-0.0975555 7.31663 -0.0975555 6.68361 0.292969 6.29309C0.683493 5.90257 1.31651 5.90257 1.70703 6.29309L6 10.5861L16.293 0.293091Z' fill='white' fill-opacity='0.5' /%3E%3C/svg%3E");
 	background-size: contain;
 	background-repeat: no-repeat;

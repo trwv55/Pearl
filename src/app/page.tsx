@@ -32,10 +32,10 @@ const Home = observer(() => {
 		<ProtectedRoute>
 			<MainPageLayout>
 				<div className="relative">
-					<div className="">
+					<div>
 						<MainPageTopBar />
 					</div>
-					<div className="">
+					<div>
 						<DaysSwitcher value={taskStore.selectedDate} onChange={handleDateChange} />
 					</div>
 					<div className="mt-[40px]">
