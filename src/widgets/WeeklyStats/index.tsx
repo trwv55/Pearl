@@ -8,7 +8,7 @@ import styles from "./WeeklyStats.module.css";
 import { ProgressWheel } from "./ProgressWheel";
 
 const emojiByTasks: Record<number, string> = {
-	0: "😞",
+	0: "😴",
 	1: "😐",
 	2: "😊",
 	3: "🥳",

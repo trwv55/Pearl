@@ -3,7 +3,6 @@
 import { useCallback, useState, memo } from "react";
 import { useRouter } from "next/navigation";
 import { LoginEmail } from "@/features/auth/ui/login/LoginEmail";
-import { AuthLayout } from "../layout/AuthLayout";
 import { LoginPassword } from "@/features/auth/ui/login/LoginPassword";
 import { userStore } from "@/entities/user/store";
 import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
@@ -45,13 +44,12 @@ export const Login = memo(() => {
 				router.push(ROUTES.HOME);
 			}
 		} else {
-			// Устанавливаем ошибку только если она не null (для других ошибок, не 400)
 			setError(result.error || null);
 		}
 	}, [formData.email, formData.password, router]);
 
 	return (
-		<AuthLayout>
+		<>
 			{step === 0 && <LoginEmail value={formData.email} onChange={handleEmailChange} onNext={goNext} />}
 			{step === 1 && (
 				<LoginPassword
@@ -62,7 +60,7 @@ export const Login = memo(() => {
 				/>
 			)}
 			{showSplash && <SplashScreen />}
-		</AuthLayout>
+		</>
 	);
 });
 

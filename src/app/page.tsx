@@ -1,8 +1,8 @@
 "use client";
+
 import DaysSwitcher from "@/widgets/mainPage/DaySwitcher";
 import { MainPageTopBar } from "@/widgets/mainPage/MainPageTopBar";
 import { CreateTaskBtn } from "@/widgets/mainPage/shared/CreateTaskBtn";
-// import { SwitcherModeBtn } from "@/widgets/mainPage/shared/SwitcherModeBtn";
 import { MainTasks } from "@/features/dashboard/MainTasks";
 import { RoutineTasks } from "@/features/dashboard/RoutineTasks";
 import { MainPageLayout } from "@/app/layouts/MainPageLayout";
@@ -16,14 +16,11 @@ import { addDays, startOfDay } from "date-fns";
 const Home = observer(() => {
 	useEffect(() => {
 		if (userStore.user) {
-			// Очищаем кеш задач при смене пользователя
-			// taskStore.clearCache();
-
 			const today = startOfDay(new Date());
 			const start = addDays(today, -15);
 			const end = addDays(today, 15);
 
-			taskStore.fetchTasksForRange(userStore.user.uid, start, end); // загрузить диапазон
+			taskStore.fetchTasksForRange(userStore.user.uid, start, end);
 		}
 	}, [userStore.user]);
 
@@ -35,10 +32,10 @@ const Home = observer(() => {
 		<ProtectedRoute>
 			<MainPageLayout>
 				<div className="relative">
-					<div className="">
+					<div>
 						<MainPageTopBar />
 					</div>
-					<div className="">
+					<div>
 						<DaysSwitcher value={taskStore.selectedDate} onChange={handleDateChange} />
 					</div>
 					<div className="mt-[40px]">
@@ -49,7 +46,6 @@ const Home = observer(() => {
 					</div>
 					<div className="flex flex-col justify-between items-center">
 						<CreateTaskBtn />
-						{/* <SwitcherModeBtn /> */}
 					</div>
 				</div>
 			</MainPageLayout>

@@ -6,21 +6,21 @@
 	src: url("/fonts/SF-pro/SFProDisplay-Regular.woff2") format("woff2");
 	font-weight: 400;
 	font-style: normal;
-  }
+}
   
   @font-face {
 	font-family: "SF Pro";
 	src: url("/fonts/SF-pro/SFProDisplay-Semibold.woff2") format("woff2");
 	font-weight: 600;
 	font-style: normal;
-  }
+}
   
   @font-face {
 	font-family: "SF Pro";
 	src: url("/fonts/SF-pro/SFProDisplay-Heavy.woff2") format("woff2");
 	font-weight: 800;
 	font-style: normal;
-  }
+}
   
   
   @font-face {
@@ -28,56 +28,74 @@
 	src: url("/fonts/SF-pro-text/SFProText-Heavy.woff2") format("woff2");
 	font-weight: 800;
 	font-style: normal;
-  }
+}
 
   @font-face {
 	font-family: "SF Pro Text";
 	src: url("/fonts/SF-pro-text/SFProText-Semibold.woff2") format("woff2");
 	font-weight: 600;
 	font-style: normal;
-  }
+}
 
-  @font-face {
+@font-face {
 	font-family: "Onest";
-	src: url("/fonts/Onest/Onest-Black.woff2") format("woff2");
-	font-weight: 900;
-	font-style: normal;
-  }
-
-  @font-face {
-	font-family: "Onest";
-	src: url("/fonts/Onest/Onest-Medium.woff2") format("woff2");
-	font-weight: 500;
-	font-style: normal;
-  }
-
-  @font-face {
-	font-family: "Onest";
-	src: url("/fonts/Onest/Onest-Light.woff2") format("woff2");
+	src:
+		url("/fonts/Onest/Onest-Light.woff2") format("woff2"),
+		url("/fonts/Onest/Onest-Light.woff") format("woff");
 	font-weight: 300;
 	font-style: normal;
-  }
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Onest";
+	src:
+		url("/fonts/Onest/Onest-Regular.woff2") format("woff2"),
+		url("/fonts/Onest/Onest-Regular.woff") format("woff");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Onest";
+	src:
+		url("/fonts/Onest/Onest-SemiBold.woff2") format("woff2"),
+		url("/fonts/Onest/Onest-SemiBold.woff") format("woff");
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Onest";
+	src:
+		url("/fonts/Onest/Onest-Black.woff2") format("woff2"),
+		url("/fonts/Onest/Onest-Black.woff") format("woff");
+	font-weight: 900;
+	font-style: normal;
+	font-display: swap;
+}
 
 :root {
-  --font-family: "Onest", sans-serif;
-  --second-family: "SF Pro Text", sans-serif;
-  --third-family: "SF Compact", sans-serif;
-  --font3: "SF Pro", sans-serif;
-  --font4: "VK Sans Text", sans-serif;
-  --font5: "SF Pro Display", sans-serif;
+	--font-family: "Onest", sans-serif;
+	--second-family: "SF Pro Text", sans-serif;
+	--font3: "SF Pro", sans-serif;
+	--font4: "VK Sans Text", sans-serif;
+	--font5: "SF Pro Display", sans-serif;
 
-  --flowkit-purple: #7b61ff;
+	--flowkit-purple: #7b61ff;
 	--flowkit-charcoal: #222;
 	--flowkit-red: #fc5555;
 	--flowkit-green: #29cc6a;
 	--flowkit-blue: #09f;
 	--flowkit-white: #fff;
 
-  --bg-register: linear-gradient(135deg, #ae96ff 0%, #3d00cb 60%);
-  --btn-text-main: #3d00cb;
-  --main-accent: #3d00cb;
-  --app-bg: #f7f1ee;
-  --black: #000;
+	--bg-register: linear-gradient(135deg, #ae96ff 0%, #3d00cb 60%);
+	--btn-text-main: #3d00cb;
+	--main-accent: #3d00cb;
+	--app-bg: #f7f1ee;
+	--black: #000;
 
   /* Popup animations */
   --popup-transition-duration: 0.25s;
@@ -99,6 +117,40 @@ main {
 body {
   position: relative;
   overflow-x: hidden;
+}
+
+html.dash-page {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  height: 100vh;
+  background-color: var(--app-bg);
+}
+
+body.dash-page {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+html.auth-page {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  height: 100vh;
+  background-color: #3d00cb;
+}
+
+body.auth-page {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  height: 100vh;
+  width: 100%;
+  position: relative;
 }
 
 button {

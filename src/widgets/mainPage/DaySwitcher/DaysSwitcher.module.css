@@ -5,10 +5,10 @@
 
 .header {
 	display: grid;
-	grid-template-columns: auto 1px 1fr; /* месяц | разделитель | карусель */
+	grid-template-columns: auto 1px minmax(0, 1fr); /* месяц | разделитель | карусель */
 	align-items: center;
-	gap: 24px;
-	margin-top: 20px;
+	column-gap: 0;
+	margin-top: 15px;
 }
   
 .monthBox {
@@ -17,6 +17,7 @@
 	justify-content: center;
 	min-width: 35px; 
 	padding-left: 8px;
+	margin-right: 24px;
 }
   
 .monthLine {
@@ -46,6 +47,7 @@
   
 .viewport {
 	display: flex;
+	position: relative;
 	overflow-x: scroll;
 	scrollbar-width: none;
 	-ms-overflow-style: none;
@@ -136,12 +138,12 @@
     background-color: #ae96ff;
 }
 
-.nextDay button {
+.todayDay button {
 	border-radius: 15px;
 	width: 49px;
 	height: 49px;
 	background-color: var(--flowkit-white);
-	opacity: 0.25;
+	opacity: 0.75;
 	color: #000;
 }
   

@@ -10,8 +10,6 @@
 	--rdp-accent-color: var(--btn-text-main);
 	--rdp-background-color: #f0f0f0;
 	--rdp-today-color: var(--btn-text-main);
-	/* --rdp-accent-color
-	--rdp-accent-background-color */
   }
 
 .monthsCustom {
@@ -73,49 +71,3 @@
 	align-items: center;
 	transition: background 0.2s ease; 
 }
-
-
-
-/* :global(.rdp-weekday) {
-	font-family: var(--font-family);
-	font-weight: 300;
-	font-size: 11px;
-	line-height: 138%;
-	letter-spacing: -0.09em;
-	text-align: center;
-	color: rgba(0, 0, 0, 0.25);
-}
-
-:global(.rdp-day button) {
-	font-family: var(--font-family);
-	font-weight: 300;
-	font-size: 17px;
-	line-height: 120%;
-	letter-spacing: -0.06em;
-	text-transform: uppercase;
-	text-align: center;
-	color: #000;
-}
-
-:global(.rdp-today button) {
-	font-family: var(--font-family);
-	font-weight: 900;
-	font-size: 17px;
-	line-height: 120%;
-	letter-spacing: -0.06em;
-	text-transform: uppercase;
-	text-align: center;
-	color: #3d00cb;
-}
-
-:global(.rdp-day--selected) {
-	background: rgba(174, 150, 255, 0.25);
-	font-family: var(--font-family);
-	font-weight: 900;
-	font-size: 21px;
-	line-height: 121%;
-	letter-spacing: -0.05em;
-	text-transform: uppercase;
-	text-align: center;
-	color: #3d00cb;
-} */

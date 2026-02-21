@@ -1,3 +1,6 @@
+ "use client";
+
+import { useEffect } from "react";
 import styles from "./AuthLayout.module.css";
 
 type Props = {
@@ -5,5 +8,15 @@ type Props = {
 };
 
 export const AuthLayout = ({ children }: Props) => {
-	return <div className={styles.wrap}>{children}</div>;
+	useEffect(() => {
+		document.documentElement.classList.add("auth-page");
+		document.body.classList.add("auth-page");
+
+		return () => {
+			document.documentElement.classList.remove("auth-page");
+			document.body.classList.remove("auth-page");
+		};
+	}, []);
+
+	return <div className={styles.wrap} data-page="auth">{children}</div>;
 };
