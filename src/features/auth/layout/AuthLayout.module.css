@@ -53,22 +53,3 @@
 	mix-blend-mode: overlay;
 }
 
-/* Глобальные стили для auth-страниц.
-   background-color — страховочный fallback на случай
-   если bounce превысит 50vh (практически невозможно). */
-:global(html:has([data-page="auth"])) {
-	margin: 0;
-	padding: 0;
-	height: 100%;
-	height: 100vh;
-	background-color: #3d00cb;
-}
-
-:global(body:has([data-page="auth"])) {
-	margin: 0;
-	padding: 0;
-	height: 100%;
-	height: 100vh;
-	width: 100%;
-	position: relative;
-}

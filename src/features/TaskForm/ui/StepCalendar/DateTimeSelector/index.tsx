@@ -27,9 +27,6 @@ interface Props {
 
 export const DateTimeSelector = ({ value, onChange, onTimeChange, time }: Props) => {
 	const [selected, setSelected] = useState<Date>(value);
-	// const [selectedTime, setSelectedTime] = useState<string>(() => {
-	// 	return value.toTimeString().slice(0, 5);
-	// });
 	const [selectedTime, setSelectedTime] = useState<string>(time || "");
 
 	const handleTimeChange = (t: string) => {

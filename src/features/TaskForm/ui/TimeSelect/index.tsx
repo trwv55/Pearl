@@ -25,23 +25,24 @@ const roundToInterval = (date: Date, interval = 30) => {
 };
 
 interface Props {
-        value: string;
-        onChange: (value: string) => void;
-        interval?: number;
-        placeholderLabel?: string;
+	value: string;
+	onChange: (value: string) => void;
+	interval?: number;
+	placeholderLabel?: string;
 }
 
 export const TimeSelect = ({ value, onChange, interval = 5, placeholderLabel = "--:--" }: Props) => {
 	const timeOptions = useMemo(() => generateTimeOptions(interval), [interval]);
+	const selectClassName = value ? styles.select : `${styles.select} ${styles.placeholderCentered}`;
 
 	return (
 		<div className="flex justify-between items-center mt-[15px]">
 			<span className={styles.timeLabel}>Время</span>
-			<select value={value} onChange={e => onChange(e.target.value)} className={styles.select}>
+			<select value={value} onChange={(e) => onChange(e.target.value)} className={selectClassName}>
 				{/* Плейсхолдер: выбран при value="" */}
 				<option value="">{placeholderLabel}</option>
 
-				{timeOptions.map(time => (
+				{timeOptions.map((time) => (
 					<option key={time} value={time}>
 						{time}
 					</option>

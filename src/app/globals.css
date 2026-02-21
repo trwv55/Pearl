@@ -136,6 +136,23 @@ body.dash-page {
   position: relative;
 }
 
+html.auth-page {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  height: 100vh;
+  background-color: #3d00cb;
+}
+
+body.auth-page {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
 button {
   cursor: pointer;
   border: none;

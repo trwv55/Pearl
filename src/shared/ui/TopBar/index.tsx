@@ -25,13 +25,13 @@ export const TopBar = ({ title, logoHref = "/", onBack }: TopBarProps) => {
 
 	return (
 		<div className="w-full flex items-center justify-between">
-			<button onClick={handleBack} aria-label="Назад">
+			<button className="w-[52]" onClick={handleBack} aria-label="Назад">
 				<AppBack />
 			</button>
 
 			<h2 className={styles.title}>{title}</h2>
 
-			<Link href={logoHref} className="p-2" aria-label="На главную">
+			<Link href={logoHref} aria-label="На главную">
 				<LogoIcon />
 			</Link>
 		</div>
