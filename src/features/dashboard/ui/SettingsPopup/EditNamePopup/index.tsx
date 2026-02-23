@@ -123,7 +123,7 @@ export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible
 					<PopupGradientBackground className={styles.gradientBackground} />
 				</div>
 				<div className={styles.top}>
-					<SheetHandle onDragEnd={onClose} />
+					<SheetHandle onDragEnd={onClose} color="rgba(0, 0, 0, 0.25)" />
 				</div>
 				<div className={styles.header}>
 					<button className={styles.backButton} onClick={onBack || onClose} type="button">

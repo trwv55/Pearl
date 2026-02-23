@@ -68,7 +68,7 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 				role="dialog"
 			>
 				<div className={styles.top}>
-					<SheetHandle onDragEnd={onClose} />
+					<SheetHandle onDragEnd={onClose} color="rgba(0, 0, 0, 0.25)" />
 				</div>
 				<div className={styles.contentWrapper}>
 					<div className={styles.header}>
