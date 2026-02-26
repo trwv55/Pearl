@@ -29,6 +29,7 @@ interface TaskViewPopupProps {
 export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, onClose }) => {
 	const { openEditTask, openDuplicateTask } = useTaskViewPopup();
 	const editTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const dragStartYRef = useRef<number | null>(null);
 	const [isAnimated, setIsAnimated] = useState(false);
 
 	const dateLabel = useMemo(() => {
@@ -112,14 +113,35 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 		}, 250);
 	}, [task, onClose, openEditTask]);
 
-	// Очищаем таймер при размонтировании компонента
+	const handleSwipeEnd = useCallback(
+		(event: PointerEvent) => {
+			if (dragStartYRef.current === null) return;
+			const delta = event.clientY - dragStartYRef.current;
+			dragStartYRef.current = null;
+			window.removeEventListener("pointerup", handleSwipeEnd);
+			if (delta >= 60) {
+				onClose();
+			}
+		},
+		[onClose],
+	);
+
+	const handleSheetPointerDown = useCallback(
+		(event: React.PointerEvent<HTMLElement>) => {
+			dragStartYRef.current = event.clientY;
+			window.addEventListener("pointerup", handleSwipeEnd);
+		},
+		[handleSwipeEnd],
+	);
+
 	useEffect(() => {
 		return () => {
 			if (editTimerRef.current) {
 				clearTimeout(editTimerRef.current);
 			}
+			window.removeEventListener("pointerup", handleSwipeEnd);
 		};
-	}, []);
+	}, [handleSwipeEnd]);
 
 	const handleDuplicate = useCallback(() => {
 		if (!task) return;
@@ -184,14 +206,14 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 				}
 			}}
 		>
-			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog">
+			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog" onPointerDown={handleSheetPointerDown}>
 				<div className={styles.gradientTop}>
 					<TaskGradientEllipse
 						className={styles.gradientEllipse}
 						color={gradientColor}
 						uniqueId={task?.id || "default"}
 					/>
-					<SheetHandle onDragEnd={onClose} />
+					<SheetHandle />
 				</div>
 				<div className={styles.header}>
 					<div className={styles.gradientAvatar}>
