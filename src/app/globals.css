@@ -83,6 +83,7 @@
 	--font3: "SF Pro", sans-serif;
 	--font4: "VK Sans Text", sans-serif;
 	--font5: "SF Pro Display", sans-serif;
+	--popup-overlay-bg: rgba(0, 0, 0, 0.65);
 
 	--flowkit-purple: #7b61ff;
 	--flowkit-charcoal: #222;
@@ -111,7 +112,7 @@ main {
   flex-direction: column;
   justify-content: flex-start;
   align-items: start;
-  height: 100vh;
+  min-height: 0;
 }
 
 body {
@@ -140,7 +141,9 @@ html.auth-page {
   margin: 0;
   padding: 0;
   height: 100%;
-  height: 100vh;
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
   background-color: #3d00cb;
 }
 
@@ -148,7 +151,9 @@ body.auth-page {
   margin: 0;
   padding: 0;
   height: 100%;
-  height: 100vh;
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
   width: 100%;
   position: relative;
 }

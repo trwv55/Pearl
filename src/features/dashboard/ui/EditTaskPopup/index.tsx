@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
+import { useDragToClose } from "@/shared/hooks/useDragToClose";
 import clsx from "clsx";
 import { toast } from "sonner";
 import type { Task } from "@/entities/task/types";
@@ -19,6 +21,7 @@ interface EditTaskPopupProps {
 export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, onClose }) => {
 	const gradientColor = useMemo(() => task?.markerColor || "#3d00cb", [task?.markerColor]);
 	const [isAnimated, setIsAnimated] = React.useState(false);
+	const handleSheetPointerDown = useDragToClose(onClose);
 
 	useEffect(() => {
 		if (!isVisible) return;
@@ -62,7 +65,7 @@ export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, o
 		return null;
 	}
 
-	return (
+	return createPortal(
 		<div
 			className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
 			onClick={(event) => {
@@ -71,14 +74,14 @@ export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, o
 				}
 			}}
 		>
-			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog">
+			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog" onPointerDown={handleSheetPointerDown}>
 				<div className={styles.gradientTop}>
 					<TaskGradientEllipse
 						className={styles.gradientEllipse}
 						color={gradientColor}
 						uniqueId={task.id || "edit-popup"}
 					/>
-					<SheetHandle onDragEnd={onClose} />
+					<SheetHandle />
 				</div>
 				<div className={styles.header}>
 					<h2 className={styles.title}>Редактируем задачу</h2>
@@ -87,6 +90,7 @@ export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, o
 					<EditTaskForm task={task} onClose={onClose} />
 				</div>
 			</section>
-		</div>
+		</div>,
+		document.body,
 	);
 };

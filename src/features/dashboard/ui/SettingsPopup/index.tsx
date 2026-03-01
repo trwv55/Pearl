@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { useDragToClose } from "@/shared/hooks/useDragToClose";
 import clsx from "clsx";
 import { UserRoundPen, Bell, RotateCcw, MessageCircleMore, FileText } from "lucide-react";
 import { observer } from "mobx-react-lite";
@@ -22,6 +24,10 @@ interface SettingsPopupProps {
 
 export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible, onClose }) => {
 	const [isEditNameOpen, setIsEditNameOpen] = useState(false);
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => setMounted(true), []);
+	const handleSheetPointerDown = useDragToClose(onClose);
 
 	const handleOpenEditName = () => {
 		setIsEditNameOpen(true);
@@ -54,7 +60,9 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 
 	const displayName = userStore.displayName;
 
-	return (
+	if (!mounted) return null;
+
+	return createPortal(
 		<div
 			className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
 			onClick={(event) => {
@@ -66,9 +74,10 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 			<section
 				className={clsx(styles.sheet, isVisible && styles.sheetVisible, isEditNameOpen && styles.sheetBlurred)}
 				role="dialog"
+				onPointerDown={handleSheetPointerDown}
 			>
 				<div className={styles.top}>
-					<SheetHandle onDragEnd={onClose} />
+					<SheetHandle color="rgba(0, 0, 0, 0.25)" />
 				</div>
 				<div className={styles.contentWrapper}>
 					<div className={styles.header}>
@@ -102,6 +111,7 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 				</div>
 			</section>
 			<EditNamePopup isVisible={isEditNameOpen} onClose={handleCloseBoth} onBack={handleCloseEditName} />
-		</div>
+		</div>,
+		document.body,
 	);
 });

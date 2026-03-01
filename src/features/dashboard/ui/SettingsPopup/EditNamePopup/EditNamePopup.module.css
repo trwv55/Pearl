@@ -1,7 +1,7 @@
 .overlay {
 	position: fixed;
 	inset: 0;
-	/* background: rgba(0, 0, 0, 0.4); */
+	/* background: var(--popup-overlay-bg); */
 	display: flex;
 	align-items: flex-end;
 	justify-content: center;
@@ -114,8 +114,8 @@
 	width: 100%;
 	background: transparent;
 	border: none;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-	padding: 20px 0;
+	border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+	padding: 10px 0;
 	font-family: var(--font-family);
 	font-weight: 900;
 	font-size: 40px;

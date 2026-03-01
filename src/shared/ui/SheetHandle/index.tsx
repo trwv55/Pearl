@@ -8,12 +8,14 @@ interface SheetHandleProps {
 	onDragEnd?: () => void;
 	threshold?: number;
 	className?: string;
+	color?: string;
 }
 
 export const SheetHandle: React.FC<SheetHandleProps> = ({
 	onDragEnd,
 	threshold = 60,
 	className,
+	color,
 }) => {
 	const startYRef = useRef<number | null>(null);
 
@@ -32,6 +34,7 @@ export const SheetHandle: React.FC<SheetHandleProps> = ({
 
 	const handlePointerDown = useCallback(
 		(event: React.PointerEvent<HTMLDivElement>) => {
+			event.preventDefault();
 			startYRef.current = event.clientY;
 			event.currentTarget.setPointerCapture?.(event.pointerId);
 			window.addEventListener("pointerup", handlePointerUp);
@@ -50,7 +53,11 @@ export const SheetHandle: React.FC<SheetHandleProps> = ({
 			className={clsx(styles.handleArea, className)}
 			onPointerDown={handlePointerDown}
 		>
-			<button className={styles.handle} aria-label="Перетащить для закрытия" />
+			<button
+				className={styles.handle}
+				style={color ? { background: color } : undefined}
+				aria-label="Перетащить для закрытия"
+			/>
 		</div>
 	);
 };

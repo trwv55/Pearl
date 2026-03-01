@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useDragToClose } from "@/shared/hooks/useDragToClose";
 import clsx from "clsx";
 import type { Task } from "@/entities/task/types";
 import { Edit, Copy, Trash2 } from "lucide-react";
@@ -30,6 +32,7 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 	const { openEditTask, openDuplicateTask } = useTaskViewPopup();
 	const editTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const [isAnimated, setIsAnimated] = useState(false);
+	const handleSheetPointerDown = useDragToClose(onClose);
 
 	const dateLabel = useMemo(() => {
 		if (!task) return "";
@@ -112,7 +115,6 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 		}, 250);
 	}, [task, onClose, openEditTask]);
 
-	// Очищаем таймер при размонтировании компонента
 	useEffect(() => {
 		return () => {
 			if (editTimerRef.current) {
@@ -175,7 +177,7 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 		return null;
 	}
 
-	return (
+	return createPortal(
 		<div
 			className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
 			onClick={(event) => {
@@ -184,14 +186,14 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 				}
 			}}
 		>
-			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog">
+			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog" onPointerDown={handleSheetPointerDown}>
 				<div className={styles.gradientTop}>
 					<TaskGradientEllipse
 						className={styles.gradientEllipse}
 						color={gradientColor}
 						uniqueId={task?.id || "default"}
 					/>
-					<SheetHandle onDragEnd={onClose} />
+					<SheetHandle />
 				</div>
 				<div className={styles.header}>
 					<div className={styles.gradientAvatar}>
@@ -264,6 +266,7 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 					</footer>
 				)}
 			</section>
-		</div>
+		</div>,
+		document.body,
 	);
 };

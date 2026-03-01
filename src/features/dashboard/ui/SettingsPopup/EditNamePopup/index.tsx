@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
+import { useDragToClose } from "@/shared/hooks/useDragToClose";
 import clsx from "clsx";
 import { ChevronLeft } from "lucide-react";
 import { observer } from "mobx-react-lite";
@@ -25,6 +27,7 @@ export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible
 	const [error, setError] = useState<string | null>(null);
 	const sheetRef = useRef<HTMLElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
+	const handleSheetPointerDown = useDragToClose(onClose);
 
 	// Получаем высоту попапа настроек и применяем к попапу изменения имени
 	useEffect(() => {
@@ -104,7 +107,7 @@ export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible
 		return null;
 	}
 
-	return (
+	return createPortal(
 		<div
 			className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
 			onClick={(event) => {
@@ -118,12 +121,13 @@ export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible
 				className={clsx(styles.sheet, isVisible && styles.sheetVisible)}
 				role="dialog"
 				style={popupHeight ? { height: `${popupHeight}px` } : undefined}
+				onPointerDown={handleSheetPointerDown}
 			>
 				<div className={styles.gradientTop}>
 					<PopupGradientBackground className={styles.gradientBackground} />
 				</div>
 				<div className={styles.top}>
-					<SheetHandle onDragEnd={onClose} />
+					<SheetHandle color="rgba(0, 0, 0, 0.25)" />
 				</div>
 				<div className={styles.header}>
 					<button className={styles.backButton} onClick={onBack || onClose} type="button">
@@ -152,6 +156,7 @@ export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible
 					</button>
 				</div>
 			</section>
-		</div>
+		</div>,
+		document.body,
 	);
 });
