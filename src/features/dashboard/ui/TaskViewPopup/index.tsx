@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useDragToClose } from "@/shared/hooks/useDragToClose";
 import clsx from "clsx";
 import type { Task } from "@/entities/task/types";
 import { Edit, Copy, Trash2 } from "lucide-react";
@@ -30,8 +31,8 @@ interface TaskViewPopupProps {
 export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, onClose }) => {
 	const { openEditTask, openDuplicateTask } = useTaskViewPopup();
 	const editTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const dragStartYRef = useRef<number | null>(null);
 	const [isAnimated, setIsAnimated] = useState(false);
+	const handleSheetPointerDown = useDragToClose(onClose);
 
 	const dateLabel = useMemo(() => {
 		if (!task) return "";
@@ -114,35 +115,13 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 		}, 250);
 	}, [task, onClose, openEditTask]);
 
-	const handleSwipeEnd = useCallback(
-		(event: PointerEvent) => {
-			if (dragStartYRef.current === null) return;
-			const delta = event.clientY - dragStartYRef.current;
-			dragStartYRef.current = null;
-			window.removeEventListener("pointerup", handleSwipeEnd);
-			if (delta >= 60) {
-				onClose();
-			}
-		},
-		[onClose],
-	);
-
-	const handleSheetPointerDown = useCallback(
-		(event: React.PointerEvent<HTMLElement>) => {
-			dragStartYRef.current = event.clientY;
-			window.addEventListener("pointerup", handleSwipeEnd);
-		},
-		[handleSwipeEnd],
-	);
-
 	useEffect(() => {
 		return () => {
 			if (editTimerRef.current) {
 				clearTimeout(editTimerRef.current);
 			}
-			window.removeEventListener("pointerup", handleSwipeEnd);
 		};
-	}, [handleSwipeEnd]);
+	}, []);
 
 	const handleDuplicate = useCallback(() => {
 		if (!task) return;

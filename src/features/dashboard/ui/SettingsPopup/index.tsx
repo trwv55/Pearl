@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useDragToClose } from "@/shared/hooks/useDragToClose";
 import clsx from "clsx";
 import { UserRoundPen, Bell, RotateCcw, MessageCircleMore, FileText } from "lucide-react";
 import { observer } from "mobx-react-lite";
@@ -26,28 +27,7 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 	const [mounted, setMounted] = useState(false);
 
 	useEffect(() => setMounted(true), []);
-	const dragStartYRef = useRef<number | null>(null);
-
-	const handleSwipeEnd = useCallback(
-		(event: PointerEvent) => {
-			if (dragStartYRef.current === null) return;
-			const delta = event.clientY - dragStartYRef.current;
-			dragStartYRef.current = null;
-			window.removeEventListener("pointerup", handleSwipeEnd);
-			if (delta >= 60) {
-				onClose();
-			}
-		},
-		[onClose],
-	);
-
-	const handleSheetPointerDown = useCallback(
-		(event: React.PointerEvent<HTMLElement>) => {
-			dragStartYRef.current = event.clientY;
-			window.addEventListener("pointerup", handleSwipeEnd);
-		},
-		[handleSwipeEnd],
-	);
+	const handleSheetPointerDown = useDragToClose(onClose);
 
 	const handleOpenEditName = () => {
 		setIsEditNameOpen(true);
@@ -74,12 +54,6 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 		document.addEventListener("keydown", handleKeyDown);
 		return () => document.removeEventListener("keydown", handleKeyDown);
 	}, [isVisible, onClose]);
-
-	useEffect(() => {
-		return () => {
-			window.removeEventListener("pointerup", handleSwipeEnd);
-		};
-	}, [handleSwipeEnd]);
 
 	// Блокировка скролла страницы при открытии попапа
 	useLockBodyScroll(isVisible);

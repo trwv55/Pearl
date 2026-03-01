@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
+import { useDragToClose } from "@/shared/hooks/useDragToClose";
 import clsx from "clsx";
 import { toast } from "sonner";
 import type { Task } from "@/entities/task/types";
@@ -20,28 +21,7 @@ interface EditTaskPopupProps {
 export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, onClose }) => {
 	const gradientColor = useMemo(() => task?.markerColor || "#3d00cb", [task?.markerColor]);
 	const [isAnimated, setIsAnimated] = React.useState(false);
-	const dragStartYRef = useRef<number | null>(null);
-
-	const handleSwipeEnd = useCallback(
-		(event: PointerEvent) => {
-			if (dragStartYRef.current === null) return;
-			const delta = event.clientY - dragStartYRef.current;
-			dragStartYRef.current = null;
-			window.removeEventListener("pointerup", handleSwipeEnd);
-			if (delta >= 60) {
-				onClose();
-			}
-		},
-		[onClose],
-	);
-
-	const handleSheetPointerDown = useCallback(
-		(event: React.PointerEvent<HTMLElement>) => {
-			dragStartYRef.current = event.clientY;
-			window.addEventListener("pointerup", handleSwipeEnd);
-		},
-		[handleSwipeEnd],
-	);
+	const handleSheetPointerDown = useDragToClose(onClose);
 
 	useEffect(() => {
 		if (!isVisible) return;
@@ -65,12 +45,6 @@ export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, o
 
 	// Блокировка скролла страницы при открытии попапа
 	useLockBodyScroll(isVisible);
-
-	useEffect(() => {
-		return () => {
-			window.removeEventListener("pointerup", handleSwipeEnd);
-		};
-	}, [handleSwipeEnd]);
 
 	// Задержка для анимации появления
 	useEffect(() => {

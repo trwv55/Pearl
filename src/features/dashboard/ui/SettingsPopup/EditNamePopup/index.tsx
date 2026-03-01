@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useDragToClose } from "@/shared/hooks/useDragToClose";
 import clsx from "clsx";
 import { ChevronLeft } from "lucide-react";
 import { observer } from "mobx-react-lite";
@@ -26,28 +27,7 @@ export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible
 	const [error, setError] = useState<string | null>(null);
 	const sheetRef = useRef<HTMLElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
-	const dragStartYRef = useRef<number | null>(null);
-
-	const handleSwipeEnd = useCallback(
-		(event: PointerEvent) => {
-			if (dragStartYRef.current === null) return;
-			const delta = event.clientY - dragStartYRef.current;
-			dragStartYRef.current = null;
-			window.removeEventListener("pointerup", handleSwipeEnd);
-			if (delta >= 60) {
-				onClose();
-			}
-		},
-		[onClose],
-	);
-
-	const handleSheetPointerDown = useCallback(
-		(event: React.PointerEvent<HTMLElement>) => {
-			dragStartYRef.current = event.clientY;
-			window.addEventListener("pointerup", handleSwipeEnd);
-		},
-		[handleSwipeEnd],
-	);
+	const handleSheetPointerDown = useDragToClose(onClose);
 
 	// Получаем высоту попапа настроек и применяем к попапу изменения имени
 	useEffect(() => {
@@ -79,12 +59,6 @@ export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible
 		document.addEventListener("keydown", handleKeyDown);
 		return () => document.removeEventListener("keydown", handleKeyDown);
 	}, [isVisible, onClose]);
-
-	useEffect(() => {
-		return () => {
-			window.removeEventListener("pointerup", handleSwipeEnd);
-		};
-	}, [handleSwipeEnd]);
 
 	// Блокировка скролла страницы при открытии попапа
 	useLockBodyScroll(isVisible);
