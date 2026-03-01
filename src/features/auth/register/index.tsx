@@ -9,7 +9,7 @@ import { RegisterConfirmPassword } from "@/features/auth/ui/register/RegisterCon
 import { RegisterName } from "@/features/auth/ui/register/RegisterName";
 import { registerUser } from "@/shared/lib/auth/register";
 import { toast } from "sonner";
-import { userStore } from "@/entities/user/store";
+import { userStore } from "@/shared/model/userStore";
 import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
 import { getFirebaseAuth } from "@/shared/lib/firebase";
 import { RegisterNotifications } from "../ui/register/RegisterNotifications";

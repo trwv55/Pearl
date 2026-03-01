@@ -4,7 +4,7 @@ import { useCallback, useState, memo } from "react";
 import { useRouter } from "next/navigation";
 import { LoginEmail } from "@/features/auth/ui/login/LoginEmail";
 import { LoginPassword } from "@/features/auth/ui/login/LoginPassword";
-import { userStore } from "@/entities/user/store";
+import { userStore } from "@/shared/model/userStore";
 import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
 import { loginUser, isLoginSuccess } from "../lib/loginApi";
 import { ROUTES } from "@/shared/lib/routes";

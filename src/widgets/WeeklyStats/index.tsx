@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { startOfWeek, isSameDay } from "date-fns";
-import { statsStore } from "@/entities/stats/store";
-import { userStore } from "@/entities/user/store";
-import { taskStore } from "@/entities/task/store";
+import { statsStore } from "@/shared/model/statsStore";
+import { userStore } from "@/shared/model/userStore";
+import { taskStore } from "@/shared/model/taskStore";
 import styles from "./WeeklyStats.module.css";
 import { ProgressWheel } from "./ProgressWheel";
 
