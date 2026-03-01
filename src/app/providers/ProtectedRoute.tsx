@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { userStore } from "@/entities/user/store";
+import { userStore } from "@/shared/model/userStore";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/shared/lib/firebase";
 import { ROUTES } from "@/shared/lib/routes";

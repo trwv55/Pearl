@@ -2,7 +2,7 @@
 
 import { signOut } from "firebase/auth";
 import { getFirebaseAuth } from "../firebase";
-import { taskStore } from "@/entities/task/store";
+import { taskStore } from "@/shared/model/taskStore";
 
 export const logout = async () => {
 	localStorage.removeItem("splashShown"); // Чтобы показывать splash screen при входе
