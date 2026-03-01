@@ -34,6 +34,7 @@ export const SheetHandle: React.FC<SheetHandleProps> = ({
 
 	const handlePointerDown = useCallback(
 		(event: React.PointerEvent<HTMLDivElement>) => {
+			event.preventDefault();
 			startYRef.current = event.clientY;
 			event.currentTarget.setPointerCapture?.(event.pointerId);
 			window.addEventListener("pointerup", handlePointerUp);

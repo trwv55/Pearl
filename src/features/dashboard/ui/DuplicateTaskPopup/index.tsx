@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { toast } from "sonner";
 import type { Task } from "@/entities/task/types";
@@ -19,6 +20,28 @@ interface DuplicateTaskPopupProps {
 export const DuplicateTaskPopup: React.FC<DuplicateTaskPopupProps> = ({ task, isVisible, onClose }) => {
 	const gradientColor = useMemo(() => task?.markerColor || "#3d00cb", [task?.markerColor]);
 	const [isAnimated, setIsAnimated] = React.useState(false);
+	const dragStartYRef = useRef<number | null>(null);
+
+	const handleSwipeEnd = useCallback(
+		(event: PointerEvent) => {
+			if (dragStartYRef.current === null) return;
+			const delta = event.clientY - dragStartYRef.current;
+			dragStartYRef.current = null;
+			window.removeEventListener("pointerup", handleSwipeEnd);
+			if (delta >= 60) {
+				onClose();
+			}
+		},
+		[onClose],
+	);
+
+	const handleSheetPointerDown = useCallback(
+		(event: React.PointerEvent<HTMLElement>) => {
+			dragStartYRef.current = event.clientY;
+			window.addEventListener("pointerup", handleSwipeEnd);
+		},
+		[handleSwipeEnd],
+	);
 
 	useEffect(() => {
 		if (!isVisible) return;
@@ -43,6 +66,12 @@ export const DuplicateTaskPopup: React.FC<DuplicateTaskPopupProps> = ({ task, is
 	// Блокировка скролла страницы при открытии попапа
 	useLockBodyScroll(isVisible);
 
+	useEffect(() => {
+		return () => {
+			window.removeEventListener("pointerup", handleSwipeEnd);
+		};
+	}, [handleSwipeEnd]);
+
 	// Задержка для анимации появления
 	useEffect(() => {
 		if (isVisible && task) {
@@ -62,7 +91,7 @@ export const DuplicateTaskPopup: React.FC<DuplicateTaskPopupProps> = ({ task, is
 		return null;
 	}
 
-	return (
+	return createPortal(
 		<div
 			className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
 			onClick={(event) => {
@@ -71,14 +100,14 @@ export const DuplicateTaskPopup: React.FC<DuplicateTaskPopupProps> = ({ task, is
 				}
 			}}
 		>
-			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog">
+			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog" onPointerDown={handleSheetPointerDown}>
 				<div className={styles.gradientTop}>
 					<TaskGradientEllipse
 						className={styles.gradientEllipse}
 						color={gradientColor}
 						uniqueId={task.id || "duplicate-popup"}
 					/>
-					<SheetHandle onDragEnd={onClose} />
+					<SheetHandle />
 				</div>
 				<div className={styles.header}>
 					<h2 className={styles.title}>Дублируем задачу</h2>
@@ -87,7 +116,8 @@ export const DuplicateTaskPopup: React.FC<DuplicateTaskPopupProps> = ({ task, is
 					<DuplicateTaskForm task={task} onClose={onClose} />
 				</div>
 			</section>
-		</div>
+		</div>,
+		document.body,
 	);
 };
 

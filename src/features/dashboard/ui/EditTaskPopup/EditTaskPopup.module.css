@@ -18,7 +18,7 @@
 
 .sheet {
 	width: 100%;
-	max-width: 540px;
+	/* max-width: 540px; */
 	background: var(--app-bg);
 	border-radius: 28px 28px 0 0;
 	padding-bottom: 32px;
@@ -26,10 +26,11 @@
 	transition: transform var(--popup-transition-duration) var(--popup-transition-timing);
 	box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
 	overflow-y: auto;
+	overscroll-behavior: none;
 	position: relative;
 	display: flex;
 	flex-direction: column;
-	max-height: 90vh;
+	max-height: 85vh;
 }
 
 .sheetVisible {

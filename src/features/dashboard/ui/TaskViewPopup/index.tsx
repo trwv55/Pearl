@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import clsx from "clsx";
 import type { Task } from "@/entities/task/types";
 import { Edit, Copy, Trash2 } from "lucide-react";
@@ -197,7 +198,7 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 		return null;
 	}
 
-	return (
+	return createPortal(
 		<div
 			className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
 			onClick={(event) => {
@@ -286,6 +287,7 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 					</footer>
 				)}
 			</section>
-		</div>
+		</div>,
+		document.body,
 	);
 };

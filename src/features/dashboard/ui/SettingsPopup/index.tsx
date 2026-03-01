@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { UserRoundPen, Bell, RotateCcw, MessageCircleMore, FileText } from "lucide-react";
 import { observer } from "mobx-react-lite";
@@ -22,6 +23,31 @@ interface SettingsPopupProps {
 
 export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible, onClose }) => {
 	const [isEditNameOpen, setIsEditNameOpen] = useState(false);
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => setMounted(true), []);
+	const dragStartYRef = useRef<number | null>(null);
+
+	const handleSwipeEnd = useCallback(
+		(event: PointerEvent) => {
+			if (dragStartYRef.current === null) return;
+			const delta = event.clientY - dragStartYRef.current;
+			dragStartYRef.current = null;
+			window.removeEventListener("pointerup", handleSwipeEnd);
+			if (delta >= 60) {
+				onClose();
+			}
+		},
+		[onClose],
+	);
+
+	const handleSheetPointerDown = useCallback(
+		(event: React.PointerEvent<HTMLElement>) => {
+			dragStartYRef.current = event.clientY;
+			window.addEventListener("pointerup", handleSwipeEnd);
+		},
+		[handleSwipeEnd],
+	);
 
 	const handleOpenEditName = () => {
 		setIsEditNameOpen(true);
@@ -49,12 +75,20 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 		return () => document.removeEventListener("keydown", handleKeyDown);
 	}, [isVisible, onClose]);
 
+	useEffect(() => {
+		return () => {
+			window.removeEventListener("pointerup", handleSwipeEnd);
+		};
+	}, [handleSwipeEnd]);
+
 	// Блокировка скролла страницы при открытии попапа
 	useLockBodyScroll(isVisible);
 
 	const displayName = userStore.displayName;
 
-	return (
+	if (!mounted) return null;
+
+	return createPortal(
 		<div
 			className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
 			onClick={(event) => {
@@ -66,9 +100,10 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 			<section
 				className={clsx(styles.sheet, isVisible && styles.sheetVisible, isEditNameOpen && styles.sheetBlurred)}
 				role="dialog"
+				onPointerDown={handleSheetPointerDown}
 			>
 				<div className={styles.top}>
-					<SheetHandle onDragEnd={onClose} color="rgba(0, 0, 0, 0.25)" />
+					<SheetHandle color="rgba(0, 0, 0, 0.25)" />
 				</div>
 				<div className={styles.contentWrapper}>
 					<div className={styles.header}>
@@ -102,6 +137,7 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 				</div>
 			</section>
 			<EditNamePopup isVisible={isEditNameOpen} onClose={handleCloseBoth} onBack={handleCloseEditName} />
-		</div>
+		</div>,
+		document.body,
 	);
 });
