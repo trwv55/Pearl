@@ -63,8 +63,8 @@ export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, o
 				if (event.target === event.currentTarget) onClose();
 			}}
 		>
-			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog" onPointerDown={handleSheetPointerDown}>
-				<div className={styles.gradientTop}>
+			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog">
+				<div className={styles.gradientTop} onPointerDown={handleSheetPointerDown}>
 					<TaskGradientEllipse className={styles.gradientEllipse} color={gradientColor} uniqueId={task.id || "edit-popup"} />
 					<SheetHandle />
 				</div>

@@ -63,11 +63,11 @@ export const DuplicateTaskPopup: React.FC<DuplicateTaskPopupProps> = ({ task, is
 				if (event.target === event.currentTarget) onClose();
 			}}
 		>
-			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog" onPointerDown={handleSheetPointerDown}>
-				<div className={styles.gradientTop}>
-					<TaskGradientEllipse className={styles.gradientEllipse} color={gradientColor} uniqueId={task.id || "duplicate-popup"} />
-					<SheetHandle />
-				</div>
+		<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog">
+			<div className={styles.gradientTop} onPointerDown={handleSheetPointerDown}>
+				<TaskGradientEllipse className={styles.gradientEllipse} color={gradientColor} uniqueId={task.id || "duplicate-popup"} />
+				<SheetHandle />
+			</div>
 				<div className={styles.header}>
 					<h2 className={styles.title}>Дублируем задачу</h2>
 				</div>
