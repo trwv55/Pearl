@@ -68,7 +68,7 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksP
 				/>
 			</div>
 		);
-	}, [tasks, isStackExpanded, stackTasks]);
+	}, [tasks, isStackExpanded, stackTasks])
 
 	if (isStackExpanded) {
 		if (tasks.length === 0) {

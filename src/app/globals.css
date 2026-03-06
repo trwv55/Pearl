@@ -186,9 +186,9 @@ textarea:focus, textarea:active {
   width: 100%
 }
 
+html.no-scroll,
 body.no-scroll {
   overflow: hidden;
-  /* Для мобильных, чтобы свайп не работал */
   touch-action: none;
 }
 
