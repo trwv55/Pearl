@@ -16,11 +16,13 @@ import { observer } from "mobx-react-lite";
 import { showSuccessToast, showErrorToast } from "@/shared/lib/showToast";
 import { useRouter } from "next/navigation";
 import StepEmoji from "@/shared/ui/task-form-steps/StepEmoji";
+import { useWebHaptics } from "web-haptics/react";
 
 const DEFAULT_EMOJI = "🐚";
 
 const TaskForm = observer(() => {
 	const router = useRouter();
+	const { trigger } = useWebHaptics();
 	const [title, setTitle] = useState("");
 	const [titleError, setTitleError] = useState(false);
 	const [isMain, setIsMain] = useState<boolean>(taskStore.mainTasks.length < 3);
@@ -76,6 +78,10 @@ const TaskForm = observer(() => {
 				await taskStore.fetchTasks(userStore.user.uid, taskStore.selectedDate);
 			}
 
+			trigger([
+				{ duration: 30 },
+				{ delay: 60, duration: 40, intensity: 1 },
+			]);
 			showSuccessToast("Задача создана");
 			router.back();
 		} catch (e) {
