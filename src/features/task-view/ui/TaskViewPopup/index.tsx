@@ -69,9 +69,10 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 			return;
 		}
 
+		trigger("success");
+
 		try {
 			await taskStore.toggleCompletion(uid, task.id);
-			trigger("success");
 			const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
 			statsStore.fetchWeekStats(uid, weekStart);
 			onClose();

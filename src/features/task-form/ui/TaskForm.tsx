@@ -55,6 +55,11 @@ const TaskForm = observer(() => {
 
 		const finalEmoji = emoji && emoji.trim() ? emoji : DEFAULT_EMOJI;
 
+		trigger([
+			{ duration: 80 },
+			{ delay: 60, duration: 100, intensity: 1 },
+		]);
+
 		try {
 			const timeInMinutes = time
 				? (() => {
@@ -72,12 +77,6 @@ const TaskForm = observer(() => {
 				markerColor,
 				time: timeInMinutes,
 			});
-
-
-			trigger([
-				{ duration: 80 },
-				{ delay: 60, duration: 100, intensity: 1 },
-			]);
 
 			if (userStore.user) {
 				taskStore.setSelectedDate(date);
