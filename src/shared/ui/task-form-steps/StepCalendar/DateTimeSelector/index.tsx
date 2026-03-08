@@ -10,6 +10,7 @@ import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
 import styles from "./DateTimeSelector.module.css";
 import { TimeSelect } from "../../TimeSelect";
+import { useWebHaptics } from "web-haptics/react";
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -24,9 +25,24 @@ interface Props {
 	time?: string;
 }
 
+const NUDGE_PATTERN: Parameters<ReturnType<typeof useWebHaptics>["trigger"]>[0] = [
+	{ duration: 80, intensity: 0.8 },
+	{ delay: 80, duration: 50, intensity: 0.3 },
+];
+
 export const DateTimeSelector = ({ value, onChange, onTimeChange, time }: Props) => {
 	const [selected, setSelected] = useState<Date>(value);
 	const [selectedTime, setSelectedTime] = useState<string>(time || "");
+	const { trigger } = useWebHaptics();
+
+	const handleSelectDay = (date: Date) => {
+		trigger(NUDGE_PATTERN);
+		setSelected(date);
+	};
+
+	const handleMonthChange = () => {
+		trigger(NUDGE_PATTERN);
+	};
 
 	const handleTimeChange = (t: string) => {
 		setSelectedTime(t);
@@ -57,14 +73,15 @@ export const DateTimeSelector = ({ value, onChange, onTimeChange, time }: Props)
 	return (
 		<Card className={styles.card}>
 			<CardContent className="px-4">
-				<DayPicker
-					animate
-					mode="single"
-					selected={selected}
-					onSelect={setSelected}
-					required
-					locale={ru}
-					formatters={customFormatters}
+			<DayPicker
+				animate
+				mode="single"
+				selected={selected}
+				onSelect={handleSelectDay}
+				onMonthChange={handleMonthChange}
+				required
+				locale={ru}
+				formatters={customFormatters}
 					className={styles.root}
 					classNames={{
 						month: styles.monthsCustom,

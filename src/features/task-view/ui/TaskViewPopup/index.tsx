@@ -21,6 +21,7 @@ import { statsStore } from "@/shared/model/statsStore";
 import { startOfWeek } from "date-fns";
 import { toast } from "sonner";
 import { formatTimeFromMinutes } from "@/shared/lib/utils";
+import { useWebHaptics } from "web-haptics/react";
 
 interface TaskViewPopupProps {
 	task: Task | null;
@@ -30,6 +31,7 @@ interface TaskViewPopupProps {
 
 export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, onClose }) => {
 	const { openEditTask, openDuplicateTask } = useTaskViewPopup();
+	const { trigger } = useWebHaptics();
 	const editTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const [isAnimated, setIsAnimated] = useState(false);
 	const handleSheetPointerDown = useDragToClose(onClose);
@@ -67,6 +69,8 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 			return;
 		}
 
+		trigger("success");
+
 		try {
 			await taskStore.toggleCompletion(uid, task.id);
 			const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
@@ -75,7 +79,7 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 		} catch (error) {
 			console.error("Ошибка при выполнении задачи:", error);
 		}
-	}, [task, onClose]);
+	}, [task, onClose, trigger]);
 
 	const handleDelete = useCallback(() => {
 		if (!task) return;

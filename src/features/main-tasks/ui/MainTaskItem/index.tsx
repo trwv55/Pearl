@@ -6,6 +6,7 @@ import { getTaskBackground } from "@/shared/lib/taskBackground";
 import styles from "./MainTaskItem.module.css";
 import { useTaskViewPopup } from "@/features/task-view";
 import { formatTimeFromMinutes } from "@/shared/lib/utils";
+import { useWebHaptics } from "web-haptics/react";
 
 interface RoutineTaskItemProps {
 	task: TaskMain;
@@ -19,6 +20,7 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 	const [isChecked, setIsChecked] = useState(task.isCompleted);
 	const [showDelete, setShowDelete] = useState(false);
 	const { openTask } = useTaskViewPopup();
+	const { trigger } = useWebHaptics();
 
 	useEffect(() => {
 		setIsChecked(task.isCompleted);
@@ -42,6 +44,7 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 
 	const handleChange = (e: { target: { checked: boolean | ((prevState: boolean) => boolean) } }) => {
 		setIsChecked(e.target.checked);
+		if (e.target.checked) trigger("success");
 		onComplete?.(task);
 	};
 
