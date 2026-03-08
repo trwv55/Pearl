@@ -73,15 +73,16 @@ const TaskForm = observer(() => {
 				time: timeInMinutes,
 			});
 
+
+			trigger([
+				{ duration: 80 },
+				{ delay: 60, duration: 100, intensity: 2 },
+			]);
+
 			if (userStore.user) {
 				taskStore.setSelectedDate(date);
 				await taskStore.fetchTasks(userStore.user.uid, taskStore.selectedDate);
 			}
-
-			trigger([
-				{ duration: 30 },
-				{ delay: 60, duration: 40, intensity: 1 },
-			]);
 			showSuccessToast("Задача создана");
 			router.back();
 		} catch (e) {
