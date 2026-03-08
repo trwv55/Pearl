@@ -76,7 +76,7 @@ const TaskForm = observer(() => {
 
 			trigger([
 				{ duration: 80 },
-				{ delay: 60, duration: 100, intensity: 2 },
+				{ delay: 60, duration: 100, intensity: 1 },
 			]);
 
 			if (userStore.user) {
