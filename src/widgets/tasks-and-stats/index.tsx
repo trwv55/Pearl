@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import { useSwipeable } from "react-swipeable";
+import { CloseLineButton } from "./CloseLineButton";
 import AutoHeight from "embla-carousel-auto-height";
 import { EmptyTaskState } from "@/shared/ui/EmptyTaskState";
 import type { TaskMain } from "@/shared/types/task";
@@ -9,6 +11,7 @@ import { observer } from "mobx-react-lite";
 import WeeklyStats from "@/widgets/WeeklyStats";
 import styles from "./TasksAndStatsWidget.module.css";
 import { statsStore } from "@/shared/model/statsStore";
+
 
 interface ShowMainTasksProps {
 	tasks: TaskMain[];
@@ -28,6 +31,12 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots, isStackExpanded:
 	const setIsStackExpanded = isControlled
 		? (onExpandChange ?? (() => {}))
 		: setInternalExpanded;
+
+	const closeSwipeHandlers = useSwipeable({
+		onSwipedUp: () => setIsStackExpanded(false),
+		delta: 30,
+		preventScrollOnSwipe: true,
+	});
 
 	useEffect(() => {
 		if (!isControlled) setInternalExpanded(false);
@@ -89,6 +98,15 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots, isStackExpanded:
 		return (
 			<div className="w-full">
 				<MainTaskStack tasks={stackTasks} isExpanded onExpandChange={setIsStackExpanded} />
+				{showDots && (
+					<div
+						className={styles.dotsWrap}
+						onClick={() => setIsStackExpanded(false)}
+						{...closeSwipeHandlers}
+					>
+						<CloseLineButton className={styles.closeLine} />
+					</div>
+				)}
 			</div>
 		);
 	}

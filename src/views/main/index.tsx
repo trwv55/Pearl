@@ -12,7 +12,6 @@ import { taskStore } from "@/shared/model/taskStore";
 import { userStore } from "@/shared/model/userStore";
 import { useEffect, useState } from "react";
 import { addDays, startOfDay } from "date-fns";
-import { useSwipeable } from "react-swipeable";
 
 export const MainPage = observer(() => {
 	const [isStackExpanded, setIsStackExpanded] = useState(false);
@@ -34,12 +33,6 @@ export const MainPage = observer(() => {
 		taskStore.setSelectedDate(date);
 	};
 
-	const stackSwipeHandlers = useSwipeable({
-		onSwipedUp: () => setIsStackExpanded(false),
-		delta: 50,
-		preventScrollOnSwipe: false,
-	});
-
 	return (
 		<ProtectedRoute>
 			<MainPageLayout>
@@ -50,14 +43,10 @@ export const MainPage = observer(() => {
 					<div>
 						<DaysSwitcher value={taskStore.selectedDate} onChange={handleDateChange} />
 					</div>
-					<div
-						className="mt-[40px]"
-						onClick={() => setIsStackExpanded(v => !v)}
-						{...stackSwipeHandlers}
-					>
+					<div className="mt-[40px]">
 						<MainTasks isStackExpanded={isStackExpanded} onExpandChange={setIsStackExpanded} />
 					</div>
-					<div className="mt-[40px]">
+					<div className="mt-[20px]">
 						<RoutineTasks />
 					</div>
 					<div className="flex flex-col justify-between items-center">
