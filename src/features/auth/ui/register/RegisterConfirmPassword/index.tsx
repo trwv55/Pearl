@@ -5,6 +5,8 @@ import { AuthBack } from "@/shared/assets/icons/AuthBack";
 import { startBackText } from "@/features/auth/lib/classNames";
 import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_LIGHT, HAPTIC_ERROR } from "@/shared/lib/haptics";
 
 interface Props {
 	onChange: (value: string) => void;
@@ -16,6 +18,7 @@ interface Props {
 export const RegisterConfirmPassword = memo(({ onChange, onNext, onPrev, password }: Props) => {
 	const [localPassword, setLocalPassword] = useState("");
 	const [error, setError] = useState(false);
+	const { trigger } = useWebHaptics();
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,18 +30,25 @@ export const RegisterConfirmPassword = memo(({ onChange, onNext, onPrev, passwor
 
 	const handleNext = () => {
 		if (localPassword !== password) {
+			trigger(HAPTIC_ERROR);
 			setError(true);
 			return;
 		}
 		setError(false);
+		trigger(...HAPTIC_LIGHT);
 		onChange(localPassword);
 		onNext();
 	};
 
+	const handleBack = useCallback(() => {
+		trigger(...HAPTIC_LIGHT);
+		onPrev();
+	}, [onPrev, trigger]);
+
 	return (
 		<div className="h-full flex flex-col">
 			<div className="flex justify-between">
-				<Button variant="startBack" onClick={onPrev}>
+				<Button variant="startBack" onClick={handleBack}>
 					<AuthBack className="w-[6px] h-[10px]" />
 					Назад
 				</Button>

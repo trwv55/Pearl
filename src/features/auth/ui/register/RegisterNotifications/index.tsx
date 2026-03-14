@@ -7,6 +7,8 @@ import { memo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./RegisterNotifications.module.css";
 import { ROUTES } from "@/shared/lib/routes";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 
 interface Props {
 	onFinish: () => void;
@@ -15,7 +17,10 @@ interface Props {
 
 export const RegisterNotifications = memo(({ onFinish, onPrev }: Props) => {
 	const router = useRouter();
+	const { trigger } = useWebHaptics();
+
 	const handleEnableNotifications = async () => {
+		trigger(...HAPTIC_LIGHT);
 		try {
 			if ("Notification" in window) {
 				await Notification.requestPermission();
@@ -27,12 +32,13 @@ export const RegisterNotifications = memo(({ onFinish, onPrev }: Props) => {
 	};
 
 	const handleBack = useCallback(() => {
+		trigger(...HAPTIC_LIGHT);
 		if (typeof window !== "undefined" && window.history.length > 1) {
 			router.back();
 		} else {
 			router.push(ROUTES.HOME);
 		}
-	}, [router]);
+	}, [router, trigger]);
 
 	return (
 		<div className="h-full flex flex-col">

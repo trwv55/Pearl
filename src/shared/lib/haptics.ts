@@ -9,8 +9,8 @@ export const HAPTIC_LIGHT: [TriggerInput, TriggerOptions] = [
 ];
 
 export const HAPTIC_SUCCESS: TriggerInput = [
-	{ duration: 80 },
-	{ delay: 60, duration: 100, intensity: 1 },
+    { duration: 30 },
+    { delay: 60, duration: 40, intensity: 1 },
 ];
 
 export const HAPTIC_ERROR: TriggerInput = [
@@ -24,3 +24,9 @@ export const HAPTIC_NUDGE: TriggerInput = [
 	{ duration: 80, intensity: 0.8 },
 	{ delay: 80, duration: 50, intensity: 0.3 },
 ];
+
+export const HAPTIC_MEDIUM: [TriggerInput, TriggerOptions] = [
+	[{ duration: 25 }],
+	{ intensity: 0.7 },
+];
+

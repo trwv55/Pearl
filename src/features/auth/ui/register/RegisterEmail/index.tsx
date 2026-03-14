@@ -8,6 +8,8 @@ import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
 import { emailSchema } from "../../../lib/yupShemas";
 import { ROUTES } from "@/shared/lib/routes";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_LIGHT, HAPTIC_ERROR } from "@/shared/lib/haptics";
 
 interface StepEmailProps {
 	onChange: (value: string) => void;
@@ -18,6 +20,7 @@ export const RegisterEmail = memo(({ onChange, onNext }: StepEmailProps) => {
 	const router = useRouter();
 	const [localEmail, setLocalEmail] = useState("");
 	const [error, setError] = useState(false);
+	const { trigger } = useWebHaptics();
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,20 +34,23 @@ export const RegisterEmail = memo(({ onChange, onNext }: StepEmailProps) => {
 		try {
 			await emailSchema.validate({ email: localEmail });
 			setError(false);
+			trigger(...HAPTIC_LIGHT);
 			onChange(localEmail);
 			onNext();
 		} catch {
+			trigger(HAPTIC_ERROR);
 			setError(true);
 		}
 	};
 
 	const handleBack = useCallback(() => {
+		trigger(...HAPTIC_LIGHT);
 		if (typeof window !== "undefined" && window.history.length > 1) {
 			router.back();
 		} else {
 			router.push(ROUTES.HOME);
 		}
-	}, [router]);
+	}, [router, trigger]);
 
 	return (
 		<div className="h-full flex flex-col">
