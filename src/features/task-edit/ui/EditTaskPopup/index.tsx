@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useDragToClose } from "@/shared/hooks/useDragToClose";
 import clsx from "clsx";
@@ -11,6 +11,8 @@ import { TaskGradientEllipse } from "@/shared/assets/icons/TaskGradientEllipse";
 import { useLockBodyScroll } from "@/shared/hooks/useLockBodyScroll";
 import EditTaskForm from "./EditTaskForm";
 import styles from "./EditTaskPopup.module.css";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_NUDGE } from "@/shared/lib/haptics";
 
 interface EditTaskPopupProps {
 	task: Task | null;
@@ -21,7 +23,14 @@ interface EditTaskPopupProps {
 export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, onClose }) => {
 	const gradientColor = useMemo(() => task?.markerColor || "#3d00cb", [task?.markerColor]);
 	const [isAnimated, setIsAnimated] = React.useState(false);
-	const handleSheetPointerDown = useDragToClose(onClose);
+	const { trigger } = useWebHaptics();
+
+	const handleClose = useCallback(() => {
+		trigger(HAPTIC_NUDGE);
+		onClose();
+	}, [onClose, trigger]);
+
+	const handleSheetPointerDown = useDragToClose(handleClose);
 
 	useEffect(() => {
 		if (!isVisible) return;
@@ -60,7 +69,7 @@ export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, o
 		<div
 			className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
 			onClick={(event) => {
-				if (event.target === event.currentTarget) onClose();
+				if (event.target === event.currentTarget) handleClose();
 			}}
 		>
 			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog">
