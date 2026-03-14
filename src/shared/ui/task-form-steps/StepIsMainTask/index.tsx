@@ -8,6 +8,8 @@ import { isTaskMain, type Task } from "@/shared/types/task";
 import { MAX_MAIN_TASKS } from "@/shared/config/tasks";
 import styles from "../shared/styles.module.css";
 import { MainTasksCount } from "@/shared/ui/TasksCount";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 
 interface Props {
 	value: boolean;
@@ -22,6 +24,7 @@ function StepIsMainTask({ value, onChange, originalIsMain, date, originalDate, i
 	const tasksForDate: Task[] = date ? taskStore.getTasksForDate(date) : taskStore.tasks;
 	const mainTasksForDate = tasksForDate.filter(isTaskMain);
 	const currentCount = mainTasksForDate.length;
+	const { trigger } = useWebHaptics();
 
 	const isDateChanged = date && originalDate ? !isSameDay(date, originalDate) : false;
 
@@ -34,6 +37,7 @@ function StepIsMainTask({ value, onChange, originalIsMain, date, originalDate, i
 				if (currentCount >= MAX_MAIN_TASKS) return;
 			}
 		}
+		trigger(...HAPTIC_LIGHT);
 		onChange(val);
 	};
 

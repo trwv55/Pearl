@@ -3,6 +3,8 @@
 import { useState, memo } from "react";
 import clsx from "clsx";
 import styles from "./MarkerSelect.module.css";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 
 interface Props {
 	value?: string;
@@ -27,8 +29,10 @@ const COLORS: ColorOption[] = [
 function MarkerSelect({ value, onChange }: Props) {
 	const [internalValue, setInternalValue] = useState<string>(COLORS[4].bg);
 	const selected = value ?? internalValue;
+	const { trigger } = useWebHaptics();
 
 	const handleChange = (color: string) => {
+		trigger(...HAPTIC_LIGHT);
 		setInternalValue(color);
 		onChange(color);
 	};
