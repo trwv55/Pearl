@@ -22,6 +22,7 @@ import { startOfWeek } from "date-fns";
 import { toast } from "sonner";
 import { formatTimeFromMinutes } from "@/shared/lib/utils";
 import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_SUCCESS } from "@/shared/lib/haptics";
 
 interface TaskViewPopupProps {
 	task: Task | null;
@@ -69,7 +70,7 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 			return;
 		}
 
-		trigger("success");
+		trigger(HAPTIC_SUCCESS);
 
 		try {
 			await taskStore.toggleCompletion(uid, task.id);

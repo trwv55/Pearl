@@ -11,6 +11,7 @@ import "react-clock/dist/Clock.css";
 import styles from "./DateTimeSelector.module.css";
 import { TimeSelect } from "../../TimeSelect";
 import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -25,23 +26,18 @@ interface Props {
 	time?: string;
 }
 
-const NUDGE_PATTERN: Parameters<ReturnType<typeof useWebHaptics>["trigger"]>[0] = [
-	{ duration: 80, intensity: 0.8 },
-	{ delay: 80, duration: 50, intensity: 0.3 },
-];
-
 export const DateTimeSelector = ({ value, onChange, onTimeChange, time }: Props) => {
 	const [selected, setSelected] = useState<Date>(value);
 	const [selectedTime, setSelectedTime] = useState<string>(time || "");
 	const { trigger } = useWebHaptics();
 
 	const handleSelectDay = (date: Date) => {
-		trigger(NUDGE_PATTERN);
+		trigger(...HAPTIC_LIGHT);
 		setSelected(date);
 	};
 
 	const handleMonthChange = () => {
-		trigger(NUDGE_PATTERN);
+		trigger(...HAPTIC_LIGHT);
 	};
 
 	const handleTimeChange = (t: string) => {

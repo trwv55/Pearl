@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 import styles from "./TimeSelect.module.css";
 
 const generateTimeOptions = (interval = 30) => {
@@ -23,11 +25,17 @@ interface Props {
 export const TimeSelect = ({ value, onChange, interval = 5, placeholderLabel = "--:--" }: Props) => {
 	const timeOptions = useMemo(() => generateTimeOptions(interval), [interval]);
 	const selectClassName = value ? styles.select : `${styles.select} ${styles.placeholderCentered}`;
+	const { trigger } = useWebHaptics();
+
+	const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		trigger(...HAPTIC_LIGHT);
+		onChange(e.target.value);
+	};
 
 	return (
 		<div className="flex justify-between items-center mt-[15px]">
 			<span className={styles.timeLabel}>Время</span>
-			<select value={value} onChange={(e) => onChange(e.target.value)} className={selectClassName}>
+			<select value={value} onChange={handleChange} className={selectClassName}>
 				<option value="">{placeholderLabel}</option>
 				{timeOptions.map((time) => (
 					<option key={time} value={time}>

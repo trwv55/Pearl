@@ -17,6 +17,7 @@ import { showSuccessToast, showErrorToast } from "@/shared/lib/showToast";
 import { useRouter } from "next/navigation";
 import StepEmoji from "@/shared/ui/task-form-steps/StepEmoji";
 import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_ERROR, HAPTIC_SUCCESS } from "@/shared/lib/haptics";
 
 const DEFAULT_EMOJI = "🐚";
 
@@ -44,21 +45,20 @@ const TaskForm = observer(() => {
 		if (!title.trim()) setTitleError(true);
 
 		if (!title.trim() || !date || !markerColor) {
+			trigger(HAPTIC_ERROR);
 			showErrorToast("Заполните обязательные поля");
 			return;
 		}
 
 		if (!userStore.user) {
+			trigger(HAPTIC_ERROR);
 			showErrorToast("Нет данных пользователя");
 			return;
 		}
 
 		const finalEmoji = emoji && emoji.trim() ? emoji : DEFAULT_EMOJI;
 
-		trigger([
-			{ duration: 80 },
-			{ delay: 60, duration: 100, intensity: 1 },
-		]);
+		trigger(HAPTIC_SUCCESS);
 
 		try {
 			const timeInMinutes = time
@@ -86,6 +86,7 @@ const TaskForm = observer(() => {
 			router.back();
 		} catch (e) {
 			console.error(e);
+			trigger(HAPTIC_ERROR);
 			showErrorToast("Ошибка. Попробуй еще раз");
 		}
 	};
