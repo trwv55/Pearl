@@ -5,7 +5,12 @@ import { taskStore } from "@/shared/model/taskStore";
 import { TasksAndStatsWidget } from "@/widgets/tasks-and-stats";
 import { TaskViewPopupProvider } from "@/features/task-view";
 
-export const MainTasks: React.FC = observer(() => {
+interface MainTasksProps {
+	isStackExpanded?: boolean;
+	onExpandChange?: (expanded: boolean) => void;
+}
+
+export const MainTasks: React.FC<MainTasksProps> = observer(({ isStackExpanded, onExpandChange }) => {
 	return (
 		<div className={styles.wrap}>
 			<div className={styles.top}>
@@ -13,7 +18,12 @@ export const MainTasks: React.FC = observer(() => {
 				<MainTasksCount current={taskStore.mainTasks.length} max={3} />
 			</div>
 			<TaskViewPopupProvider>
-				<TasksAndStatsWidget tasks={taskStore.mainTasks} showDots />
+				<TasksAndStatsWidget
+					tasks={taskStore.mainTasks}
+					showDots
+					isStackExpanded={isStackExpanded}
+					onExpandChange={onExpandChange}
+				/>
 			</TaskViewPopupProvider>
 		</div>
 	);

@@ -13,17 +13,25 @@ import { statsStore } from "@/shared/model/statsStore";
 interface ShowMainTasksProps {
 	tasks: TaskMain[];
 	showDots?: boolean;
+	isStackExpanded?: boolean;
+	onExpandChange?: (expanded: boolean) => void;
 }
 
-export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksProps) => {
+export const TasksAndStatsWidget = observer(({ tasks, showDots, isStackExpanded: controlledExpanded, onExpandChange }: ShowMainTasksProps) => {
 	const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false }, [AutoHeight()]);
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
-	const [isStackExpanded, setIsStackExpanded] = useState(false);
+	const [internalExpanded, setInternalExpanded] = useState(false);
+
+	const isControlled = controlledExpanded !== undefined;
+	const isStackExpanded = isControlled ? controlledExpanded : internalExpanded;
+	const setIsStackExpanded = isControlled
+		? (onExpandChange ?? (() => {}))
+		: setInternalExpanded;
 
 	useEffect(() => {
-		setIsStackExpanded(false);
-	}, [taskStore.selectedDate]);
+		if (!isControlled) setInternalExpanded(false);
+	}, [taskStore.selectedDate, isControlled]);
 
 	useEffect(() => {
 		if (!emblaApi) return;
@@ -81,11 +89,6 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksP
 		return (
 			<div className="w-full">
 				<MainTaskStack tasks={stackTasks} isExpanded onExpandChange={setIsStackExpanded} />
-				{showDots && (
-					<div className={styles.dotsWrap}>
-						<button onClick={() => setIsStackExpanded(false)} className={styles.closeLine} />
-					</div>
-				)}
 			</div>
 		);
 	}
