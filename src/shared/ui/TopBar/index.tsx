@@ -12,9 +12,10 @@ interface TopBarProps {
 	title: string;
 	logoHref?: string;
 	onBack?: () => void;
+	onLogoClick?: () => void;
 }
 
-export const TopBar = ({ title, logoHref = "/", onBack }: TopBarProps) => {
+export const TopBar = ({ title, onBack, onLogoClick }: TopBarProps) => {
 	const router = useRouter();
 	const { trigger } = useWebHaptics();
 
@@ -29,6 +30,9 @@ export const TopBar = ({ title, logoHref = "/", onBack }: TopBarProps) => {
 
 	const handleLogoClick = () => {
 		trigger(...HAPTIC_LIGHT);
+		if (onLogoClick) {
+			onLogoClick();
+		}
 	};
 
 	return (
@@ -39,9 +43,11 @@ export const TopBar = ({ title, logoHref = "/", onBack }: TopBarProps) => {
 
 			<h2 className={styles.title}>{title}</h2>
 
-			<Link href={logoHref} aria-label="На главную" onClick={handleLogoClick}>
-				<LogoIcon />
-			</Link>
+			{onLogoClick && 
+				<button aria-label="Настройки" onClick={handleLogoClick}>
+					<LogoIcon />
+				</button>
+			}
 		</div>
 	);
 };

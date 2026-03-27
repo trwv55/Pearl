@@ -11,6 +11,8 @@ import { TaskGradientEllipse } from "@/shared/assets/icons/TaskGradientEllipse";
 import { useLockBodyScroll } from "@/shared/hooks/useLockBodyScroll";
 import DuplicateTaskForm from "./DuplicateTaskForm";
 import styles from "./DuplicateTaskPopup.module.css";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_NUDGE } from "@/shared/lib/haptics";
 
 interface DuplicateTaskPopupProps {
 	task: Task | null;
@@ -22,6 +24,7 @@ export const DuplicateTaskPopup: React.FC<DuplicateTaskPopupProps> = ({ task, is
 	const gradientColor = useMemo(() => task?.markerColor || "#3d00cb", [task?.markerColor]);
 	const [isAnimated, setIsAnimated] = React.useState(false);
 	const handleSheetPointerDown = useDragToClose(onClose);
+	const { trigger } = useWebHaptics();
 
 	useEffect(() => {
 		if (!isVisible) return;
@@ -60,7 +63,10 @@ export const DuplicateTaskPopup: React.FC<DuplicateTaskPopupProps> = ({ task, is
 		<div
 			className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
 			onClick={(event) => {
-				if (event.target === event.currentTarget) onClose();
+				if (event.target === event.currentTarget) {
+					trigger(HAPTIC_NUDGE);
+					onClose();
+				}
 			}}
 		>
 		<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog">

@@ -22,7 +22,7 @@ import { startOfWeek } from "date-fns";
 import { toast } from "sonner";
 import { formatTimeFromMinutes } from "@/shared/lib/utils";
 import { useWebHaptics } from "web-haptics/react";
-import { HAPTIC_SUCCESS } from "@/shared/lib/haptics";
+import { HAPTIC_SUCCESS, HAPTIC_NUDGE } from "@/shared/lib/haptics";
 
 interface TaskViewPopupProps {
 	task: Task | null;
@@ -166,7 +166,10 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 		<div
 			className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
 			onClick={(event) => {
-				if (event.target === event.currentTarget) onClose();
+				if (event.target === event.currentTarget) {
+					trigger(HAPTIC_NUDGE);
+					onClose();
+				}
 			}}
 		>
 			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog" onPointerDown={handleSheetPointerDown}>

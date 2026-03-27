@@ -7,7 +7,7 @@ import styles from "./MainTaskItem.module.css";
 import { useTaskViewPopup } from "@/features/task-view";
 import { formatTimeFromMinutes } from "@/shared/lib/utils";
 import { useWebHaptics } from "web-haptics/react";
-import { HAPTIC_SUCCESS } from "@/shared/lib/haptics";
+import { HAPTIC_MEDIUM, HAPTIC_SUCCESS } from "@/shared/lib/haptics";
 
 interface RoutineTaskItemProps {
 	task: TaskMain;
@@ -40,6 +40,7 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 
 	const handleDeleteClick = () => {
 		onDelete?.(task.id);
+        trigger(...HAPTIC_MEDIUM)
 		setShowDelete(false);
 	};
 

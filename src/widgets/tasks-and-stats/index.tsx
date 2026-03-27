@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { useSwipeable } from "react-swipeable";
 import { CloseLineButton } from "./CloseLineButton";
@@ -11,6 +11,8 @@ import { observer } from "mobx-react-lite";
 import WeeklyStats from "@/widgets/WeeklyStats";
 import styles from "./TasksAndStatsWidget.module.css";
 import { statsStore } from "@/shared/model/statsStore";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 
 
 interface ShowMainTasksProps {
@@ -32,8 +34,15 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots, isStackExpanded:
 		? (onExpandChange ?? (() => {}))
 		: setInternalExpanded;
 
+	const { trigger } = useWebHaptics();
+
+	const handleClose = useCallback(() => {
+		trigger(...HAPTIC_LIGHT);
+		setIsStackExpanded(false);
+	}, [trigger, setIsStackExpanded]);
+
 	const closeSwipeHandlers = useSwipeable({
-		onSwipedUp: () => setIsStackExpanded(false),
+		onSwipedUp: handleClose,
 		delta: 30,
 		preventScrollOnSwipe: true,
 	});
@@ -99,11 +108,11 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots, isStackExpanded:
 			<div className="w-full">
 				<MainTaskStack tasks={stackTasks} isExpanded onExpandChange={setIsStackExpanded} />
 				{showDots && (
-					<div
-						className={styles.dotsWrap}
-						onClick={() => setIsStackExpanded(false)}
-						{...closeSwipeHandlers}
-					>
+				<div
+					className={styles.dotsWrap}
+					onClick={handleClose}
+					{...closeSwipeHandlers}
+				>
 						<CloseLineButton className={styles.closeLine} />
 					</div>
 				)}

@@ -16,6 +16,8 @@ import { LogoutButton } from "./LogoutButton";
 import { EditNamePopup } from "./EditNamePopup";
 import { APP_NAME, APP_VERSION } from "@/shared/lib/version";
 import styles from "./SettingsPopup.module.css";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_NUDGE, HAPTIC_LIGHT } from "@/shared/lib/haptics";
 
 interface SettingsPopupProps {
 	isVisible: boolean;
@@ -25,11 +27,15 @@ interface SettingsPopupProps {
 export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible, onClose }) => {
 	const [isEditNameOpen, setIsEditNameOpen] = useState(false);
 	const [mounted, setMounted] = useState(false);
+	const { trigger } = useWebHaptics();
 
 	useEffect(() => setMounted(true), []);
 	const handleSheetPointerDown = useDragToClose(onClose);
 
-	const handleOpenEditName = () => setIsEditNameOpen(true);
+	const handleOpenEditName = () => {
+		trigger(...HAPTIC_LIGHT);
+		setIsEditNameOpen(true);
+	};
 	const handleCloseEditName = () => setIsEditNameOpen(false);
 	const handleCloseBoth = () => {
 		setIsEditNameOpen(false);
@@ -57,7 +63,10 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 		<div
 			className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
 			onClick={(event) => {
-				if (event.target === event.currentTarget) onClose();
+				if (event.target === event.currentTarget) {
+					trigger(HAPTIC_NUDGE);
+					onClose();
+				}
 			}}
 		>
 			<section
@@ -82,10 +91,10 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 						</div>
 						<GiftButton />
 						<div className={styles.settingsContainer}>
-							<SettingItem icon={MessageCircleMore} label="Поделиться мнением" value="" />
+							<SettingItem icon={MessageCircleMore} label="Поделиться мнением" value="" onClick={() => trigger(...HAPTIC_LIGHT)} />
 						</div>
 						<div className={clsx(styles.settingsContainer, styles.settingsContainerLast)}>
-							<SettingItem icon={FileText} label="Политика конфиденциальности" value="" />
+							<SettingItem icon={FileText} label="Политика конфиденциальности" value="" onClick={() => trigger(...HAPTIC_LIGHT)} />
 						</div>
 						<LogoutButton />
 						<div className={styles.version}>
