@@ -1,6 +1,13 @@
+import type { Viewport } from "next";
 import { AuthProvider } from "@/app/providers/AuthProvider";
 import { Toaster } from "sonner";
 import "./globals.css";
+
+export const viewport: Viewport = {
+	width: "device-width",
+	initialScale: 1,
+	viewportFit: "cover",
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (

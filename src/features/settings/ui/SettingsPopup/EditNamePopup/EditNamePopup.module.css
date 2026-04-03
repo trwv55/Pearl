@@ -1,6 +1,7 @@
 .overlay {
 	position: fixed;
 	inset: 0;
+	top: env(safe-area-inset-top, 0px);
 	/* background: var(--popup-overlay-bg); */
 	display: flex;
 	align-items: flex-end;
