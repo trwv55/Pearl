@@ -128,9 +128,8 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 				right: 0,
 				padding: 0,
 				border: "none",
-				background: "var(--app-bg)",
+				background: "none",
 				margin: 0,
-				overflow: "hidden",
 			}}
 		>
 			<>
