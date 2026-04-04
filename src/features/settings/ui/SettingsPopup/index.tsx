@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Popup from "reactjs-popup";
 import { useDragToClose } from "@/shared/hooks/useDragToClose";
@@ -29,6 +29,7 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 	const [isEditNameOpen, setIsEditNameOpen] = useState(false);
 	const [mounted, setMounted] = useState(false);
 	const { trigger } = useWebHaptics();
+	const sheetRef = useRef<HTMLElement>(null);
 
 	useEffect(() => setMounted(true), []);
 	const handleSheetPointerDown = useDragToClose(onClose);
@@ -54,60 +55,26 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 		return () => document.removeEventListener("keydown", handleKeyDown);
 	}, [isVisible, onClose]);
 
+	useEffect(() => {
+		if (!isVisible) return;
+
+		const handleOutsideClick = (e: MouseEvent) => {
+			if (isEditNameOpen) return;
+			if (sheetRef.current?.contains(e.target as Node)) return;
+			e.stopPropagation();
+			trigger(HAPTIC_NUDGE);
+			onClose();
+		};
+
+		document.addEventListener("click", handleOutsideClick, true);
+		return () => document.removeEventListener("click", handleOutsideClick, true);
+	}, [isVisible, isEditNameOpen, onClose, trigger]);
+
 	useLockBodyScroll(isVisible);
 
 	const displayName = userStore.displayName;
 
 	if (!mounted) return null;
-
-	// return createPortal(
-	// 	<div
-	// 		className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
-	// 		onClick={(event) => {
-	// 			if (event.target === event.currentTarget) {
-	// 				trigger(HAPTIC_NUDGE);
-	// 				onClose();
-	// 			}
-	// 		}}
-	// 	>
-	// 		<section
-	// 			className={clsx(styles.sheet, isVisible && styles.sheetVisible, isEditNameOpen && styles.sheetBlurred)}
-	// 			role="dialog"
-	// 			onPointerDown={handleSheetPointerDown}
-	// 		>
-	// 			<div className={styles.top}>
-	// 				<SheetHandle color="rgba(0, 0, 0, 0.25)" />
-	// 			</div>
-	// 			<div className={styles.contentWrapper}>
-	// 				<div className={styles.header}>
-	// 					<h2 className={styles.title}>Настройки</h2>
-	// 				</div>
-	// 				<div className={styles.content}>
-	// 					<div className={styles.settingsContainer}>
-	// 						<SettingItem icon={UserRoundPen} label="Изменить имя" value={displayName || ""} onClick={handleOpenEditName} />
-	// 						<div className={styles.divider} />
-	// 						<SettingItemToggle icon={Bell} label="Уведомления" disabled />
-	// 						<div className={styles.divider} />
-	// 						<SettingItemToggle icon={RotateCcw} label="Продление задач" disabled />
-	// 					</div>
-	// 					<GiftButton />
-	// 					<div className={styles.settingsContainer}>
-	// 						<SettingItem icon={MessageCircleMore} label="Поделиться мнением" value="" onClick={() => trigger(...HAPTIC_LIGHT)} />
-	// 					</div>
-	// 					<div className={clsx(styles.settingsContainer, styles.settingsContainerLast)}>
-	// 						<SettingItem icon={FileText} label="Политика конфиденциальности" value="" onClick={() => trigger(...HAPTIC_LIGHT)} />
-	// 					</div>
-	// 					<LogoutButton />
-	// 					<div className={styles.version}>
-	// 						{APP_NAME.charAt(0).toUpperCase() + APP_NAME.slice(1)} {APP_VERSION}
-	// 					</div>
-	// 				</div>
-	// 			</div>
-	// 		</section>
-	// 		<EditNamePopup isVisible={isEditNameOpen} onClose={handleCloseBoth} onBack={handleCloseEditName} />
-	// 	</div>,
-	// 	document.body,
-	// );
 
 	return (
 		<Popup
@@ -115,8 +82,8 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 			onClose={() => { trigger(HAPTIC_NUDGE); onClose(); }}
 			modal
 			lockScroll
-			closeOnDocumentClick={!isEditNameOpen}
-			closeOnEscape
+			closeOnDocumentClick={false}
+			closeOnEscape={false}
 			overlayStyle={{
 				background: "var(--popup-overlay-bg)",
 				zIndex: 300,
@@ -128,12 +95,13 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 				right: 0,
 				padding: 0,
 				border: "none",
-				background: "var(--app-bg)",
+				background: 'transparent',
 				margin: 0,
 			}}
 		>
 			<>
 				<section
+					ref={sheetRef}
 					className={clsx(styles.sheet, styles.sheetEnter, isEditNameOpen && styles.sheetBlurred)}
 					role="dialog"
 					onPointerDown={handleSheetPointerDown}
