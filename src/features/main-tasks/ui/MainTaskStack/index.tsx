@@ -9,6 +9,8 @@ import { taskStore } from "@/shared/model/taskStore";
 import { toast } from "sonner";
 import { statsStore } from "@/shared/model/statsStore";
 import { startOfWeek } from "date-fns";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 
 interface MainTaskStackProps {
 	tasks: (TaskMain | null)[];
@@ -30,6 +32,7 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 	const firstItemRef = useRef<HTMLDivElement | null>(null);
 	const [itemH, setItemH] = useState<number>(0);
 	const uid = userStore.user?.uid;
+	const { trigger } = useWebHaptics();
 
 	useEffect(() => {
 		if (isControlled) return;
@@ -53,10 +56,11 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 	}, [tasks]);
 
 	const handleToggle = useCallback(() => {
+		trigger(...HAPTIC_LIGHT);
 		const next = !isExpanded;
 		if (!isControlled) setUncontrolledExpanded(next);
 		onExpandChange?.(next);
-	}, [isExpanded, isControlled, onExpandChange]);
+	}, [isExpanded, isControlled, onExpandChange, trigger]);
 
 	const handleDelete = useCallback(
 		(taskId: string) => {

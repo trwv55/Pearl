@@ -10,10 +10,12 @@ import { ProtectedRoute } from "@/app/providers/ProtectedRoute";
 import { observer } from "mobx-react-lite";
 import { taskStore } from "@/shared/model/taskStore";
 import { userStore } from "@/shared/model/userStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { addDays, startOfDay } from "date-fns";
 
 export const MainPage = observer(() => {
+	const [isStackExpanded, setIsStackExpanded] = useState(false);
+
 	useEffect(() => {
 		if (userStore.user) {
 			const today = startOfDay(new Date());
@@ -22,6 +24,10 @@ export const MainPage = observer(() => {
 			taskStore.fetchTasksForRange(userStore.user.uid, start, end);
 		}
 	}, [userStore.user]);
+
+	useEffect(() => {
+		setIsStackExpanded(false);
+	}, [taskStore.selectedDate]);
 
 	const handleDateChange = (date: Date) => {
 		taskStore.setSelectedDate(date);
@@ -38,9 +44,9 @@ export const MainPage = observer(() => {
 						<DaysSwitcher value={taskStore.selectedDate} onChange={handleDateChange} />
 					</div>
 					<div className="mt-[40px]">
-						<MainTasks />
+						<MainTasks isStackExpanded={isStackExpanded} onExpandChange={setIsStackExpanded} />
 					</div>
-					<div className="mt-[40px]">
+					<div className="mt-[20px]">
 						<RoutineTasks />
 					</div>
 					<div className="flex flex-col justify-between items-center">

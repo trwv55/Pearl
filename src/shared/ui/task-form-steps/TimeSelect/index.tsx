@@ -28,7 +28,6 @@ export const TimeSelect = ({ value, onChange, interval = 5, placeholderLabel = "
 	const { trigger } = useWebHaptics();
 
 	const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		trigger(...HAPTIC_LIGHT);
 		onChange(e.target.value);
 	};
 

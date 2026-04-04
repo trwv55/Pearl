@@ -2,9 +2,14 @@ import React from "react";
 import { LogOut } from "lucide-react";
 import { logout } from "@/shared/lib/auth/logout";
 import styles from "./LogoutButton.module.css";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_MEDIUM } from "@/shared/lib/haptics";
 
 export const LogoutButton: React.FC = () => {
+	const { trigger } = useWebHaptics();
+
 	const handleLogout = async () => {
+		trigger(...HAPTIC_MEDIUM);
 		try {
 			await logout();
 		} catch (error) {

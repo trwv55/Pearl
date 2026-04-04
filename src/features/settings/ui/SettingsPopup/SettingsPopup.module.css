@@ -1,6 +1,9 @@
 .overlay {
 	position: fixed;
-	inset: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
 	background: var(--popup-overlay-bg);
 	display: flex;
 	align-items: flex-end;
@@ -33,6 +36,15 @@
 
 .sheetVisible {
 	transform: translateY(0);
+}
+
+.sheetEnter {
+	animation: slideUp var(--popup-transition-duration) var(--popup-transition-timing) forwards;
+}
+
+@keyframes slideUp {
+	from { transform: translateY(20px); }
+	to   { transform: translateY(0); }
 }
 
 .contentWrapper {

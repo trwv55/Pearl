@@ -13,6 +13,8 @@ import { userStore } from "@/shared/model/userStore";
 import { updateUserName } from "@/shared/lib/auth/updateUserName";
 import { getFirebaseAuth } from "@/shared/lib/firebase";
 import styles from "./EditNamePopup.module.css";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_NUDGE, HAPTIC_LIGHT, HAPTIC_SUCCESS } from "@/shared/lib/haptics";
 
 interface EditNamePopupProps {
 	isVisible: boolean;
@@ -28,6 +30,7 @@ export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible
 	const sheetRef = useRef<HTMLElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const handleSheetPointerDown = useDragToClose(onClose);
+	const { trigger } = useWebHaptics();
 
 	useEffect(() => {
 		if (isVisible) {
@@ -80,6 +83,7 @@ export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible
 				userStore.updateUser(updatedUser);
 				userStore.forceUpdate();
 			}
+			trigger(HAPTIC_SUCCESS);
 			onClose();
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Не удалось сохранить имя");
@@ -100,7 +104,10 @@ export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible
 		<div
 			className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
 			onClick={(event) => {
-				if (event.target === event.currentTarget) onClose();
+				if (event.target === event.currentTarget) {
+					trigger(HAPTIC_NUDGE);
+					onClose();
+				}
 			}}
 		>
 			<section
@@ -117,7 +124,7 @@ export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible
 					<SheetHandle color="rgba(0, 0, 0, 0.25)" />
 				</div>
 				<div className={styles.header}>
-					<button className={styles.backButton} onClick={onBack || onClose} type="button">
+					<button className={styles.backButton} onClick={() => { trigger(...HAPTIC_LIGHT); (onBack || onClose)(); }} type="button">
 						<ChevronLeft className={styles.backIcon} size={20} />
 						<span className={styles.backText}>Назад</span>
 					</button>

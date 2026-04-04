@@ -1,5 +1,7 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import { useSwipeable } from "react-swipeable";
+import { CloseLineButton } from "./CloseLineButton";
 import AutoHeight from "embla-carousel-auto-height";
 import { EmptyTaskState } from "@/shared/ui/EmptyTaskState";
 import type { TaskMain } from "@/shared/types/task";
@@ -9,21 +11,45 @@ import { observer } from "mobx-react-lite";
 import WeeklyStats from "@/widgets/WeeklyStats";
 import styles from "./TasksAndStatsWidget.module.css";
 import { statsStore } from "@/shared/model/statsStore";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
+
 
 interface ShowMainTasksProps {
 	tasks: TaskMain[];
 	showDots?: boolean;
+	isStackExpanded?: boolean;
+	onExpandChange?: (expanded: boolean) => void;
 }
 
-export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksProps) => {
+export const TasksAndStatsWidget = observer(({ tasks, showDots, isStackExpanded: controlledExpanded, onExpandChange }: ShowMainTasksProps) => {
 	const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false }, [AutoHeight()]);
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
-	const [isStackExpanded, setIsStackExpanded] = useState(false);
+	const [internalExpanded, setInternalExpanded] = useState(false);
+
+	const isControlled = controlledExpanded !== undefined;
+	const isStackExpanded = isControlled ? controlledExpanded : internalExpanded;
+	const setIsStackExpanded = isControlled
+		? (onExpandChange ?? (() => {}))
+		: setInternalExpanded;
+
+	const { trigger } = useWebHaptics();
+
+	const handleClose = useCallback(() => {
+		trigger(...HAPTIC_LIGHT);
+		setIsStackExpanded(false);
+	}, [trigger, setIsStackExpanded]);
+
+	const closeSwipeHandlers = useSwipeable({
+		onSwipedUp: handleClose,
+		delta: 30,
+		preventScrollOnSwipe: true,
+	});
 
 	useEffect(() => {
-		setIsStackExpanded(false);
-	}, [taskStore.selectedDate]);
+		if (!isControlled) setInternalExpanded(false);
+	}, [taskStore.selectedDate, isControlled]);
 
 	useEffect(() => {
 		if (!emblaApi) return;
@@ -82,8 +108,12 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots }: ShowMainTasksP
 			<div className="w-full">
 				<MainTaskStack tasks={stackTasks} isExpanded onExpandChange={setIsStackExpanded} />
 				{showDots && (
-					<div className={styles.dotsWrap}>
-						<button onClick={() => setIsStackExpanded(false)} className={styles.closeLine} />
+				<div
+					className={styles.dotsWrap}
+					onClick={handleClose}
+					{...closeSwipeHandlers}
+				>
+						<CloseLineButton className={styles.closeLine} />
 					</div>
 				)}
 			</div>

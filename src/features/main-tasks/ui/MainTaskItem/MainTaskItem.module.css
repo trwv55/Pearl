@@ -122,7 +122,7 @@
 	width: 22px;
 	height: 22px;
 	border-radius: 50%;
-	background-color: rgba(128, 128, 128, 0.8); /* серый фон */
+	background-color: rgba(255, 255, 255, 0.5);
 	position: relative;
 	cursor: pointer;
 	outline: none;
@@ -134,7 +134,7 @@
 	position: absolute;
 	inset: -4px; /* внешнее кольцо */
 	border-radius: 50%;
-	border: 2px solid rgba(128, 128, 128, 0.6); /* прозрачный бордер */
+	border: 2px solid rgba(255, 255, 255, 0.5);
 	pointer-events: none;
 }
   

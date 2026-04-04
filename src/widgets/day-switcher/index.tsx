@@ -4,6 +4,8 @@ import { addDays, format, isSameDay } from "date-fns";
 import { ru } from "date-fns/locale";
 import styles from "./DaysSwitcher.module.css";
 import Day from "./Day";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_LIGHT, HAPTIC_MEDIUM } from "@/shared/lib/haptics";
 
 const INITIAL_RANGE = 3;
 const BATCH_SIZE = 10;
@@ -16,6 +18,7 @@ interface DaysSwitcherProps {
 export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 	const [selectedDate, setSelectedDate] = useState<Date>(value);
 	const [selectedTimestamp, setSelectedTimestamp] = useState<Timestamp>(Timestamp.fromDate(value));
+	const { trigger } = useWebHaptics();
 	const [days, setDays] = useState<Date[]>(() =>
 		Array.from({ length: INITIAL_RANGE * 2 + 1 }).map((_, i) => addDays(value, i - INITIAL_RANGE)),
 	);
@@ -61,6 +64,11 @@ export default function DaysSwitcher({ value, onChange }: DaysSwitcherProps) {
 
 	const handleSelect = (index: number) => {
 		const date = uniqueDays[index];
+		if (isSameDay(date, new Date())) {
+			trigger(...HAPTIC_MEDIUM);
+		} else {
+			trigger(...HAPTIC_LIGHT);
+		}
 		setSelectedDate(date);
 		setSelectedTimestamp(Timestamp.fromDate(date));
 		onChange(date);

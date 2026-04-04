@@ -8,6 +8,8 @@ import { userStore } from "@/shared/model/userStore";
 import { useSwipeable } from "react-swipeable";
 import { statsStore } from "@/shared/model/statsStore";
 import { startOfWeek } from "date-fns";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_SUCCESS, HAPTIC_MEDIUM } from "@/shared/lib/haptics";
 
 interface RoutineTaskItemProps {
 	task: Task;
@@ -20,6 +22,7 @@ export const RoutineTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isDraggi
 	const [isChecked, setIsChecked] = useState(task.isCompleted);
 	const [showDelete, setShowDelete] = useState(false);
 	const uid = userStore.user?.uid;
+	const { trigger } = useWebHaptics();
 
 	useEffect(() => {
 		setIsChecked(task.isCompleted);
@@ -39,6 +42,7 @@ export const RoutineTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isDraggi
 
 	const handleCheck = useCallback(
 		async (e: { target: { checked: boolean | ((prevState: boolean) => boolean) } }) => {
+			if (e.target.checked) trigger(HAPTIC_SUCCESS);
 			setIsChecked(e.target.checked);
 			if (!uid) {
 				toast.error("Нет данных пользователя");
@@ -48,10 +52,11 @@ export const RoutineTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isDraggi
 			const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
 			statsStore.fetchWeekStats(uid, weekStart);
 		},
-		[uid, taskStore.selectedDate],
+		[uid, taskStore.selectedDate, trigger],
 	);
 
 	const handleDeleteClick = () => {
+		trigger(...HAPTIC_MEDIUM);
 		onDelete?.(task.id);
 		setShowDelete(false);
 	};

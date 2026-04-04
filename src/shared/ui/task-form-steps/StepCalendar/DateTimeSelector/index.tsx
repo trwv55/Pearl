@@ -41,6 +41,7 @@ export const DateTimeSelector = ({ value, onChange, onTimeChange, time }: Props)
 	};
 
 	const handleTimeChange = (t: string) => {
+        trigger(...HAPTIC_LIGHT)
 		setSelectedTime(t);
 		onTimeChange?.(t);
 	};

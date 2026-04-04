@@ -7,6 +7,8 @@ import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
 import { passwordSchema } from "../../../lib/yupShemas";
 import { useRouter } from "next/navigation";
+import { useWebHaptics } from "web-haptics/react";
+import { HAPTIC_LIGHT, HAPTIC_ERROR } from "@/shared/lib/haptics";
 
 interface StepPasswordProps {
 	value: string;
@@ -18,6 +20,7 @@ interface StepPasswordProps {
 export const LoginPassword = memo(({ value, onChange, onFinish, onPrev }: StepPasswordProps) => {
 	const router = useRouter();
 	const [error, setError] = useState(false);
+	const { trigger } = useWebHaptics();
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,15 +35,18 @@ export const LoginPassword = memo(({ value, onChange, onFinish, onPrev }: StepPa
 		try {
 			await passwordSchema.validate({ password: value });
 			setError(false);
+			trigger(...HAPTIC_LIGHT);
 			onFinish();
 		} catch {
+			trigger(HAPTIC_ERROR);
 			setError(true);
 		}
-	}, [value, onFinish]);
+	}, [value, onFinish, trigger]);
 
 	const handleBack = useCallback(() => {
+		trigger(...HAPTIC_LIGHT);
 		router.back();
-	}, [router]);
+	}, [router, trigger]);
 
 	return (
 		<div className="h-full flex flex-col">
