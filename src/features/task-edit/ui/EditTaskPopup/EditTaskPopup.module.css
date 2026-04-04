@@ -40,6 +40,15 @@
 	transform: translateY(0);
 }
 
+.sheetEnter {
+	animation: slideUp var(--popup-transition-duration) var(--popup-transition-timing) forwards;
+}
+
+@keyframes slideUp {
+	from { transform: translateY(20px); }
+	to   { transform: translateY(0); }
+}
+
 .gradientTop {
 	position: absolute;
 	top: 0;

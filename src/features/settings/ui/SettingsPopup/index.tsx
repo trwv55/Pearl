@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import Popup from "reactjs-popup";
 import { useDragToClose } from "@/shared/hooks/useDragToClose";
 import clsx from "clsx";
@@ -97,6 +96,7 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 				padding: 0,
 				border: "none",
 				background: "var(--app-bg)",
+				borderRadius: "40px 40px 0 0",
 				margin: 0,
 			}}
 		>

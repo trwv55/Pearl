@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useMemo, useCallback } from "react";
-import { createPortal } from "react-dom";
+import React, { useEffect, useRef, useMemo, useCallback } from "react";
+// import { createPortal } from "react-dom";
+import Popup from "reactjs-popup";
 import { useDragToClose } from "@/shared/hooks/useDragToClose";
 import clsx from "clsx";
 import { toast } from "sonner";
@@ -22,8 +23,8 @@ interface EditTaskPopupProps {
 
 export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, onClose }) => {
 	const gradientColor = useMemo(() => task?.markerColor || "#3d00cb", [task?.markerColor]);
-	const [isAnimated, setIsAnimated] = React.useState(false);
 	const { trigger } = useWebHaptics();
+	const sheetRef = useRef<HTMLElement>(null);
 
 	const handleClose = useCallback(() => {
 		trigger(HAPTIC_NUDGE);
@@ -36,12 +37,12 @@ export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, o
 		if (!isVisible) return;
 
 		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.key === "Escape") onClose();
+			if (event.key === "Escape") handleClose();
 		};
 
 		document.addEventListener("keydown", handleKeyDown);
 		return () => document.removeEventListener("keydown", handleKeyDown);
-	}, [isVisible, onClose]);
+	}, [isVisible, handleClose]);
 
 	useEffect(() => {
 		if (isVisible && !task) {
@@ -53,26 +54,73 @@ export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, o
 	useLockBodyScroll(isVisible);
 
 	useEffect(() => {
-		if (isVisible && task) {
-			setIsAnimated(false);
-			requestAnimationFrame(() => {
-				requestAnimationFrame(() => setIsAnimated(true));
-			});
-		} else {
-			setIsAnimated(false);
-		}
-	}, [isVisible, task]);
+		if (!isVisible) return;
+
+		const handleOutsideClick = (e: MouseEvent) => {
+			if (sheetRef.current?.contains(e.target as Node)) return;
+			e.stopPropagation();
+			handleClose();
+		};
+
+		document.addEventListener("click", handleOutsideClick, true);
+		return () => document.removeEventListener("click", handleOutsideClick, true);
+	}, [isVisible, handleClose]);
 
 	if (!task) return null;
 
-	return createPortal(
-		<div
-			className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
-			onClick={(event) => {
-				if (event.target === event.currentTarget) handleClose();
+	// return createPortal(
+	// 	<div
+	// 		className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
+	// 		onClick={(event) => {
+	// 			if (event.target === event.currentTarget) handleClose();
+	// 		}}
+	// 	>
+	// 		<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog">
+	// 			<div className={styles.gradientTop} onPointerDown={handleSheetPointerDown}>
+	// 				<TaskGradientEllipse className={styles.gradientEllipse} color={gradientColor} uniqueId={task.id || "edit-popup"} />
+	// 				<SheetHandle />
+	// 			</div>
+	// 			<div className={styles.header}>
+	// 				<h2 className={styles.title}>Редактируем задачу</h2>
+	// 			</div>
+	// 			<div className={styles.content}>
+	// 				<EditTaskForm task={task} onClose={onClose} />
+	// 			</div>
+	// 		</section>
+	// 	</div>,
+	// 	document.body,
+	// );
+
+	return (
+		<Popup
+			open={isVisible}
+			onClose={handleClose}
+			modal
+			lockScroll
+			closeOnDocumentClick={false}
+			closeOnEscape={false}
+			overlayStyle={{
+				background: "var(--popup-overlay-bg)",
+				zIndex: 300,
+			}}
+			contentStyle={{
+				position: "fixed",
+				bottom: 0,
+				left: 0,
+				right: 0,
+				height: "auto",
+				padding: 0,
+				border: "none",
+				background: "var(--app-bg)",
+				borderRadius: "28px 28px 0 0",
+				margin: 0,
 			}}
 		>
-			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog">
+			<section
+				ref={sheetRef}
+				className={clsx(styles.sheet, styles.sheetEnter)}
+				role="dialog"
+			>
 				<div className={styles.gradientTop} onPointerDown={handleSheetPointerDown}>
 					<TaskGradientEllipse className={styles.gradientEllipse} color={gradientColor} uniqueId={task.id || "edit-popup"} />
 					<SheetHandle />
@@ -84,7 +132,6 @@ export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, o
 					<EditTaskForm task={task} onClose={onClose} />
 				</div>
 			</section>
-		</div>,
-		document.body,
+		</Popup>
 	);
 };
