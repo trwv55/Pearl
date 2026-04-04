@@ -122,7 +122,7 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 				display: "flex",
 				alignItems: "flex-end",
 				justifyContent: "center",
-				top: "env(safe-area-inset-top, 0px)",
+				// top: "env(safe-area-inset-top, 0px)",
 				zIndex: 300,
 			}}
 			contentStyle={{
