@@ -119,13 +119,13 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 			closeOnEscape
 			overlayStyle={{
 				background: "var(--popup-overlay-bg)",
-				display: "flex",
-				alignItems: "flex-end",
-				justifyContent: "center",
 				zIndex: 300,
 			}}
 			contentStyle={{
-				width: "100%",
+				position: "fixed",
+				bottom: 0,
+				left: 0,
+				right: 0,
 				padding: 0,
 				border: "none",
 				background: "none",
@@ -137,7 +137,6 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 					className={clsx(styles.sheet, styles.sheetEnter, isEditNameOpen && styles.sheetBlurred)}
 					role="dialog"
 					onPointerDown={handleSheetPointerDown}
-					style={{ paddingBottom: "env(safe-area-inset-bottom, 32px)" }}
 				>
 					<div className={styles.top}>
 						<SheetHandle color="rgba(0, 0, 0, 0.25)" />
