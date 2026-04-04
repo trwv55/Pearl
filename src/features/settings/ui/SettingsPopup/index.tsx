@@ -122,7 +122,6 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 				display: "flex",
 				alignItems: "flex-end",
 				justifyContent: "center",
-				// top: "env(safe-area-inset-top, 0px)",
 				zIndex: 300,
 			}}
 			contentStyle={{
@@ -138,6 +137,7 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 					className={clsx(styles.sheet, styles.sheetEnter, isEditNameOpen && styles.sheetBlurred)}
 					role="dialog"
 					onPointerDown={handleSheetPointerDown}
+					style={{ paddingBottom: "env(safe-area-inset-bottom, 32px)" }}
 				>
 					<div className={styles.top}>
 						<SheetHandle color="rgba(0, 0, 0, 0.25)" />
