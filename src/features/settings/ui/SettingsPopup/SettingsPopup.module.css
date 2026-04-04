@@ -38,6 +38,15 @@
 	transform: translateY(0);
 }
 
+.sheetEnter {
+	animation: slideUp var(--popup-transition-duration) var(--popup-transition-timing) forwards;
+}
+
+@keyframes slideUp {
+	from { transform: translateY(100%); }
+	to   { transform: translateY(0); }
+}
+
 .contentWrapper {
 	position: relative;
 }
