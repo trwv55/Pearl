@@ -1,6 +1,6 @@
 .overlay {
 	position: fixed;
-	top: env(safe-area-inset-top, 0px);
+	top: 0;
 	right: 0;
 	bottom: 0;
 	left: 0;
@@ -21,10 +21,11 @@
 
 .sheet {
 	width: 100%;
-	/* max-width: 540px; */
 	background: var(--app-bg);
 	border-radius: 28px 28px 0 0;
 	padding-bottom: 32px;
+    transform: translateY(100%);
+	transition: transform var(--popup-transition-duration) var(--popup-transition-timing);
 	box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
 	overflow-y: auto;
 	overscroll-behavior: none;
