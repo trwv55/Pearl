@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
-// import { createPortal } from "react-dom";
 import Popup from "reactjs-popup";
 import { useDragToClose } from "@/shared/hooks/useDragToClose";
 import clsx from "clsx";
@@ -183,34 +182,6 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 	}, [isVisible, onClose, trigger]);
 
 	if (!task) return null;
-
-	// return createPortal(
-	// 	<div
-	// 		className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
-	// 		onClick={(event) => {
-	// 			if (event.target === event.currentTarget) {
-	// 				trigger(HAPTIC_NUDGE);
-	// 				onClose();
-	// 			}
-	// 		}}
-	// 	>
-	// 		<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog" onPointerDown={handleSheetPointerDown}>
-	// 			<div className={styles.gradientTop}>
-	// 				<TaskGradientEllipse className={styles.gradientEllipse} color={gradientColor} uniqueId={task?.id || "default"} />
-	// 				<SheetHandle />
-	// 			</div>
-	// 			<div className={styles.header}>
-	// 				<div className={styles.gradientAvatar}>
-	// 					<span role="img" aria-label="Значок задачи">{task.emoji || "✨"}</span>
-	// 				</div>
-	// 				<h2 className={styles.title}>{task.title}</h2>
-	// 			</div>
-	// 			<div className={styles.metaSection}>...</div>
-	// 			...
-	// 		</section>
-	// 	</div>,
-	// 	document.body,
-	// );
 
 	return (
 		<Popup
