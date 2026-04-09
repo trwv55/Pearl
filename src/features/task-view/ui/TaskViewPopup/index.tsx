@@ -120,11 +120,26 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 		};
 	}, []);
 
+	const duplicateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
 	const handleDuplicate = useCallback(() => {
 		if (!task) return;
+
+		if (duplicateTimerRef.current) clearTimeout(duplicateTimerRef.current);
+
 		onClose();
-		openDuplicateTask(task);
+
+		duplicateTimerRef.current = setTimeout(() => {
+			openDuplicateTask(task);
+			duplicateTimerRef.current = null;
+		}, 250);
 	}, [task, onClose, openDuplicateTask]);
+
+	useEffect(() => {
+		return () => {
+			if (duplicateTimerRef.current) clearTimeout(duplicateTimerRef.current);
+		};
+	}, []);
 
 	const actionIcons = useMemo(
 		() => [

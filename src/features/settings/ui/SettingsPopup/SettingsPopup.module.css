@@ -37,7 +37,7 @@
 }
 
 @keyframes slideUp {
-	from { transform: translateY(100%); }
+	from { transform: translateY(20px); }
 	to   { transform: translateY(0); }
 }
 
