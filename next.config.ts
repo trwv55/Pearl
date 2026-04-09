@@ -11,6 +11,7 @@ const withPWAPlugin = withPWA({
 
 const nextConfig: NextConfig = {
 	reactStrictMode: true,
+	output: "export",
 
 	// Явно указываем, что используем webpack для сборки
 	// (так как у нас есть настройки для SVGR и алиасов)
