@@ -6,6 +6,7 @@ import { userStore } from "@/shared/model/userStore";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/shared/lib/firebase";
 import { ROUTES } from "@/shared/lib/routes";
+import SplashScreen from "@/shared/ui/SplashScreen";
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 	const router = useRouter();
@@ -24,7 +25,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 	}, [router]);
 
 	if (loading) {
-		return null;
+		return <SplashScreen />;
 	}
 
 	return <>{children}</>;

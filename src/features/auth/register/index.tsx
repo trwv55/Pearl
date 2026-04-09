@@ -10,7 +10,7 @@ import { RegisterName } from "@/features/auth/ui/register/RegisterName";
 import { registerUser } from "@/shared/lib/auth/register";
 import { toast } from "sonner";
 import { userStore } from "@/shared/model/userStore";
-import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
+import SplashScreen from "@/shared/ui/SplashScreen";
 import { getFirebaseAuth } from "@/shared/lib/firebase";
 import { RegisterNotifications } from "../ui/register/RegisterNotifications";
 import { ROUTES } from "@/shared/lib/routes";
