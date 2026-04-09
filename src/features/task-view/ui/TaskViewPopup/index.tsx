@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+// import { createPortal } from "react-dom";
+import Popup from "reactjs-popup";
 import { useDragToClose } from "@/shared/hooks/useDragToClose";
 import clsx from "clsx";
 import type { Task } from "@/shared/types/task";
@@ -34,7 +35,7 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 	const { openEditTask, openDuplicateTask } = useTaskViewPopup();
 	const { trigger } = useWebHaptics();
 	const editTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const [isAnimated, setIsAnimated] = useState(false);
+	const sheetRef = useRef<HTMLElement>(null);
 	const handleSheetPointerDown = useDragToClose(onClose);
 
 	const dateLabel = useMemo(() => {
@@ -150,29 +151,78 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 	useLockBodyScroll(isVisible);
 
 	useEffect(() => {
-		if (isVisible && task) {
-			setIsAnimated(false);
-			requestAnimationFrame(() => {
-				requestAnimationFrame(() => setIsAnimated(true));
-			});
-		} else {
-			setIsAnimated(false);
-		}
-	}, [isVisible, task]);
+		if (!isVisible) return;
+		const handleOutsideClick = (e: MouseEvent) => {
+			if (sheetRef.current?.contains(e.target as Node)) return;
+			e.stopPropagation();
+			trigger(HAPTIC_NUDGE);
+			onClose();
+		};
+		document.addEventListener("click", handleOutsideClick, true);
+		return () => document.removeEventListener("click", handleOutsideClick, true);
+	}, [isVisible, onClose, trigger]);
 
 	if (!task) return null;
 
-	return createPortal(
-		<div
-			className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
-			onClick={(event) => {
-				if (event.target === event.currentTarget) {
-					trigger(HAPTIC_NUDGE);
-					onClose();
-				}
+	// return createPortal(
+	// 	<div
+	// 		className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
+	// 		onClick={(event) => {
+	// 			if (event.target === event.currentTarget) {
+	// 				trigger(HAPTIC_NUDGE);
+	// 				onClose();
+	// 			}
+	// 		}}
+	// 	>
+	// 		<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog" onPointerDown={handleSheetPointerDown}>
+	// 			<div className={styles.gradientTop}>
+	// 				<TaskGradientEllipse className={styles.gradientEllipse} color={gradientColor} uniqueId={task?.id || "default"} />
+	// 				<SheetHandle />
+	// 			</div>
+	// 			<div className={styles.header}>
+	// 				<div className={styles.gradientAvatar}>
+	// 					<span role="img" aria-label="Значок задачи">{task.emoji || "✨"}</span>
+	// 				</div>
+	// 				<h2 className={styles.title}>{task.title}</h2>
+	// 			</div>
+	// 			<div className={styles.metaSection}>...</div>
+	// 			...
+	// 		</section>
+	// 	</div>,
+	// 	document.body,
+	// );
+
+	return (
+		<Popup
+			open={isVisible}
+			onClose={() => { trigger(HAPTIC_NUDGE); onClose(); }}
+			modal
+			lockScroll
+			closeOnDocumentClick={false}
+			closeOnEscape={false}
+			overlayStyle={{
+				background: "var(--popup-overlay-bg)",
+				zIndex: 300,
+			}}
+			contentStyle={{
+				position: "fixed",
+				bottom: 0,
+				left: 0,
+				right: 0,
+				height: "auto",
+				padding: 0,
+				border: "none",
+				background: "var(--app-bg)",
+				borderRadius: "28px 28px 0 0",
+				margin: 0,
 			}}
 		>
-			<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog" onPointerDown={handleSheetPointerDown}>
+			<section
+				ref={sheetRef}
+				className={clsx(styles.sheet, styles.sheetEnter)}
+				role="dialog"
+				onPointerDown={handleSheetPointerDown}
+			>
 				<div className={styles.gradientTop}>
 					<TaskGradientEllipse className={styles.gradientEllipse} color={gradientColor} uniqueId={task?.id || "default"} />
 					<SheetHandle />
@@ -238,7 +288,6 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 					</footer>
 				)}
 			</section>
-		</div>,
-		document.body,
+		</Popup>
 	);
 };
