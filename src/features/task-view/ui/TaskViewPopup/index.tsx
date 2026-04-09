@@ -158,8 +158,13 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 			trigger(HAPTIC_NUDGE);
 			onClose();
 		};
-		document.addEventListener("click", handleOutsideClick, true);
-		return () => document.removeEventListener("click", handleOutsideClick, true);
+		const timerId = setTimeout(() => {
+			document.addEventListener("click", handleOutsideClick, true);
+		}, 100);
+		return () => {
+			clearTimeout(timerId);
+			document.removeEventListener("click", handleOutsideClick, true);
+		};
 	}, [isVisible, onClose, trigger]);
 
 	if (!task) return null;
@@ -212,7 +217,7 @@ export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, o
 				height: "auto",
 				padding: 0,
 				border: "none",
-				background: "var(--app-bg)",
+				background: "transparent",
 				borderRadius: "28px 28px 0 0",
 				margin: 0,
 			}}

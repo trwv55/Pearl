@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useMemo } from "react";
-// import { createPortal } from "react-dom";
 import Popup from "reactjs-popup";
 import { useDragToClose } from "@/shared/hooks/useDragToClose";
 import clsx from "clsx";
@@ -58,37 +57,17 @@ export const DuplicateTaskPopup: React.FC<DuplicateTaskPopupProps> = ({ task, is
 			e.stopPropagation();
 			handleClose();
 		};
-		document.addEventListener("click", handleOutsideClick, true);
-		return () => document.removeEventListener("click", handleOutsideClick, true);
+		// Delay registration so the click that opened the popup doesn't immediately close it
+		const timerId = setTimeout(() => {
+			document.addEventListener("click", handleOutsideClick, true);
+		}, 100);
+		return () => {
+			clearTimeout(timerId);
+			document.removeEventListener("click", handleOutsideClick, true);
+		};
 	}, [isVisible, handleClose]);
 
 	if (!task) return null;
-
-	// return createPortal(
-	// 	<div
-	// 		className={clsx(styles.overlay, isVisible && styles.overlayVisible)}
-	// 		onClick={(event) => {
-	// 			if (event.target === event.currentTarget) {
-	// 				trigger(HAPTIC_NUDGE);
-	// 				onClose();
-	// 			}
-	// 		}}
-	// 	>
-	// 	<section className={clsx(styles.sheet, isAnimated && styles.sheetVisible)} role="dialog">
-	// 		<div className={styles.gradientTop} onPointerDown={handleSheetPointerDown}>
-	// 			<TaskGradientEllipse className={styles.gradientEllipse} color={gradientColor} uniqueId={task.id || "duplicate-popup"} />
-	// 			<SheetHandle />
-	// 		</div>
-	// 			<div className={styles.header}>
-	// 				<h2 className={styles.title}>Дублируем задачу</h2>
-	// 			</div>
-	// 			<div className={styles.content}>
-	// 				<DuplicateTaskForm task={task} onClose={onClose} />
-	// 			</div>
-	// 		</section>
-	// 	</div>,
-	// 	document.body,
-	// );
 
 	return (
 		<Popup
@@ -110,7 +89,7 @@ export const DuplicateTaskPopup: React.FC<DuplicateTaskPopupProps> = ({ task, is
 				height: "auto",
 				padding: 0,
 				border: "none",
-				background: "var(--app-bg)",
+				background: "transparent",
 				borderRadius: "28px 28px 0 0",
 				margin: 0,
 			}}
