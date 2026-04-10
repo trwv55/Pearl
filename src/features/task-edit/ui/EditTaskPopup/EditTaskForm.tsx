@@ -18,6 +18,7 @@ import { observer } from "mobx-react-lite";
 import { showSuccessToast, showErrorToast } from "@/shared/lib/showToast";
 import StepEmoji from "@/shared/ui/task-form-steps/StepEmoji";
 import { formatTimeFromMinutes } from "@/shared/lib/utils";
+import { scheduleTaskNotification, cancelTaskNotification } from "@/shared/lib/notifications";
 
 interface EditTaskFormProps {
 	task: Task;
@@ -68,6 +69,18 @@ const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 				: null;
 
 			await updateTask(userStore.user.uid, task.id, {
+				title,
+				comment,
+				date,
+				emoji: emoji || "🐚",
+				isMain,
+				markerColor,
+				time: timeInMinutes,
+			});
+
+			await cancelTaskNotification(task.id);
+			await scheduleTaskNotification({
+				...task,
 				title,
 				comment,
 				date,

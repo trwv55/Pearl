@@ -1,8 +1,9 @@
 "use client";
 
 import { FirebaseApp, getApp, getApps, initializeApp } from "firebase/app";
-import { Auth, getAuth } from "firebase/auth";
+import { Auth, getAuth, initializeAuth, indexedDBLocalPersistence, browserLocalPersistence } from "firebase/auth";
 import { Firestore, getFirestore } from "firebase/firestore";
+import { Capacitor } from "@capacitor/core";
 
 const firebaseConfig = {
         apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -27,8 +28,19 @@ const initFirebase = () => {
         ensureClient();
 
         if (!appInstance) {
-                appInstance = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-                authInstance = getAuth(appInstance);
+                const isNewApp = getApps().length === 0;
+                appInstance = isNewApp ? initializeApp(firebaseConfig) : getApp();
+
+                if (isNewApp) {
+                        authInstance = initializeAuth(appInstance, {
+                                persistence: Capacitor.isNativePlatform()
+                                        ? indexedDBLocalPersistence
+                                        : browserLocalPersistence,
+                        });
+                } else {
+                        authInstance = getAuth(appInstance);
+                }
+
                 dbInstance = getFirestore(appInstance);
         }
 };

@@ -9,6 +9,7 @@ import styles from "./RegisterNotifications.module.css";
 import { ROUTES } from "@/shared/lib/routes";
 import { useWebHaptics } from "web-haptics/react";
 import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
+import { requestNotificationPermission } from "@/shared/lib/notifications";
 
 interface Props {
 	onFinish: () => void;
@@ -21,13 +22,7 @@ export const RegisterNotifications = memo(({ onFinish, onPrev }: Props) => {
 
 	const handleEnableNotifications = async () => {
 		trigger(...HAPTIC_LIGHT);
-		try {
-			if ("Notification" in window) {
-				await Notification.requestPermission();
-			}
-		} catch (err) {
-			console.warn("Не удалось запросить разрешение на уведомления", err);
-		}
+		await requestNotificationPermission();
 		onFinish();
 	};
 

@@ -55,11 +55,15 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 	}, [isVisible, onClose]);
 
 	useEffect(() => {
-		if (!isVisible) return;
+		if (!isVisible) {
+			setIsEditNameOpen(false);
+			return;
+		}
 
 		const handleOutsideClick = (e: MouseEvent) => {
 			if (isEditNameOpen) return;
-			if (sheetRef.current?.contains(e.target as Node)) return;
+			const path = e.composedPath ? e.composedPath() : [];
+			if (sheetRef.current && path.includes(sheetRef.current)) return;
 			e.stopPropagation();
 			trigger(HAPTIC_NUDGE);
 			onClose();
