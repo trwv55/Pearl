@@ -25,10 +25,17 @@ export const SettingItemToggle: React.FC<SettingItemToggleProps> = ({
 	};
 
 	return (
-		<div className={styles.settingItem}>
+		<div
+			className={styles.settingItem}
+			onPointerDown={(event) => event.stopPropagation()}
+			onClick={(event) => event.stopPropagation()}
+		>
 			<Icon className={clsx(styles.icon, disabled && styles.iconDisabled)} size={16} />
 			<span className={clsx(styles.settingLabel, disabled && styles.settingLabelDisabled)}>{label}</span>
-			<div className={styles.toggle} onClick={handleToggleClick}>
+			<div
+				className={clsx(styles.toggle, checked && styles.toggleActive, disabled && styles.toggleDisabled)}
+				onClick={handleToggleClick}
+			>
 				<div className={clsx(styles.toggleKnob, checked && styles.toggleKnobActive)} />
 			</div>
 		</div>

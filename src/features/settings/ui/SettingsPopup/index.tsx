@@ -18,6 +18,8 @@ import { APP_NAME, APP_VERSION } from "@/shared/lib/version";
 import styles from "./SettingsPopup.module.css";
 import { useWebHaptics } from "web-haptics/react";
 import { HAPTIC_NUDGE, HAPTIC_LIGHT } from "@/shared/lib/haptics";
+import { notificationSettingsStore } from "@/shared/model/notificationSettingsStore";
+import { showErrorToast, showSuccessToast } from "@/shared/lib/showToast";
 
 interface SettingsPopupProps {
 	isVisible: boolean;
@@ -42,6 +44,21 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 		setIsEditNameOpen(false);
 		onClose();
 	};
+	const handleNotificationsToggle = async (checked: boolean) => {
+		trigger(...HAPTIC_LIGHT);
+		if (checked) {
+			const enabled = await notificationSettingsStore.enableNotifications();
+			if (enabled) {
+				showSuccessToast("Уведомления включены");
+			} else {
+				console.warn("Не удалось включить уведомления");
+			}
+			return;
+		}
+
+		await notificationSettingsStore.disableNotifications();
+		showSuccessToast("Уведомления отключены");
+	};
 
 	useEffect(() => {
 		if (!isVisible) return;
@@ -63,7 +80,10 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 		const handleOutsideClick = (e: MouseEvent) => {
 			if (isEditNameOpen) return;
 			const path = e.composedPath ? e.composedPath() : [];
-			if (sheetRef.current && path.includes(sheetRef.current)) return;
+			const targetNode = e.target instanceof Node ? e.target : null;
+			if (sheetRef.current && (path.includes(sheetRef.current) || (targetNode && sheetRef.current.contains(targetNode)))) {
+				return;
+			}
 			e.stopPropagation();
 			trigger(HAPTIC_NUDGE);
 			onClose();
@@ -74,6 +94,11 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 	}, [isVisible, isEditNameOpen, onClose, trigger]);
 
 	useLockBodyScroll(isVisible);
+
+	useEffect(() => {
+		if (!isVisible) return;
+		void notificationSettingsStore.initialize();
+	}, [isVisible]);
 
 	const displayName = userStore.displayName;
 
@@ -122,7 +147,12 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 							<div className={styles.settingsContainer}>
 								<SettingItem icon={UserRoundPen} label="Изменить имя" value={displayName || ""} onClick={handleOpenEditName} />
 								<div className={styles.divider} />
-								<SettingItemToggle icon={Bell} label="Уведомления" disabled />
+								<SettingItemToggle
+									icon={Bell}
+									label="Уведомления"
+									checked={notificationSettingsStore.isNotificationsEnabled}
+									onChange={handleNotificationsToggle}
+								/>
 								<div className={styles.divider} />
 								<SettingItemToggle icon={RotateCcw} label="Продление задач" disabled />
 							</div>
