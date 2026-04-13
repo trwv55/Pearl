@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { LoginEmail } from "@/features/auth/ui/login/LoginEmail";
 import { LoginPassword } from "@/features/auth/ui/login/LoginPassword";
 import { userStore } from "@/shared/model/userStore";
-import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
+import SplashScreen from "@/shared/ui/SplashScreen";
 import { loginUser, isLoginSuccess } from "../lib/loginApi";
 import { ROUTES } from "@/shared/lib/routes";
 import { useWebHaptics } from "web-haptics/react";

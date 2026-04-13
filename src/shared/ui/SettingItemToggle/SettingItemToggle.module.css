@@ -49,6 +49,16 @@
 	border-radius: 100px;
 	overflow: hidden;
 	cursor: pointer;
+	transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.toggleActive {
+	background: #ae96ff;
+}
+
+.toggleDisabled {
+	opacity: 0.5;
+	cursor: default;
 }
 
 .toggleKnob {

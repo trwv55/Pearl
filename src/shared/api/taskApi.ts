@@ -28,7 +28,7 @@ export interface TaskPayload {
 	time: number | null;
 }
 
-export const addTask = async (userId: string, payload: TaskPayload) => {
+export const addTask = async (userId: string, payload: TaskPayload): Promise<string> => {
 	const { title, comment, date, emoji, isMain, markerColor, time } = payload;
 	const db = getFirebaseDb();
 	const ref = doc(collection(db, "users", userId, "tasks"));
@@ -49,6 +49,8 @@ export const addTask = async (userId: string, payload: TaskPayload) => {
 		createdAt: serverTimestamp(),
 		updatedAt: serverTimestamp(),
 	});
+
+	return id;
 };
 
 export const getTasksByDate = async (userId: string, date: Date) => {

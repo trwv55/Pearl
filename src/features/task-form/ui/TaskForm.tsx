@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { addTask } from "@/shared/api/taskApi";
 import { userStore } from "@/shared/model/userStore";
 import { taskStore } from "@/shared/model/taskStore";
@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import StepEmoji from "@/shared/ui/task-form-steps/StepEmoji";
 import { useWebHaptics } from "web-haptics/react";
 import { HAPTIC_ERROR, HAPTIC_SUCCESS } from "@/shared/lib/haptics";
+import { scheduleTaskNotification } from "@/shared/lib/notifications";
 
 const DEFAULT_EMOJI = "🐚";
 
@@ -32,6 +33,8 @@ const TaskForm = observer(() => {
 	const [markerColor, setMarkerColor] = useState<string>("#3d00cb");
 	const [emoji, setEmoji] = useState("");
 	const [time, setTime] = useState<string>("");
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const submitLockRef = useRef(false);
 
 	const { isLoadingTasks } = useTaskDateSync(date, {
 		onAutoSwitch: (shouldSwitch) => {
@@ -42,6 +45,8 @@ const TaskForm = observer(() => {
 	});
 
 	const handleSubmit = async () => {
+		if (submitLockRef.current) return;
+
 		if (!title.trim()) setTitleError(true);
 
 		if (!title.trim() || !date || !markerColor) {
@@ -56,6 +61,9 @@ const TaskForm = observer(() => {
 			return;
 		}
 
+		submitLockRef.current = true;
+		setIsSubmitting(true);
+
 		const finalEmoji = emoji && emoji.trim() ? emoji : DEFAULT_EMOJI;
 
 		trigger(HAPTIC_SUCCESS);
@@ -68,7 +76,7 @@ const TaskForm = observer(() => {
 				  })()
 				: null;
 
-			await addTask(userStore.user.uid, {
+			const taskId = await addTask(userStore.user.uid, {
 				title,
 				comment,
 				date,
@@ -76,6 +84,19 @@ const TaskForm = observer(() => {
 				isMain,
 				markerColor,
 				time: timeInMinutes,
+			});
+
+			await scheduleTaskNotification({
+				id: taskId,
+				title,
+				comment,
+				date,
+				emoji: finalEmoji,
+				isMain,
+				markerColor,
+				time: timeInMinutes,
+				isCompleted: false,
+				completedAt: null,
 			});
 
 			if (userStore.user) {
@@ -86,6 +107,8 @@ const TaskForm = observer(() => {
 			router.back();
 		} catch (e) {
 			console.error(e);
+			submitLockRef.current = false;
+			setIsSubmitting(false);
 			trigger(HAPTIC_ERROR);
 			showErrorToast("Ошибка. Попробуй еще раз");
 		}
@@ -111,7 +134,7 @@ const TaskForm = observer(() => {
 				<StepCount stepNumber={6} totalSteps={6} label="Добавь эмодзи" />
 				<StepEmoji value={emoji} onChange={setEmoji} rows={1} />
 			</div>
-			<Button variant="mainDashboard" size="start" onClick={handleSubmit}>
+			<Button variant="mainDashboard" size="start" onClick={handleSubmit} disabled={isSubmitting}>
 				Готово
 				<Image src="/arrow.svg" alt="icon" width="10" height="10" className="w-5 h-5 shrink-0" />
 			</Button>

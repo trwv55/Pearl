@@ -11,7 +11,7 @@ interface DayStats {
 
 export interface WeekStats {
 	days: DayStats[];
-	completedDaysCount: number;
+	completedDaysCount?: number;
 }
 
 class StatsStore {
@@ -20,6 +20,10 @@ class StatsStore {
 	constructor() {
 		makeAutoObservable(this);
 	}
+
+    get completedDaysCount() {
+        return this.weekStats?.days.filter(d => d.isCompleted).length ?? 0
+    }
 
 	async fetchWeekStats(userId: string, weekStart: Date) {
 		try {
@@ -45,10 +49,10 @@ class StatsStore {
 				days.push({ date, isCompleted, completedMainTasksCount });
 			}
 
-			const completedDaysCount = days.filter((d) => d.isCompleted).length;
+			// const completedDaysCount = days.filter((d) => d.isCompleted).length;
 
 			runInAction(() => {
-				this.weekStats = { days, completedDaysCount };
+				this.weekStats = { days };
 			});
 		} catch (error) {
 			console.error("Ошибка при загрузке статистики недели:", error);

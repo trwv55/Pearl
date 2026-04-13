@@ -23,9 +23,5 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 		return () => unsubscribe();
 	}, [router]);
 
-	if (loading) {
-		return null;
-	}
-
 	return <>{children}</>;
 };

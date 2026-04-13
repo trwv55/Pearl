@@ -8,6 +8,7 @@ import { deleteTask as deleteTaskApi, toggleTaskCompletion } from "@/shared/api/
 import { isTaskMain, isTaskRoutine, TaskRoutine, type Task, type TaskMain } from "@/shared/types/task";
 import { showUndoToast } from "@/shared/lib/showUndoToast";
 import { showErrorToast } from "@/shared/lib/showToast";
+import { cancelTaskNotification, scheduleTaskNotification } from "@/shared/lib/notifications";
 
 class TaskStore {
 	tasks: Task[] = [];
@@ -146,6 +147,7 @@ class TaskStore {
 		if (this.pending.has(task.id)) return;
 
 		this.removeLocal(task.id);
+		cancelTaskNotification(task.id);
 
 		let cancelled = false;
 
@@ -159,6 +161,7 @@ class TaskStore {
 				}
 			} catch (e) {
 				runInAction(() => this.addLocal(task));
+				scheduleTaskNotification(task);
 				console.error("Ошибка при удалении задачи:", e);
 				showErrorToast("Ошибка. Попробуй еще раз");
 			}
@@ -175,11 +178,14 @@ class TaskStore {
 				if (timer) clearTimeout(timer);
 				this.pending.delete(task.id);
 				runInAction(() => this.addLocal(task));
+				scheduleTaskNotification(task);
 			},
 		});
 	}
 
 	async toggleCompletion(userId: string, taskId: string) {
+		const existingTask = this.tasks.find((t) => t.id === taskId);
+
 		try {
 			const updatedTask = await toggleTaskCompletion(userId, taskId);
 
@@ -195,6 +201,14 @@ class TaskStore {
 
 				this.syncCacheForSelectedDate();
 			});
+
+			if (existingTask) {
+				if (updatedTask.isCompleted) {
+					cancelTaskNotification(taskId);
+				} else {
+					scheduleTaskNotification(existingTask);
+				}
+			}
 		} catch (e) {
 			console.error("Ошибка при обновлении статуса задачи:", e);
 			showErrorToast("Не удалось обновить статус задачи");

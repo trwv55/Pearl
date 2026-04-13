@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import SplashScreen from "@/shared/ui/TopBar/SplashScreen";
+import SplashScreen from "@/shared/ui/SplashScreen";
 
 export default function SplashProvider({ children }: { children: React.ReactNode }) {
 	const [visible, setVisible] = useState(true);

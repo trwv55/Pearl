@@ -62,8 +62,13 @@ export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, o
 			handleClose();
 		};
 
-		document.addEventListener("click", handleOutsideClick, true);
-		return () => document.removeEventListener("click", handleOutsideClick, true);
+		const timerId = setTimeout(() => {
+			document.addEventListener("click", handleOutsideClick, true);
+		}, 100);
+		return () => {
+			clearTimeout(timerId);
+			document.removeEventListener("click", handleOutsideClick, true);
+		};
 	}, [isVisible, handleClose]);
 
 	if (!task) return null;
@@ -111,7 +116,7 @@ export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, o
 				height: "auto",
 				padding: 0,
 				border: "none",
-				background: "var(--app-bg)",
+				background: "transparent",
 				borderRadius: "28px 28px 0 0",
 				margin: 0,
 			}}
