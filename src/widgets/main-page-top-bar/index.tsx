@@ -43,7 +43,7 @@ export const MainPageTopBar: React.FC<MainPageTopBarProps> = observer(
 						/>
 					</button>
 				</header>
-				<SettingsPopup isVisible={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+				<SettingsPopup isVisible={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} onOpen={() => setIsSettingsOpen(true)} />
 			</>
 		);
 	},
