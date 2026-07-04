@@ -97,8 +97,8 @@ export async function scheduleTaskNotification(task: Task): Promise<void> {
 	const taskAt = new Date(taskDate);
 	taskAt.setHours(hours, minutes, 0, 0);
 
-	// const notifyAt = new Date(taskAt.getTime() - 30 * 60 * 1000);
-    const notifyAt = new Date(taskAt.getTime() - 10 * 1000); 
+	const notifyAt = new Date(taskAt.getTime() - 30 * 60 * 1000); // за полчаса
+    // const notifyAt = new Date(taskAt.getTime() - 10 * 1000); // за 10 секунд
 
 	if (notifyAt <= new Date()) return;
 
