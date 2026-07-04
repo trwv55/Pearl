@@ -12,7 +12,7 @@ import { TaskGradientEllipse } from "@/shared/assets/icons/TaskGradientEllipse";
 import { useLockBodyScroll } from "@/shared/hooks/useLockBodyScroll";
 import EditTaskForm from "./EditTaskForm";
 import styles from "./EditTaskPopup.module.css";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_NUDGE } from "@/shared/lib/haptics";
 
 interface EditTaskPopupProps {
@@ -23,7 +23,7 @@ interface EditTaskPopupProps {
 
 export const EditTaskPopup: React.FC<EditTaskPopupProps> = ({ task, isVisible, onClose }) => {
 	const gradientColor = useMemo(() => task?.markerColor || "#3d00cb", [task?.markerColor]);
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 	const sheetRef = useRef<HTMLElement>(null);
 
 	const handleClose = useCallback(() => {

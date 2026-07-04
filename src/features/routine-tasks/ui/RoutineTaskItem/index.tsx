@@ -8,7 +8,7 @@ import { userStore } from "@/shared/model/userStore";
 import { useSwipeable } from "react-swipeable";
 import { statsStore } from "@/shared/model/statsStore";
 import { startOfWeek } from "date-fns";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_SUCCESS, HAPTIC_MEDIUM } from "@/shared/lib/haptics";
 
 interface RoutineTaskItemProps {
@@ -22,7 +22,7 @@ export const RoutineTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isDraggi
 	const [isChecked, setIsChecked] = useState(task.isCompleted);
 	const [showDelete, setShowDelete] = useState(false);
 	const uid = userStore.user?.uid;
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	useEffect(() => {
 		setIsChecked(task.isCompleted);

@@ -16,7 +16,7 @@ import { LogoutButton } from "./LogoutButton";
 import { EditNamePopup } from "./EditNamePopup";
 import { APP_NAME, APP_VERSION } from "@/shared/lib/version";
 import styles from "./SettingsPopup.module.css";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_NUDGE, HAPTIC_LIGHT } from "@/shared/lib/haptics";
 import { notificationSettingsStore } from "@/shared/model/notificationSettingsStore";
 import { showErrorToast, showSuccessToast } from "@/shared/lib/showToast";
@@ -33,7 +33,7 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 	const [isEditNameOpen, setIsEditNameOpen] = useState(false);
 	const [editNameHeight, setEditNameHeight] = useState<number | null>(null);
 	const [mounted, setMounted] = useState(false);
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 	const sheetRef = useRef<HTMLElement>(null);
 	const editNameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

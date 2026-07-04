@@ -7,7 +7,7 @@ import { memo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./RegisterNotifications.module.css";
 import { ROUTES } from "@/shared/lib/routes";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 import { notificationSettingsStore } from "@/shared/model/notificationSettingsStore";
 
@@ -18,7 +18,7 @@ interface Props {
 
 export const RegisterNotifications = memo(({ onFinish, onPrev }: Props) => {
 	const router = useRouter();
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	const handleEnableNotifications = async () => {
 		trigger(...HAPTIC_LIGHT);

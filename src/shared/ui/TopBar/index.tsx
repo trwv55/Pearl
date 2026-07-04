@@ -5,7 +5,7 @@ import { AppBack } from "@/shared/assets/icons/AppBack";
 import { LogoIcon } from "@/shared/assets/svg/LogoIcon";
 import styles from "./topBar.module.css";
 import Link from "next/link";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 
 interface TopBarProps {
@@ -17,7 +17,7 @@ interface TopBarProps {
 
 export const TopBar = ({ title, onBack, onLogoClick }: TopBarProps) => {
 	const router = useRouter();
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	const handleBack = () => {
 		trigger(...HAPTIC_LIGHT);

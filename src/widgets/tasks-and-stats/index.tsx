@@ -11,7 +11,7 @@ import { observer } from "mobx-react-lite";
 import WeeklyStats from "@/widgets/WeeklyStats";
 import styles from "./TasksAndStatsWidget.module.css";
 import { statsStore } from "@/shared/model/statsStore";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 
 
@@ -34,7 +34,7 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots, isStackExpanded:
 		? (onExpandChange ?? (() => {}))
 		: setInternalExpanded;
 
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	const handleClose = useCallback(() => {
 		trigger(...HAPTIC_LIGHT);

@@ -9,7 +9,7 @@ import { taskStore } from "@/shared/model/taskStore";
 import { toast } from "sonner";
 import { statsStore } from "@/shared/model/statsStore";
 import { startOfWeek } from "date-fns";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 
 interface MainTaskStackProps {
@@ -32,7 +32,7 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 	const firstItemRef = useRef<HTMLDivElement | null>(null);
 	const [itemH, setItemH] = useState<number>(0);
 	const uid = userStore.user?.uid;
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	useEffect(() => {
 		if (isControlled) return;

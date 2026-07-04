@@ -4,7 +4,7 @@ import { observer } from "mobx-react-lite";
 import styles from "./MainPageTopBar.module.css";
 import { userStore } from "@/shared/model/userStore";
 import { SettingsPopup } from "@/features/settings";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 
 interface MainPageTopBarProps {
@@ -17,7 +17,7 @@ export const MainPageTopBar: React.FC<MainPageTopBarProps> = observer(
 	({ logoAlt = "Логотип", logoWidth = 40, logoHeight = 40 }) => {
 		const name = userStore.displayName;
 		const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-		const { trigger } = useWebHaptics();
+		const { trigger } = useHaptics();
 
 		const handleLogoClick = () => {
 			trigger(...HAPTIC_LIGHT);

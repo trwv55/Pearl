@@ -13,7 +13,7 @@ import { userStore } from "@/shared/model/userStore";
 import { updateUserName } from "@/shared/lib/auth/updateUserName";
 import { getFirebaseAuth } from "@/shared/lib/firebase";
 import styles from "./EditNamePopup.module.css";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_NUDGE, HAPTIC_LIGHT, HAPTIC_SUCCESS } from "@/shared/lib/haptics";
 
 interface EditNamePopupProps {
@@ -30,7 +30,7 @@ export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible
 	const sheetRef = useRef<HTMLElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const handleSheetPointerDown = useDragToClose(onClose);
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	useEffect(() => {
 		if (isVisible) {

@@ -7,7 +7,7 @@ import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/shared/lib/routes";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_LIGHT, HAPTIC_ERROR } from "@/shared/lib/haptics";
 
 interface Props {
@@ -20,7 +20,7 @@ export const RegisterName = memo(({ onChange, onNext, onPrev }: Props) => {
 	const router = useRouter();
 	const [localName, setLocalName] = useState("");
 	const [error, setError] = useState(false);
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {

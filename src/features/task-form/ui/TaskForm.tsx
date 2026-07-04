@@ -16,7 +16,7 @@ import { observer } from "mobx-react-lite";
 import { showSuccessToast, showErrorToast } from "@/shared/lib/showToast";
 import { useRouter } from "next/navigation";
 import StepEmoji from "@/shared/ui/task-form-steps/StepEmoji";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_ERROR, HAPTIC_SUCCESS } from "@/shared/lib/haptics";
 import { scheduleTaskNotification } from "@/shared/lib/notifications";
 
@@ -24,7 +24,7 @@ const DEFAULT_EMOJI = "🐚";
 
 const TaskForm = observer(() => {
 	const router = useRouter();
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 	const [title, setTitle] = useState("");
 	const [titleError, setTitleError] = useState(false);
 	const [isMain, setIsMain] = useState<boolean>(taskStore.mainTasks.length < 3);

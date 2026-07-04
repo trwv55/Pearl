@@ -21,7 +21,7 @@ import { statsStore } from "@/shared/model/statsStore";
 import { startOfWeek } from "date-fns";
 import { toast } from "sonner";
 import { formatTimeFromMinutes } from "@/shared/lib/utils";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_SUCCESS, HAPTIC_NUDGE } from "@/shared/lib/haptics";
 
 interface TaskViewPopupProps {
@@ -32,7 +32,7 @@ interface TaskViewPopupProps {
 
 export const TaskViewPopup: React.FC<TaskViewPopupProps> = ({ task, isVisible, onClose }) => {
 	const { openEditTask, openDuplicateTask } = useTaskViewPopup();
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 	const editTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const sheetRef = useRef<HTMLElement>(null);
 	const handleSheetPointerDown = useDragToClose(onClose);
