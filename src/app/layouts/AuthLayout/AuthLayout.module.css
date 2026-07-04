@@ -4,7 +4,8 @@
 	height: 100dvh;
 	height: 100svh;
 	width: 100%;
-	padding: 40px 20px;
+	/* в нативе добавляем высоту статус-бара; env() = 0 в обычном вебе */
+	padding: calc(env(safe-area-inset-top, 0px) + 40px) 20px 40px 20px;
 	box-sizing: border-box;
 	display: flex;
   	flex-direction: column;           
