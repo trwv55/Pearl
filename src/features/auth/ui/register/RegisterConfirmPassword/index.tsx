@@ -5,7 +5,7 @@ import { AuthBack } from "@/shared/assets/icons/AuthBack";
 import { startBackText } from "@/features/auth/lib/classNames";
 import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_LIGHT, HAPTIC_ERROR } from "@/shared/lib/haptics";
 
 interface Props {
@@ -18,7 +18,7 @@ interface Props {
 export const RegisterConfirmPassword = memo(({ onChange, onNext, onPrev, password }: Props) => {
 	const [localPassword, setLocalPassword] = useState("");
 	const [error, setError] = useState(false);
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {

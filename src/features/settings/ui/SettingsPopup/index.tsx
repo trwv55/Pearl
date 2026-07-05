@@ -16,34 +16,62 @@ import { LogoutButton } from "./LogoutButton";
 import { EditNamePopup } from "./EditNamePopup";
 import { APP_NAME, APP_VERSION } from "@/shared/lib/version";
 import styles from "./SettingsPopup.module.css";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_NUDGE, HAPTIC_LIGHT } from "@/shared/lib/haptics";
 import { notificationSettingsStore } from "@/shared/model/notificationSettingsStore";
 import { showErrorToast, showSuccessToast } from "@/shared/lib/showToast";
 
+const ANIMATION_DURATION = 250;
+
 interface SettingsPopupProps {
 	isVisible: boolean;
 	onClose: () => void;
+	onOpen?: () => void;
 }
 
-export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible, onClose }) => {
+export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible, onClose, onOpen }) => {
 	const [isEditNameOpen, setIsEditNameOpen] = useState(false);
+	const [editNameHeight, setEditNameHeight] = useState<number | null>(null);
 	const [mounted, setMounted] = useState(false);
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 	const sheetRef = useRef<HTMLElement>(null);
+	const editNameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	useEffect(() => setMounted(true), []);
+	useEffect(() => {
+		return () => {
+			if (editNameTimerRef.current) clearTimeout(editNameTimerRef.current);
+		};
+	}, []);
+
 	const handleSheetPointerDown = useDragToClose(onClose);
 
 	const handleOpenEditName = () => {
 		trigger(...HAPTIC_LIGHT);
-		setIsEditNameOpen(true);
-	};
-	const handleCloseEditName = () => setIsEditNameOpen(false);
-	const handleCloseBoth = () => {
-		setIsEditNameOpen(false);
+		if (sheetRef.current) {
+			setEditNameHeight(sheetRef.current.offsetHeight);
+		}
 		onClose();
+		if (editNameTimerRef.current) clearTimeout(editNameTimerRef.current);
+		editNameTimerRef.current = setTimeout(() => {
+			setIsEditNameOpen(true);
+			editNameTimerRef.current = null;
+		}, ANIMATION_DURATION);
 	};
+
+	const handleCloseEditName = () => {
+		setIsEditNameOpen(false);
+		if (editNameTimerRef.current) clearTimeout(editNameTimerRef.current);
+		editNameTimerRef.current = setTimeout(() => {
+			onOpen?.();
+			editNameTimerRef.current = null;
+		}, ANIMATION_DURATION);
+	};
+
+	const handleCloseEditNameFinal = () => {
+		setIsEditNameOpen(false);
+	};
+
 	const handleNotificationsToggle = async (checked: boolean) => {
 		trigger(...HAPTIC_LIGHT);
 		if (checked) {
@@ -72,13 +100,9 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 	}, [isVisible, onClose]);
 
 	useEffect(() => {
-		if (!isVisible) {
-			setIsEditNameOpen(false);
-			return;
-		}
+		if (!isVisible) return;
 
 		const handleOutsideClick = (e: MouseEvent) => {
-			if (isEditNameOpen) return;
 			const path = e.composedPath ? e.composedPath() : [];
 			const targetNode = e.target instanceof Node ? e.target : null;
 			if (sheetRef.current && (path.includes(sheetRef.current) || (targetNode && sheetRef.current.contains(targetNode)))) {
@@ -91,7 +115,7 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 
 		document.addEventListener("click", handleOutsideClick, true);
 		return () => document.removeEventListener("click", handleOutsideClick, true);
-	}, [isVisible, isEditNameOpen, onClose, trigger]);
+	}, [isVisible, onClose, trigger]);
 
 	useLockBodyScroll(isVisible);
 
@@ -105,34 +129,34 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 	if (!mounted) return null;
 
 	return (
-		<Popup
-			open={isVisible}
-			onClose={() => { trigger(HAPTIC_NUDGE); onClose(); }}
-			modal
-			lockScroll
-			closeOnDocumentClick={false}
-			closeOnEscape={false}
-			overlayStyle={{
-				background: "var(--popup-overlay-bg)",
-				zIndex: 300,
-			}}
-			contentStyle={{
-				position: "fixed",
-				bottom: 0,
-				left: 0,
-				right: 0,
-				height: "auto",
-				padding: 0,
-				border: "none",
-				background: "transparent",
-				borderRadius: "40px 40px 0 0",
-				margin: 0,
-			}}
-		>
-			<>
+		<>
+			<Popup
+				open={isVisible}
+				onClose={() => { trigger(HAPTIC_NUDGE); onClose(); }}
+				modal
+				lockScroll
+				closeOnDocumentClick={false}
+				closeOnEscape={false}
+				overlayStyle={{
+					background: "var(--popup-overlay-bg)",
+					zIndex: 300,
+				}}
+				contentStyle={{
+					position: "fixed",
+					bottom: 0,
+					left: 0,
+					right: 0,
+					height: "auto",
+					padding: 0,
+					border: "none",
+					background: "transparent",
+					borderRadius: "40px 40px 0 0",
+					margin: 0,
+				}}
+			>
 				<section
 					ref={sheetRef}
-					className={clsx(styles.sheet, styles.sheetEnter, isEditNameOpen && styles.sheetBlurred)}
+					className={clsx(styles.sheet, styles.sheetEnter)}
 					role="dialog"
 					onPointerDown={handleSheetPointerDown}
 				>
@@ -170,8 +194,8 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 						</div>
 					</div>
 				</section>
-				<EditNamePopup isVisible={isEditNameOpen} onClose={handleCloseBoth} onBack={handleCloseEditName} />
-			</>
-		</Popup>
+			</Popup>
+			<EditNamePopup isVisible={isEditNameOpen} onClose={handleCloseEditNameFinal} onBack={handleCloseEditName} height={editNameHeight} />
+		</>
 	);
 });

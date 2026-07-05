@@ -13,32 +13,27 @@ import { userStore } from "@/shared/model/userStore";
 import { updateUserName } from "@/shared/lib/auth/updateUserName";
 import { getFirebaseAuth } from "@/shared/lib/firebase";
 import styles from "./EditNamePopup.module.css";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_NUDGE, HAPTIC_LIGHT, HAPTIC_SUCCESS } from "@/shared/lib/haptics";
 
 interface EditNamePopupProps {
 	isVisible: boolean;
 	onClose: () => void;
 	onBack?: () => void;
+	height?: number | null;
 }
 
-export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible, onClose, onBack }) => {
+export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible, onClose, onBack, height }) => {
 	const [name, setName] = useState("");
-	const [popupHeight, setPopupHeight] = useState<number | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const sheetRef = useRef<HTMLElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const handleSheetPointerDown = useDragToClose(onClose);
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	useEffect(() => {
 		if (isVisible) {
-			const settingsPopup = document.querySelector('[role="dialog"]') as HTMLElement;
-			if (settingsPopup) {
-				const height = settingsPopup.offsetHeight;
-				setPopupHeight(height);
-			}
 			setName(userStore.displayName || "");
 			setTimeout(() => {
 				inputRef.current?.focus();
@@ -114,7 +109,7 @@ export const EditNamePopup: React.FC<EditNamePopupProps> = observer(({ isVisible
 				ref={sheetRef}
 				className={clsx(styles.sheet, isVisible && styles.sheetVisible)}
 				role="dialog"
-				style={popupHeight ? { height: `${popupHeight}px` } : undefined}
+				style={height ? { height: `${height}px` } : undefined}
 				onPointerDown={handleSheetPointerDown}
 			>
 				<div className={styles.gradientTop}>

@@ -8,7 +8,7 @@ import { memo, useCallback, useState } from "react";
 import { passwordSchema } from "../../../lib/yupShemas";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/shared/lib/routes";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_LIGHT, HAPTIC_ERROR } from "@/shared/lib/haptics";
 
 interface Props {
@@ -21,7 +21,7 @@ export const RegisterPassword = memo(({ onChange, onNext, onPrev }: Props) => {
 	const router = useRouter();
 	const [localPassword, setLocalPassword] = useState("");
 	const [error, setError] = useState(false);
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {

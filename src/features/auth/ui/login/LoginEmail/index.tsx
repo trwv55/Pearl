@@ -8,7 +8,7 @@ import { AuthInput } from "../../shared/AuthInput/Index";
 import { memo, useCallback, useState } from "react";
 import { emailSchema } from "../../../lib/yupShemas";
 import { ROUTES } from "@/shared/lib/routes";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_LIGHT, HAPTIC_ERROR } from "@/shared/lib/haptics";
 
 interface StepEmailProps {
@@ -20,7 +20,7 @@ interface StepEmailProps {
 export const LoginEmail = memo(({ value, onChange, onNext }: StepEmailProps) => {
 	const router = useRouter();
 	const [error, setError] = useState(false);
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {

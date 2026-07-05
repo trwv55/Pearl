@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 import styles from "./TimeSelect.module.css";
 
@@ -25,7 +25,7 @@ interface Props {
 export const TimeSelect = ({ value, onChange, interval = 5, placeholderLabel = "--:--" }: Props) => {
 	const timeOptions = useMemo(() => generateTimeOptions(interval), [interval]);
 	const selectClassName = value ? styles.select : `${styles.select} ${styles.placeholderCentered}`;
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		onChange(e.target.value);

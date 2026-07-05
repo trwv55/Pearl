@@ -10,7 +10,7 @@ import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
 import styles from "./DateTimeSelector.module.css";
 import { TimeSelect } from "../../TimeSelect";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
@@ -29,7 +29,7 @@ interface Props {
 export const DateTimeSelector = ({ value, onChange, onTimeChange, time }: Props) => {
 	const [selected, setSelected] = useState<Date>(value);
 	const [selectedTime, setSelectedTime] = useState<string>(time || "");
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	const handleSelectDay = (date: Date) => {
 		trigger(...HAPTIC_LIGHT);

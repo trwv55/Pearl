@@ -1,7 +1,7 @@
 import React from "react";
 import { Gift } from "lucide-react";
 import styles from "./GiftButton.module.css";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 
 interface GiftButtonProps {
@@ -9,7 +9,7 @@ interface GiftButtonProps {
 }
 
 export const GiftButton: React.FC<GiftButtonProps> = ({ onClick }) => {
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	const handleClick = () => {
 		trigger(...HAPTIC_LIGHT);

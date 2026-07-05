@@ -8,7 +8,7 @@ import { userStore } from "@/shared/model/userStore";
 import SplashScreen from "@/shared/ui/SplashScreen";
 import { loginUser, isLoginSuccess } from "../lib/loginApi";
 import { ROUTES } from "@/shared/lib/routes";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_SUCCESS, HAPTIC_ERROR } from "@/shared/lib/haptics";
 
 export const Login = memo(() => {
@@ -20,7 +20,7 @@ export const Login = memo(() => {
 	const [error, setError] = useState<string | null>(null);
 	const [showSplash, setShowSplash] = useState(false);
 	const router = useRouter();
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	const goNext = useCallback(() => setStep((prev) => prev + 1), []);
 	const goBack = useCallback(() => setStep((prev) => Math.max(0, prev - 1)), []);

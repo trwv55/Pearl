@@ -1,7 +1,7 @@
 "use client";
 import { memo } from "react";
 import styles from "./UndoToast.module.css";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
 
 interface UndoToastProps {
@@ -11,7 +11,7 @@ interface UndoToastProps {
 }
 
 export const UndoToast = memo(function UndoToast({ title = "Задача удалена", onUndo, onClose }: UndoToastProps) {
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	const handleUndo = () => {
 		trigger(...HAPTIC_LIGHT);

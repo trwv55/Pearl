@@ -11,7 +11,7 @@ import { TaskGradientEllipse } from "@/shared/assets/icons/TaskGradientEllipse";
 import { useLockBodyScroll } from "@/shared/hooks/useLockBodyScroll";
 import DuplicateTaskForm from "./DuplicateTaskForm";
 import styles from "./DuplicateTaskPopup.module.css";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_NUDGE } from "@/shared/lib/haptics";
 
 interface DuplicateTaskPopupProps {
@@ -22,7 +22,7 @@ interface DuplicateTaskPopupProps {
 
 export const DuplicateTaskPopup: React.FC<DuplicateTaskPopupProps> = ({ task, isVisible, onClose }) => {
 	const gradientColor = useMemo(() => task?.markerColor || "#3d00cb", [task?.markerColor]);
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 	const sheetRef = useRef<HTMLElement>(null);
 
 	const handleClose = useCallback(() => {

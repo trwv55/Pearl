@@ -6,12 +6,12 @@ import styles from "./auth.module.css";
 import Image from "next/image";
 import { ROUTES } from "@/shared/lib/routes";
 import pearlLogo from "@/shared/assets/svg/pearl_logo.svg?url";
-import { useWebHaptics } from "web-haptics/react";
+import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_MEDIUM } from "@/shared/lib/haptics";
 
 export const Auth = () => {
 	const router = useRouter();
-	const { trigger } = useWebHaptics();
+	const { trigger } = useHaptics();
 
 	const handleRegister = () => {
 		trigger(...HAPTIC_MEDIUM);
