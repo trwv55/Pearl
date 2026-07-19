@@ -10,9 +10,19 @@ import {
 	addTaskWithId,
 	generateTaskId,
 	updateTask,
+	updateTasksOrder,
+	mapDocToTask,
 	type TaskPayload,
 } from "@/shared/api/taskApi";
-import { isTaskMain, isTaskRoutine, TaskRoutine, type Task, type TaskMain } from "@/shared/types/task";
+import {
+	isTaskMain,
+	isTaskRoutine,
+	compareTaskOrder,
+	NO_ORDER,
+	TaskRoutine,
+	type Task,
+	type TaskMain,
+} from "@/shared/types/task";
 import { showUndoToast } from "@/shared/lib/showUndoToast";
 import { showErrorToast } from "@/shared/lib/showToast";
 import { cancelTaskNotification, scheduleTaskNotification } from "@/shared/lib/notifications";
@@ -108,21 +118,7 @@ class TaskStore {
 			const end = addDays(start, 1);
 			const q = query(collection(db, "users", userId, "tasks"), where("date", ">=", start), where("date", "<", end));
 			const snapshot = await getDocs(q);
-			const tasks: Task[] = snapshot.docs.map((doc) => {
-				const data = doc.data();
-				return {
-					id: doc.id,
-					title: data.title,
-					comment: data.comment,
-					date: data.date.toDate ? data.date.toDate() : data.date,
-					emoji: data.emoji,
-					isMain: data.isMain,
-					markerColor: data.markerColor,
-					isCompleted: data.isCompleted,
-					completedAt: data.completedAt?.toDate() || null,
-					time: typeof data.time === "number" ? data.time : null,
-				};
-			});
+			const tasks: Task[] = snapshot.docs.map((doc) => mapDocToTask(doc.id, doc.data()));
 
 			runInAction(() => {
 				const key = this.getDateKey(date);
@@ -150,19 +146,7 @@ class TaskStore {
 			const groupedTasks: Map<string, Task[]> = new Map();
 
 			snapshot.docs.forEach((doc) => {
-				const data = doc.data();
-				const task: Task = {
-					id: doc.id,
-					title: data.title,
-					comment: data.comment,
-					date: data.date.toDate ? data.date.toDate() : data.date,
-					emoji: data.emoji,
-					isMain: data.isMain,
-					markerColor: data.markerColor,
-					isCompleted: data.isCompleted,
-					completedAt: data.completedAt?.toDate() || null,
-					time: typeof data.time === "number" ? data.time : null,
-				};
+				const task = mapDocToTask(doc.id, doc.data());
 
 				const key = this.getDateKey(task.date);
 				if (!groupedTasks.has(key)) {
@@ -198,6 +182,7 @@ class TaskStore {
 	// задачи; сетевую часть НЕ ждём в вызывающем коде.
 	createOptimistic(userId: string, payload: TaskPayload): string {
 		const id = generateTaskId(userId);
+		const order = this.nextOrder(payload.date, payload.isMain);
 
 		const task: Task = {
 			id,
@@ -210,12 +195,14 @@ class TaskStore {
 			time: payload.time,
 			isCompleted: false,
 			completedAt: null,
+			order,
+			createdAt: new Date(),
 		};
 
 		this.addToCache(task);
 		scheduleTaskNotification(task);
 
-		addTaskWithId(userId, id, payload).catch((e) => {
+		addTaskWithId(userId, id, payload, order).catch((e) => {
 			console.error("Ошибка при создании задачи:", e);
 			runInAction(() => this.removeFromCache(task.date, id));
 			cancelTaskNotification(id);
@@ -223,6 +210,41 @@ class TaskStore {
 		});
 
 		return id;
+	}
+
+	// Следующий order для нового элемента: max среди задач того же типа в дне + 1.
+	// Игнорирует задачи без явного order (NO_ORDER), чтобы новая не улетала в конец.
+	private nextOrder(date: Date, isMain: boolean): number {
+		const tasks = this.getTasksForDate(date).filter((t) => t.isMain === isMain && t.order !== NO_ORDER);
+		if (tasks.length === 0) return 0;
+		return Math.max(...tasks.map((t) => t.order)) + 1;
+	}
+
+	// Оптимистичная перестановка: задаём новые order по порядку в orderedTasks,
+	// сразу применяем в кэше, батч-запись в фон. При ошибке — откат и тост.
+	reorderOptimistic(userId: string, orderedTasks: Task[]) {
+		if (orderedTasks.length === 0) return;
+
+		const prevById = new Map(orderedTasks.map((t) => [t.id, t.order]));
+
+		const updates = orderedTasks.map((t, index) => ({ id: t.id, order: index }));
+
+		runInAction(() => {
+			orderedTasks.forEach((t, index) => {
+				this.replaceInCache({ ...t, order: index });
+			});
+		});
+
+		updateTasksOrder(userId, updates).catch((e) => {
+			console.error("Ошибка при сохранении порядка задач:", e);
+			runInAction(() => {
+				orderedTasks.forEach((t) => {
+					const prevOrder = prevById.get(t.id);
+					if (prevOrder !== undefined) this.replaceInCache({ ...t, order: prevOrder });
+				});
+			});
+			showErrorToast("Не удалось сохранить порядок");
+		});
 	}
 
 	// Оптимистичное обновление: изменения сразу видны в UI, запись в Firestore
@@ -348,11 +370,11 @@ class TaskStore {
 	}
 
 	get mainTasks(): TaskMain[] {
-		return this.tasks.filter(isTaskMain);
+		return this.tasks.filter(isTaskMain).sort(compareTaskOrder);
 	}
 
 	get routineTasks(): TaskRoutine[] {
-		return this.tasks.filter(isTaskRoutine);
+		return this.tasks.filter(isTaskRoutine).sort(compareTaskOrder);
 	}
 }
 
