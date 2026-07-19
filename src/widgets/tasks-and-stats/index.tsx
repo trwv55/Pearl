@@ -123,9 +123,9 @@ export const TasksAndStatsWidget = observer(({ tasks, showDots, isStackExpanded:
 	return (
 		<div className="w-full">
 			<div className="overflow-hidden" ref={emblaRef}>
-				<div className="flex items-start">
-					<div className="flex-[0_0_100%]">{firstSlide}</div>
-					<div className="flex-[0_0_100%]">
+				<div className="flex items-start -ml-4">
+					<div className="flex-[0_0_100%] pl-4">{firstSlide}</div>
+					<div className="flex-[0_0_100%] pl-4">
 						<WeeklyStats />
 					</div>
 				</div>
