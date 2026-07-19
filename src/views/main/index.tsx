@@ -25,6 +25,14 @@ export const MainPage = observer(() => {
 		}
 	}, [userStore.user]);
 
+	// Догружаем день, если пользователь ушёл за пределы предзагруженного
+	// диапазона — иначе он увидит пустой день при существующих задачах.
+	useEffect(() => {
+		if (userStore.user) {
+			taskStore.ensureTasksForDate(userStore.user.uid, taskStore.selectedDate);
+		}
+	}, [userStore.user, taskStore.selectedDate]);
+
 	useEffect(() => {
 		setIsStackExpanded(false);
 	}, [taskStore.selectedDate]);

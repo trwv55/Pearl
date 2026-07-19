@@ -27,7 +27,7 @@ export const useTaskDateSync = (date: Date, options?: UseTaskDateSyncOptions): U
 		if (!userStore.user) return;
 
 		const loadTasksForDate = async () => {
-			const hasCachedData = taskStore.hasTasksForDate(date);
+			const hasCachedData = taskStore.isDateLoaded(date);
 
 			if (!hasCachedData) {
 				setIsLoadingTasks(true);

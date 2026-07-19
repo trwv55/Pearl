@@ -32,6 +32,8 @@ class TaskStore {
 	selectedDate: Date = new Date();
 	private taskCache: Map<string, Task[]> = new Map();
 	private pending: Map<string, ReturnType<typeof setTimeout>> = new Map();
+	// Даты, по которым сейчас идёт догрузка — чтобы не слать дубли запросов.
+	private inFlightDates: Set<string> = new Set();
 
 	constructor() {
 		makeAutoObservable(this);
@@ -156,12 +158,17 @@ class TaskStore {
 			});
 
 			runInAction(() => {
-				groupedTasks.forEach((tasks, key) => {
-					this.taskCache.set(key, tasks);
-					if (this.getDateKey(this.selectedDate) === key) {
-						this.tasks = tasks;
-					}
-				});
+				// Помечаем загруженным ВЕСЬ диапазон, включая дни без задач —
+				// иначе пустой день выглядит как незагруженный и мы шлём лишний запрос.
+				for (let d = startOfDay(startDate); d < startOfDay(addDays(endDate, 1)); d = addDays(d, 1)) {
+					const key = this.getDateKey(d);
+					this.taskCache.set(key, groupedTasks.get(key) ?? []);
+				}
+
+				const selectedKey = this.getDateKey(this.selectedDate);
+				if (this.taskCache.has(selectedKey)) {
+					this.tasks = this.taskCache.get(selectedKey)!;
+				}
 			});
 		} catch (error) {
 			console.error("Ошибка при загрузке задач за диапазон:", error);
@@ -358,10 +365,31 @@ class TaskStore {
 		}
 	}
 
+	// «У дня есть задачи» — для индикатора в переключателе дней.
+	// НЕ путать с isDateLoaded: честно пустой день вернёт false.
 	hasTasksForDate(date: Date): boolean {
 		const key = this.getDateKey(date);
 		const tasks = this.taskCache.get(key);
 		return !!tasks && tasks.length > 0;
+	}
+
+	// «День уже загружен с сервера» — в т.ч. если задач в нём нет.
+	isDateLoaded(date: Date): boolean {
+		return this.taskCache.has(this.getDateKey(date));
+	}
+
+	// Догружает день, если он ещё не загружен. Защищено от параллельных
+	// запросов по одной дате (быстрое листание календаря).
+	async ensureTasksForDate(userId: string, date: Date) {
+		const key = this.getDateKey(date);
+		if (this.taskCache.has(key) || this.inFlightDates.has(key)) return;
+
+		this.inFlightDates.add(key);
+		try {
+			await this.fetchTasks(userId, date);
+		} finally {
+			this.inFlightDates.delete(key);
+		}
 	}
 
 	getTasksForDate(date: Date): Task[] {
