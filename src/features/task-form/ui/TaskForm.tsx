@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { addTask } from "@/shared/api/taskApi";
 import { userStore } from "@/shared/model/userStore";
 import { taskStore } from "@/shared/model/taskStore";
 import { useTaskDateSync } from "@/features/task-form/model/useTaskDateSync";
@@ -18,7 +17,6 @@ import { useRouter } from "next/navigation";
 import StepEmoji from "@/shared/ui/task-form-steps/StepEmoji";
 import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_ERROR, HAPTIC_SUCCESS } from "@/shared/lib/haptics";
-import { scheduleTaskNotification } from "@/shared/lib/notifications";
 
 const DEFAULT_EMOJI = "🐚";
 
@@ -68,50 +66,28 @@ const TaskForm = observer(() => {
 
 		trigger(HAPTIC_SUCCESS);
 
-		try {
-			const timeInMinutes = time
-				? (() => {
-						const [h, m] = time.split(":");
-						return parseInt(h, 10) * 60 + parseInt(m, 10);
-				  })()
-				: null;
+		const timeInMinutes = time
+			? (() => {
+					const [h, m] = time.split(":");
+					return parseInt(h, 10) * 60 + parseInt(m, 10);
+			  })()
+			: null;
 
-			const taskId = await addTask(userStore.user.uid, {
-				title,
-				comment,
-				date,
-				emoji: finalEmoji,
-				isMain,
-				markerColor,
-				time: timeInMinutes,
-			});
+		// Открываем день новой задачи, затем оптимистично создаём её:
+		// задача сразу появляется в UI, запись в Firestore идёт в фоне.
+		taskStore.setSelectedDate(date);
+		taskStore.createOptimistic(userStore.user.uid, {
+			title,
+			comment,
+			date,
+			emoji: finalEmoji,
+			isMain,
+			markerColor,
+			time: timeInMinutes,
+		});
 
-			await scheduleTaskNotification({
-				id: taskId,
-				title,
-				comment,
-				date,
-				emoji: finalEmoji,
-				isMain,
-				markerColor,
-				time: timeInMinutes,
-				isCompleted: false,
-				completedAt: null,
-			});
-
-			if (userStore.user) {
-				taskStore.setSelectedDate(date);
-				await taskStore.fetchTasks(userStore.user.uid, taskStore.selectedDate);
-			}
-			showSuccessToast("Задача создана");
-			router.back();
-		} catch (e) {
-			console.error(e);
-			submitLockRef.current = false;
-			setIsSubmitting(false);
-			trigger(HAPTIC_ERROR);
-			showErrorToast("Ошибка. Попробуй еще раз");
-		}
+		showSuccessToast("Задача создана");
+		router.back();
 	};
 
 	return (

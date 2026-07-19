@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { isSameDay } from "date-fns";
-import { updateTask } from "@/shared/api/taskApi";
 import type { Task } from "@/shared/types/task";
 import { userStore } from "@/shared/model/userStore";
 import { taskStore } from "@/shared/model/taskStore";
@@ -18,7 +16,6 @@ import { observer } from "mobx-react-lite";
 import { showSuccessToast, showErrorToast } from "@/shared/lib/showToast";
 import StepEmoji from "@/shared/ui/task-form-steps/StepEmoji";
 import { formatTimeFromMinutes } from "@/shared/lib/utils";
-import { scheduleTaskNotification, cancelTaskNotification } from "@/shared/lib/notifications";
 
 interface EditTaskFormProps {
 	task: Task;
@@ -60,52 +57,27 @@ const EditTaskForm = observer(({ task, onClose }: EditTaskFormProps) => {
 			return;
 		}
 
-		try {
-			const timeInMinutes = time
-				? (() => {
-						const [h, m] = time.split(":");
-						return parseInt(h, 10) * 60 + parseInt(m, 10);
-				  })()
-				: null;
+		const timeInMinutes = time
+			? (() => {
+					const [h, m] = time.split(":");
+					return parseInt(h, 10) * 60 + parseInt(m, 10);
+			  })()
+			: null;
 
-			await updateTask(userStore.user.uid, task.id, {
-				title,
-				comment,
-				date,
-				emoji: emoji || "🐚",
-				isMain,
-				markerColor,
-				time: timeInMinutes,
-			});
+		// Оптимистичное обновление: изменения сразу видны в UI, запись в
+		// Firestore идёт в фоне. При ошибке — откат и тост.
+		taskStore.updateOptimistic(userStore.user.uid, task, {
+			title,
+			comment,
+			date,
+			emoji: emoji || "🐚",
+			isMain,
+			markerColor,
+			time: timeInMinutes,
+		});
 
-			await cancelTaskNotification(task.id);
-			await scheduleTaskNotification({
-				...task,
-				title,
-				comment,
-				date,
-				emoji: emoji || "🐚",
-				isMain,
-				markerColor,
-				time: timeInMinutes,
-			});
-
-			if (userStore.user) {
-				const dateChanged = !isSameDay(date, task.date);
-				const datesToUpdate = new Set<Date>();
-				datesToUpdate.add(taskStore.selectedDate);
-				datesToUpdate.add(date);
-				if (dateChanged) datesToUpdate.add(task.date);
-
-				await Promise.all(Array.from(datesToUpdate).map((d) => taskStore.fetchTasks(userStore.user!.uid, d)));
-			}
-
-			showSuccessToast("Задача обновлена");
-			onClose();
-		} catch (e) {
-			console.error(e);
-			showErrorToast("Не удалось обновить задачу");
-		}
+		showSuccessToast("Задача обновлена");
+		onClose();
 	};
 
 	return (

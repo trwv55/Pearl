@@ -13,6 +13,7 @@ import {
 	updateDoc,
 	where,
 	getDoc,
+	type FieldValue,
 } from "firebase/firestore";
 import { addDays, startOfDay } from "date-fns";
 import { getFirebaseDb } from "@/shared/lib/firebase";
@@ -28,11 +29,10 @@ export interface TaskPayload {
 	time: number | null;
 }
 
-export const addTask = async (userId: string, payload: TaskPayload): Promise<string> => {
+export const addTaskWithId = async (userId: string, id: string, payload: TaskPayload): Promise<void> => {
 	const { title, comment, date, emoji, isMain, markerColor, time } = payload;
 	const db = getFirebaseDb();
-	const ref = doc(collection(db, "users", userId, "tasks"));
-	const id = ref.id;
+	const ref = doc(db, "users", userId, "tasks", id);
 
 	await setDoc(ref, {
 		id,
@@ -49,7 +49,16 @@ export const addTask = async (userId: string, payload: TaskPayload): Promise<str
 		createdAt: serverTimestamp(),
 		updatedAt: serverTimestamp(),
 	});
+};
 
+export const generateTaskId = (userId: string): string => {
+	const db = getFirebaseDb();
+	return doc(collection(db, "users", userId, "tasks")).id;
+};
+
+export const addTask = async (userId: string, payload: TaskPayload): Promise<string> => {
+	const id = generateTaskId(userId);
+	await addTaskWithId(userId, id, payload);
 	return id;
 };
 
@@ -141,49 +150,19 @@ export const updateTask = async (userId: string, taskId: string, payload: Partia
 	const db = getFirebaseDb();
 	const taskRef = doc(db, "users", userId, "tasks", taskId);
 
-	try {
-		const taskDoc = await getDoc(taskRef);
-		if (!taskDoc.exists()) {
-			throw new Error("Задача не найдена");
-		}
+	const updateData: Partial<TaskPayload> & { updatedAt: FieldValue } = {
+		updatedAt: serverTimestamp(),
+	};
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const updateData: any = {
-			updatedAt: serverTimestamp(),
-		};
+	if (payload.title !== undefined) updateData.title = payload.title;
+	if (payload.comment !== undefined) updateData.comment = payload.comment;
+	if (payload.date !== undefined) updateData.date = payload.date;
+	if (payload.emoji !== undefined) updateData.emoji = payload.emoji;
+	if (payload.isMain !== undefined) updateData.isMain = payload.isMain;
+	if (payload.markerColor !== undefined) updateData.markerColor = payload.markerColor;
+	if (payload.time !== undefined) updateData.time = payload.time;
 
-		if (payload.title !== undefined) updateData.title = payload.title;
-		if (payload.comment !== undefined) updateData.comment = payload.comment;
-		if (payload.date !== undefined) updateData.date = payload.date;
-		if (payload.emoji !== undefined) updateData.emoji = payload.emoji;
-		if (payload.isMain !== undefined) updateData.isMain = payload.isMain;
-		if (payload.markerColor !== undefined) updateData.markerColor = payload.markerColor;
-		if (payload.time !== undefined) updateData.time = payload.time;
-
-		await updateDoc(taskRef, updateData);
-
-		const updatedDoc = await getDoc(taskRef);
-		if (!updatedDoc.exists()) {
-			throw new Error("Задача не найдена после обновления");
-		}
-
-		const data = updatedDoc.data();
-		return {
-			id: updatedDoc.id,
-			title: data.title,
-			comment: data.comment,
-			date: data.date.toDate ? data.date.toDate() : data.date,
-			emoji: data.emoji,
-			isMain: data.isMain,
-			markerColor: data.markerColor,
-			isCompleted: data.isCompleted,
-			completedAt: data.completedAt?.toDate() || null,
-			time: typeof data.time === "number" ? data.time : null,
-		} as Task;
-	} catch (e) {
-		console.error("Ошибка при обновлении задачи: ", e);
-		throw e;
-	}
+	await updateDoc(taskRef, updateData);
 };
 
 export const toggleTaskCompletion = async (userId: string, taskId: string) => {

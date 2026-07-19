@@ -4,7 +4,14 @@ import { makeAutoObservable, runInAction } from "mobx";
 import { getFirebaseDb } from "@/shared/lib/firebase";
 import { format, addDays, startOfDay } from "date-fns";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { deleteTask as deleteTaskApi, toggleTaskCompletion } from "@/shared/api/taskApi";
+import {
+	deleteTask as deleteTaskApi,
+	toggleTaskCompletion,
+	addTaskWithId,
+	generateTaskId,
+	updateTask,
+	type TaskPayload,
+} from "@/shared/api/taskApi";
 import { isTaskMain, isTaskRoutine, TaskRoutine, type Task, type TaskMain } from "@/shared/types/task";
 import { showUndoToast } from "@/shared/lib/showUndoToast";
 import { showErrorToast } from "@/shared/lib/showToast";
@@ -38,6 +45,49 @@ class TaskStore {
 		const next = this.tasks.filter((t) => t.id !== task.id);
 		this.tasks = [task, ...next];
 		this.syncCacheForSelectedDate();
+	}
+
+	// Заменяет задачу в кэше её даты НА МЕСТЕ (сохраняя позицию в списке).
+	// Если задачи нет в списке (напр. дата не подгружена) — кладёт в начало.
+	private replaceInCache(task: Task) {
+		const key = this.getDateKey(task.date);
+		const current = this.taskCache.get(key) ?? [];
+		const idx = current.findIndex((t) => t.id === task.id);
+
+		const next = idx === -1 ? [task, ...current] : current.map((t) => (t.id === task.id ? task : t));
+		this.taskCache.set(key, next);
+
+		if (this.getDateKey(this.selectedDate) === key) {
+			this.tasks = next;
+		}
+	}
+
+	// Кладёт задачу в кэш её даты (не обязательно выбранной) и обновляет
+	// this.tasks, если эта дата сейчас открыта.
+	private addToCache(task: Task) {
+		const key = this.getDateKey(task.date);
+		const current = this.taskCache.get(key) ?? [];
+		const next = [task, ...current.filter((t) => t.id !== task.id)];
+		this.taskCache.set(key, next);
+
+		if (this.getDateKey(this.selectedDate) === key) {
+			this.tasks = next;
+		}
+	}
+
+	// Убирает задачу из кэша указанной даты и обновляет this.tasks,
+	// если эта дата сейчас открыта.
+	private removeFromCache(date: Date, taskId: string) {
+		const key = this.getDateKey(date);
+		const current = this.taskCache.get(key);
+		if (current) {
+			const next = current.filter((t) => t.id !== taskId);
+			this.taskCache.set(key, next);
+
+			if (this.getDateKey(this.selectedDate) === key) {
+				this.tasks = next;
+			}
+		}
 	}
 
 	setSelectedDate(date: Date) {
@@ -141,6 +191,75 @@ class TaskStore {
 	clearCache() {
 		this.taskCache.clear();
 		this.tasks = [];
+	}
+
+	// Оптимистичное создание: задача мгновенно появляется в UI, запись в
+	// Firestore идёт в фоне. При ошибке — откат и тост. Возвращает id новой
+	// задачи; сетевую часть НЕ ждём в вызывающем коде.
+	createOptimistic(userId: string, payload: TaskPayload): string {
+		const id = generateTaskId(userId);
+
+		const task: Task = {
+			id,
+			title: payload.title,
+			comment: payload.comment,
+			date: payload.date,
+			emoji: payload.emoji,
+			isMain: payload.isMain,
+			markerColor: payload.markerColor,
+			time: payload.time,
+			isCompleted: false,
+			completedAt: null,
+		};
+
+		this.addToCache(task);
+		scheduleTaskNotification(task);
+
+		addTaskWithId(userId, id, payload).catch((e) => {
+			console.error("Ошибка при создании задачи:", e);
+			runInAction(() => this.removeFromCache(task.date, id));
+			cancelTaskNotification(id);
+			showErrorToast("Не удалось сохранить, задача убрана");
+		});
+
+		return id;
+	}
+
+	// Оптимистичное обновление: изменения сразу видны в UI, запись в Firestore
+	// идёт в фоне. Учитывает смену даты (перенос между кэшами). При ошибке —
+	// откат к прежнему состоянию и тост.
+	updateOptimistic(userId: string, prevTask: Task, payload: Partial<TaskPayload>) {
+		const updatedTask: Task = {
+			...prevTask,
+			...payload,
+		};
+
+		const dateChanged = this.getDateKey(prevTask.date) !== this.getDateKey(updatedTask.date);
+
+		if (dateChanged) {
+			this.removeFromCache(prevTask.date, prevTask.id);
+			this.addToCache(updatedTask);
+		} else {
+			this.replaceInCache(updatedTask);
+		}
+
+		cancelTaskNotification(prevTask.id);
+		scheduleTaskNotification(updatedTask);
+
+		updateTask(userId, prevTask.id, payload).catch((e) => {
+			console.error("Ошибка при обновлении задачи:", e);
+			runInAction(() => {
+				if (dateChanged) {
+					this.removeFromCache(updatedTask.date, prevTask.id);
+					this.addToCache(prevTask);
+				} else {
+					this.replaceInCache(prevTask);
+				}
+			});
+			cancelTaskNotification(prevTask.id);
+			scheduleTaskNotification(prevTask);
+			showErrorToast("Не удалось сохранить, изменения отменены");
+		});
 	}
 
 	async deleteWithUndo(userId: string, task: Task, delayMs = 4000, onDeleted?: () => void) {
