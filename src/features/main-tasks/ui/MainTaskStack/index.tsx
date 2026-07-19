@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import type { Task, TaskMain } from "@/shared/types/task";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { isTaskMain, type Task, type TaskMain } from "@/shared/types/task";
 import { MainTaskItem } from "@/features/main-tasks/ui/MainTaskItem";
 import { EmptyTaskState } from "@/shared/ui/EmptyTaskState";
 import styles from "./MainTaskStack.module.css";
@@ -11,6 +14,32 @@ import { statsStore } from "@/shared/model/statsStore";
 import { startOfWeek } from "date-fns";
 import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_LIGHT } from "@/shared/lib/haptics";
+
+interface SortableMainTaskProps {
+	task: TaskMain;
+	onDelete: (taskId: string) => void;
+	onComplete: (task: Task) => void;
+}
+
+// Обёртка для drag-and-drop в раскрытом стеке. transform от dnd-kit идёт на
+// внешнем div, а framer-motion-анимация (y:0/scale:1) — на внутреннем в стеке,
+// поэтому источники transform не конфликтуют.
+const SortableMainTask: React.FC<SortableMainTaskProps> = ({ task, onDelete, onComplete }) => {
+	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
+
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+		zIndex: isDragging ? 1 : 0,
+		position: "relative" as const,
+	};
+
+	return (
+		<div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+			<MainTaskItem task={task} isExpanded isDragging={isDragging} onDelete={onDelete} onComplete={onComplete} />
+		</div>
+	);
+};
 
 interface MainTaskStackProps {
 	tasks: (TaskMain | null)[];
@@ -94,16 +123,73 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 		[uid, taskStore.selectedDate],
 	);
 
+	// Реальные (не-плейсхолдер) главные задачи — только их можно перетаскивать.
+	const realTasks = useMemo(() => tasks.filter((t): t is TaskMain => !!t && isTaskMain(t)), [tasks]);
+
+	// Задержка активации как у рутинных: короткий свайп → удаление, удержание → drag.
+	const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { delay: 1000, tolerance: 50 } }));
+
+	const handleDragEnd = useCallback(
+		(event: { active: { id: string | number }; over: { id: string | number } | null }) => {
+			const { active, over } = event;
+			if (!over || active.id === over.id) return;
+
+			const oldIndex = realTasks.findIndex((t) => t.id === active.id);
+			const newIndex = realTasks.findIndex((t) => t.id === over.id);
+			if (oldIndex === -1 || newIndex === -1) return;
+
+			const reordered = arrayMove(realTasks, oldIndex, newIndex);
+			if (uid) taskStore.reorderOptimistic(uid, reordered);
+		},
+		[realTasks, uid],
+	);
+
 	const expandedHeight = 300;
 	const collapsedHeight = itemH || undefined;
 	const containerAnimate = itemH ? { height: isExpanded ? expandedHeight : collapsedHeight } : undefined;
 
+	// Раскрытый стек: вертикальный список с drag-and-drop. Реальные задачи
+	// перетаскиваются, плейсхолдеры («Будущая задача») — статичны.
+	if (isExpanded) {
+		return (
+			<motion.div
+				initial={false}
+				animate={containerAnimate}
+				transition={{ type: "tween", duration: 0.25, ease: "easeOut" }}
+				className={`${styles.stack} ${styles.expanded}`}
+				style={{ overflow: "hidden" }}
+			>
+				<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+					<SortableContext items={realTasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+						{tasks.map((task, index) => (
+							<div
+								key={task ? task.id : `placeholder-${index}`}
+								className={styles.taskItemWrapper}
+							>
+								<div className={styles.taskItemWrap} ref={index === 0 ? firstItemRef : undefined}>
+									{task ? (
+										<SortableMainTask task={task} onDelete={handleDelete} onComplete={handleComplete} />
+									) : (
+										<EmptyTaskState>
+											<span>Будущая</span>&nbsp; задача
+										</EmptyTaskState>
+									)}
+								</div>
+							</div>
+						))}
+					</SortableContext>
+				</DndContext>
+			</motion.div>
+		);
+	}
+
+	// Свёрнутый стек: карты наложены друг на друга (framer-motion), без DnD.
 	return (
 		<motion.div
 			initial={false}
 			animate={containerAnimate}
 			transition={{ type: "tween", duration: 0.25, ease: "easeOut" }}
-			className={`${styles.stack} ${isExpanded ? styles.expanded : ""}`}
+			className={styles.stack}
 			style={{ overflow: "hidden" }}
 		>
 			{tasks.map((task, index) => {
@@ -116,27 +202,27 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 						key={task ? task.id : `placeholder-${index}`}
 						initial={false}
 						animate={{
-							y: isExpanded ? 0 : offset,
-							scale: isExpanded ? 1 : scale,
-							opacity: isExpanded || index === 0 ? 1 : 0.95,
+							y: offset,
+							scale: scale,
+							opacity: index === 0 ? 1 : 0.95,
 						}}
 						transition={{ type: "tween", duration: 0.4, ease: "easeOut" }}
 						style={{
-							position: isExpanded ? "relative" : "absolute",
+							position: "absolute",
 							top: 0,
 							left: 0,
 							width: "100%",
-							zIndex: isExpanded ? 0 : z,
-							cursor: !isExpanded && index === 0 ? "pointer" : "default",
+							zIndex: z,
+							cursor: index === 0 ? "pointer" : "default",
 						}}
 						onClick={() => {
-							if (!isExpanded && index === 0 && canExpand) handleToggle();
+							if (index === 0 && canExpand) handleToggle();
 						}}
 						className={styles.taskItemWrapper}
 					>
 						<div className={styles.taskItemWrap} ref={index === 0 ? firstItemRef : undefined}>
 							{task ? (
-								<MainTaskItem task={task} isExpanded={isExpanded} onDelete={handleDelete} onComplete={handleComplete} />
+								<MainTaskItem task={task} isExpanded={false} onDelete={handleDelete} onComplete={handleComplete} />
 							) : (
 								<EmptyTaskState>
 									<span>Будущая</span>&nbsp; задача

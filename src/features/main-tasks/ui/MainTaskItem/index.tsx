@@ -17,7 +17,7 @@ interface RoutineTaskItemProps {
 	onComplete?: (task: Task) => void;
 }
 
-export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded, onDelete, onComplete }) => {
+export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded, isDragging, onDelete, onComplete }) => {
 	const [isChecked, setIsChecked] = useState(task.isCompleted);
 	const [showDelete, setShowDelete] = useState(false);
 	const { openTask } = useTaskViewPopup();
@@ -27,11 +27,17 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 		setIsChecked(task.isCompleted);
 	}, [task.isCompleted]);
 
+	// Во время перетаскивания прячем открытую кнопку удаления (как у рутинных).
+	useEffect(() => {
+		if (isDragging) setShowDelete(false);
+	}, [isDragging]);
+
 	const swipeHandlers = useSwipeable({
 		onSwipedLeft: () => isExpanded && setShowDelete(true),
 		onSwipedRight: () => isExpanded && setShowDelete(false),
 		trackMouse: true,
 		delta: 25,
+		preventScrollOnSwipe: true,
 	});
 
 	if (!isExpanded && showDelete) {
@@ -67,7 +73,7 @@ export const MainTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isExpanded,
 			</button>
 			<div
 				className={clsx(styles.taskItem, { [styles.checked]: isChecked, [styles.swiped]: showDelete })}
-				style={{ background: getTaskBackground(task.markerColor, isChecked) }}
+				style={{ background: getTaskBackground(task.markerColor, isChecked), touchAction: "pan-y" }}
 				onClick={handleOpen}
 			>
 				<div className={styles.taskItemContent}>

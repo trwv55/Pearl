@@ -4,8 +4,25 @@ import { makeAutoObservable, runInAction } from "mobx";
 import { getFirebaseDb } from "@/shared/lib/firebase";
 import { format, addDays, startOfDay } from "date-fns";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { deleteTask as deleteTaskApi, toggleTaskCompletion } from "@/shared/api/taskApi";
-import { isTaskMain, isTaskRoutine, TaskRoutine, type Task, type TaskMain } from "@/shared/types/task";
+import {
+	deleteTask as deleteTaskApi,
+	toggleTaskCompletion,
+	addTaskWithId,
+	generateTaskId,
+	updateTask,
+	updateTasksOrder,
+	mapDocToTask,
+	type TaskPayload,
+} from "@/shared/api/taskApi";
+import {
+	isTaskMain,
+	isTaskRoutine,
+	compareTaskOrder,
+	NO_ORDER,
+	TaskRoutine,
+	type Task,
+	type TaskMain,
+} from "@/shared/types/task";
 import { showUndoToast } from "@/shared/lib/showUndoToast";
 import { showErrorToast } from "@/shared/lib/showToast";
 import { cancelTaskNotification, scheduleTaskNotification } from "@/shared/lib/notifications";
@@ -40,6 +57,49 @@ class TaskStore {
 		this.syncCacheForSelectedDate();
 	}
 
+	// Заменяет задачу в кэше её даты НА МЕСТЕ (сохраняя позицию в списке).
+	// Если задачи нет в списке (напр. дата не подгружена) — кладёт в начало.
+	private replaceInCache(task: Task) {
+		const key = this.getDateKey(task.date);
+		const current = this.taskCache.get(key) ?? [];
+		const idx = current.findIndex((t) => t.id === task.id);
+
+		const next = idx === -1 ? [task, ...current] : current.map((t) => (t.id === task.id ? task : t));
+		this.taskCache.set(key, next);
+
+		if (this.getDateKey(this.selectedDate) === key) {
+			this.tasks = next;
+		}
+	}
+
+	// Кладёт задачу в кэш её даты (не обязательно выбранной) и обновляет
+	// this.tasks, если эта дата сейчас открыта.
+	private addToCache(task: Task) {
+		const key = this.getDateKey(task.date);
+		const current = this.taskCache.get(key) ?? [];
+		const next = [task, ...current.filter((t) => t.id !== task.id)];
+		this.taskCache.set(key, next);
+
+		if (this.getDateKey(this.selectedDate) === key) {
+			this.tasks = next;
+		}
+	}
+
+	// Убирает задачу из кэша указанной даты и обновляет this.tasks,
+	// если эта дата сейчас открыта.
+	private removeFromCache(date: Date, taskId: string) {
+		const key = this.getDateKey(date);
+		const current = this.taskCache.get(key);
+		if (current) {
+			const next = current.filter((t) => t.id !== taskId);
+			this.taskCache.set(key, next);
+
+			if (this.getDateKey(this.selectedDate) === key) {
+				this.tasks = next;
+			}
+		}
+	}
+
 	setSelectedDate(date: Date) {
 		this.selectedDate = date;
 
@@ -58,21 +118,7 @@ class TaskStore {
 			const end = addDays(start, 1);
 			const q = query(collection(db, "users", userId, "tasks"), where("date", ">=", start), where("date", "<", end));
 			const snapshot = await getDocs(q);
-			const tasks: Task[] = snapshot.docs.map((doc) => {
-				const data = doc.data();
-				return {
-					id: doc.id,
-					title: data.title,
-					comment: data.comment,
-					date: data.date.toDate ? data.date.toDate() : data.date,
-					emoji: data.emoji,
-					isMain: data.isMain,
-					markerColor: data.markerColor,
-					isCompleted: data.isCompleted,
-					completedAt: data.completedAt?.toDate() || null,
-					time: typeof data.time === "number" ? data.time : null,
-				};
-			});
+			const tasks: Task[] = snapshot.docs.map((doc) => mapDocToTask(doc.id, doc.data()));
 
 			runInAction(() => {
 				const key = this.getDateKey(date);
@@ -100,19 +146,7 @@ class TaskStore {
 			const groupedTasks: Map<string, Task[]> = new Map();
 
 			snapshot.docs.forEach((doc) => {
-				const data = doc.data();
-				const task: Task = {
-					id: doc.id,
-					title: data.title,
-					comment: data.comment,
-					date: data.date.toDate ? data.date.toDate() : data.date,
-					emoji: data.emoji,
-					isMain: data.isMain,
-					markerColor: data.markerColor,
-					isCompleted: data.isCompleted,
-					completedAt: data.completedAt?.toDate() || null,
-					time: typeof data.time === "number" ? data.time : null,
-				};
+				const task = mapDocToTask(doc.id, doc.data());
 
 				const key = this.getDateKey(task.date);
 				if (!groupedTasks.has(key)) {
@@ -141,6 +175,113 @@ class TaskStore {
 	clearCache() {
 		this.taskCache.clear();
 		this.tasks = [];
+	}
+
+	// Оптимистичное создание: задача мгновенно появляется в UI, запись в
+	// Firestore идёт в фоне. При ошибке — откат и тост. Возвращает id новой
+	// задачи; сетевую часть НЕ ждём в вызывающем коде.
+	createOptimistic(userId: string, payload: TaskPayload): string {
+		const id = generateTaskId(userId);
+		const order = this.nextOrder(payload.date, payload.isMain);
+
+		const task: Task = {
+			id,
+			title: payload.title,
+			comment: payload.comment,
+			date: payload.date,
+			emoji: payload.emoji,
+			isMain: payload.isMain,
+			markerColor: payload.markerColor,
+			time: payload.time,
+			isCompleted: false,
+			completedAt: null,
+			order,
+			createdAt: new Date(),
+		};
+
+		this.addToCache(task);
+		scheduleTaskNotification(task);
+
+		addTaskWithId(userId, id, payload, order).catch((e) => {
+			console.error("Ошибка при создании задачи:", e);
+			runInAction(() => this.removeFromCache(task.date, id));
+			cancelTaskNotification(id);
+			showErrorToast("Не удалось сохранить, задача убрана");
+		});
+
+		return id;
+	}
+
+	// Следующий order для нового элемента: max среди задач того же типа в дне + 1.
+	// Игнорирует задачи без явного order (NO_ORDER), чтобы новая не улетала в конец.
+	private nextOrder(date: Date, isMain: boolean): number {
+		const tasks = this.getTasksForDate(date).filter((t) => t.isMain === isMain && t.order !== NO_ORDER);
+		if (tasks.length === 0) return 0;
+		return Math.max(...tasks.map((t) => t.order)) + 1;
+	}
+
+	// Оптимистичная перестановка: задаём новые order по порядку в orderedTasks,
+	// сразу применяем в кэше, батч-запись в фон. При ошибке — откат и тост.
+	reorderOptimistic(userId: string, orderedTasks: Task[]) {
+		if (orderedTasks.length === 0) return;
+
+		const prevById = new Map(orderedTasks.map((t) => [t.id, t.order]));
+
+		const updates = orderedTasks.map((t, index) => ({ id: t.id, order: index }));
+
+		runInAction(() => {
+			orderedTasks.forEach((t, index) => {
+				this.replaceInCache({ ...t, order: index });
+			});
+		});
+
+		updateTasksOrder(userId, updates).catch((e) => {
+			console.error("Ошибка при сохранении порядка задач:", e);
+			runInAction(() => {
+				orderedTasks.forEach((t) => {
+					const prevOrder = prevById.get(t.id);
+					if (prevOrder !== undefined) this.replaceInCache({ ...t, order: prevOrder });
+				});
+			});
+			showErrorToast("Не удалось сохранить порядок");
+		});
+	}
+
+	// Оптимистичное обновление: изменения сразу видны в UI, запись в Firestore
+	// идёт в фоне. Учитывает смену даты (перенос между кэшами). При ошибке —
+	// откат к прежнему состоянию и тост.
+	updateOptimistic(userId: string, prevTask: Task, payload: Partial<TaskPayload>) {
+		const updatedTask: Task = {
+			...prevTask,
+			...payload,
+		};
+
+		const dateChanged = this.getDateKey(prevTask.date) !== this.getDateKey(updatedTask.date);
+
+		if (dateChanged) {
+			this.removeFromCache(prevTask.date, prevTask.id);
+			this.addToCache(updatedTask);
+		} else {
+			this.replaceInCache(updatedTask);
+		}
+
+		cancelTaskNotification(prevTask.id);
+		scheduleTaskNotification(updatedTask);
+
+		updateTask(userId, prevTask.id, payload).catch((e) => {
+			console.error("Ошибка при обновлении задачи:", e);
+			runInAction(() => {
+				if (dateChanged) {
+					this.removeFromCache(updatedTask.date, prevTask.id);
+					this.addToCache(prevTask);
+				} else {
+					this.replaceInCache(prevTask);
+				}
+			});
+			cancelTaskNotification(prevTask.id);
+			scheduleTaskNotification(prevTask);
+			showErrorToast("Не удалось сохранить, изменения отменены");
+		});
 	}
 
 	async deleteWithUndo(userId: string, task: Task, delayMs = 4000, onDeleted?: () => void) {
@@ -229,11 +370,11 @@ class TaskStore {
 	}
 
 	get mainTasks(): TaskMain[] {
-		return this.tasks.filter(isTaskMain);
+		return this.tasks.filter(isTaskMain).sort(compareTaskOrder);
 	}
 
 	get routineTasks(): TaskRoutine[] {
-		return this.tasks.filter(isTaskRoutine);
+		return this.tasks.filter(isTaskRoutine).sort(compareTaskOrder);
 	}
 }
 

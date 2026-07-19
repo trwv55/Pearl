@@ -13,10 +13,12 @@ import {
 	updateDoc,
 	where,
 	getDoc,
+	writeBatch,
+	type FieldValue,
 } from "firebase/firestore";
 import { addDays, startOfDay } from "date-fns";
 import { getFirebaseDb } from "@/shared/lib/firebase";
-import { Task } from "@/shared/types/task";
+import { Task, NO_ORDER } from "@/shared/types/task";
 
 export interface TaskPayload {
 	title: string;
@@ -28,11 +30,15 @@ export interface TaskPayload {
 	time: number | null;
 }
 
-export const addTask = async (userId: string, payload: TaskPayload): Promise<string> => {
+export const addTaskWithId = async (
+	userId: string,
+	id: string,
+	payload: TaskPayload,
+	order: number = NO_ORDER,
+): Promise<void> => {
 	const { title, comment, date, emoji, isMain, markerColor, time } = payload;
 	const db = getFirebaseDb();
-	const ref = doc(collection(db, "users", userId, "tasks"));
-	const id = ref.id;
+	const ref = doc(db, "users", userId, "tasks", id);
 
 	await setDoc(ref, {
 		id,
@@ -44,14 +50,42 @@ export const addTask = async (userId: string, payload: TaskPayload): Promise<str
 		isMain,
 		markerColor,
 		time,
+		order,
 		isCompleted: false,
 		completedAt: null,
 		createdAt: serverTimestamp(),
 		updatedAt: serverTimestamp(),
 	});
+};
 
+export const generateTaskId = (userId: string): string => {
+	const db = getFirebaseDb();
+	return doc(collection(db, "users", userId, "tasks")).id;
+};
+
+export const addTask = async (userId: string, payload: TaskPayload): Promise<string> => {
+	const id = generateTaskId(userId);
+	await addTaskWithId(userId, id, payload);
 	return id;
 };
+
+// Единый маппинг документа Firestore в Task. Используется всеми чтениями,
+// чтобы поля (в т.ч. order/createdAt) не разъезжались по копипастам.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const mapDocToTask = (id: string, data: any): Task => ({
+	id,
+	title: data.title,
+	comment: data.comment,
+	date: data.date.toDate ? data.date.toDate() : data.date,
+	emoji: data.emoji,
+	isMain: data.isMain,
+	markerColor: data.markerColor,
+	isCompleted: data.isCompleted,
+	completedAt: data.completedAt?.toDate() || null,
+	time: typeof data.time === "number" ? data.time : null,
+	order: typeof data.order === "number" ? data.order : NO_ORDER,
+	createdAt: data.createdAt?.toDate?.() ?? null,
+});
 
 export const getTasksByDate = async (userId: string, date: Date) => {
 	const start = startOfDay(date);
@@ -59,21 +93,7 @@ export const getTasksByDate = async (userId: string, date: Date) => {
 	const db = getFirebaseDb();
 	const q = query(collection(db, "users", userId, "tasks"), where("date", ">=", start), where("date", "<", end));
 	const snapshot = await getDocs(q);
-	return snapshot.docs.map((doc) => {
-		const data = doc.data();
-		return {
-			id: doc.id,
-			title: data.title,
-			comment: data.comment,
-			date: data.date.toDate ? data.date.toDate() : data.date,
-			emoji: data.emoji,
-			isMain: data.isMain,
-			markerColor: data.markerColor,
-			isCompleted: data.isCompleted,
-			completedAt: data.completedAt?.toDate() || null,
-			time: typeof data.time === "number" ? data.time : null,
-		};
-	});
+	return snapshot.docs.map((doc) => mapDocToTask(doc.id, doc.data()));
 };
 
 export const getTasksForRange = async (userId: string, startDate: Date, endDate: Date): Promise<Task[]> => {
@@ -86,26 +106,23 @@ export const getTasksForRange = async (userId: string, startDate: Date, endDate:
 
 	const snapshot = await getDocs(q);
 
-	return snapshot.docs.map((doc) => {
-		const data = doc.data();
-		return {
-			id: doc.id,
-			title: data.title,
-			comment: data.comment,
-			date: data.date.toDate ? data.date.toDate() : data.date,
-			emoji: data.emoji,
-			isMain: data.isMain,
-			markerColor: data.markerColor,
-			isCompleted: data.isCompleted,
-			completedAt: data.completedAt?.toDate() || null,
-			time: typeof data.time === "number" ? data.time : null,
-		} as Task;
-	});
+	return snapshot.docs.map((doc) => mapDocToTask(doc.id, doc.data()));
 };
 
 export const deleteTask = async (userId: string, taskId: string) => {
 	const db = getFirebaseDb();
 	await deleteDoc(doc(db, "users", userId, "tasks", taskId));
+};
+
+// Батч-запись нового порядка для набора задач (drag-and-drop).
+export const updateTasksOrder = async (userId: string, updates: { id: string; order: number }[]) => {
+	if (updates.length === 0) return;
+	const db = getFirebaseDb();
+	const batch = writeBatch(db);
+	for (const { id, order } of updates) {
+		batch.update(doc(db, "users", userId, "tasks", id), { order, updatedAt: serverTimestamp() });
+	}
+	await batch.commit();
 };
 
 export const getTaskById = async (userId: string, taskId: string): Promise<Task | null> => {
@@ -118,19 +135,7 @@ export const getTaskById = async (userId: string, taskId: string): Promise<Task 
 			return null;
 		}
 
-		const data = taskDoc.data();
-		return {
-			id: taskDoc.id,
-			title: data.title,
-			comment: data.comment,
-			date: data.date.toDate ? data.date.toDate() : data.date,
-			emoji: data.emoji,
-			isMain: data.isMain,
-			markerColor: data.markerColor,
-			isCompleted: data.isCompleted,
-			completedAt: data.completedAt?.toDate() || null,
-			time: typeof data.time === "number" ? data.time : null,
-		} as Task;
+		return mapDocToTask(taskDoc.id, taskDoc.data());
 	} catch (e) {
 		console.error("Ошибка при получении задачи: ", e);
 		throw e;
@@ -141,49 +146,19 @@ export const updateTask = async (userId: string, taskId: string, payload: Partia
 	const db = getFirebaseDb();
 	const taskRef = doc(db, "users", userId, "tasks", taskId);
 
-	try {
-		const taskDoc = await getDoc(taskRef);
-		if (!taskDoc.exists()) {
-			throw new Error("Задача не найдена");
-		}
+	const updateData: Partial<TaskPayload> & { updatedAt: FieldValue } = {
+		updatedAt: serverTimestamp(),
+	};
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const updateData: any = {
-			updatedAt: serverTimestamp(),
-		};
+	if (payload.title !== undefined) updateData.title = payload.title;
+	if (payload.comment !== undefined) updateData.comment = payload.comment;
+	if (payload.date !== undefined) updateData.date = payload.date;
+	if (payload.emoji !== undefined) updateData.emoji = payload.emoji;
+	if (payload.isMain !== undefined) updateData.isMain = payload.isMain;
+	if (payload.markerColor !== undefined) updateData.markerColor = payload.markerColor;
+	if (payload.time !== undefined) updateData.time = payload.time;
 
-		if (payload.title !== undefined) updateData.title = payload.title;
-		if (payload.comment !== undefined) updateData.comment = payload.comment;
-		if (payload.date !== undefined) updateData.date = payload.date;
-		if (payload.emoji !== undefined) updateData.emoji = payload.emoji;
-		if (payload.isMain !== undefined) updateData.isMain = payload.isMain;
-		if (payload.markerColor !== undefined) updateData.markerColor = payload.markerColor;
-		if (payload.time !== undefined) updateData.time = payload.time;
-
-		await updateDoc(taskRef, updateData);
-
-		const updatedDoc = await getDoc(taskRef);
-		if (!updatedDoc.exists()) {
-			throw new Error("Задача не найдена после обновления");
-		}
-
-		const data = updatedDoc.data();
-		return {
-			id: updatedDoc.id,
-			title: data.title,
-			comment: data.comment,
-			date: data.date.toDate ? data.date.toDate() : data.date,
-			emoji: data.emoji,
-			isMain: data.isMain,
-			markerColor: data.markerColor,
-			isCompleted: data.isCompleted,
-			completedAt: data.completedAt?.toDate() || null,
-			time: typeof data.time === "number" ? data.time : null,
-		} as Task;
-	} catch (e) {
-		console.error("Ошибка при обновлении задачи: ", e);
-		throw e;
-	}
+	await updateDoc(taskRef, updateData);
 };
 
 export const toggleTaskCompletion = async (userId: string, taskId: string) => {

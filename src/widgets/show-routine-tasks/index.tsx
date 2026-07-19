@@ -40,7 +40,10 @@ export const ShowRoutineTasks: React.FC<ShowRoutineTasksProps> = ({ tasks }) => 
 
 		const oldIndex = taskOrder.findIndex(task => task.id === active.id);
 		const newIndex = taskOrder.findIndex(task => task.id === over.id);
-		setTaskOrder(arrayMove(taskOrder, oldIndex, newIndex));
+		const reordered = arrayMove(taskOrder, oldIndex, newIndex);
+		setTaskOrder(reordered);
+
+		if (uid) taskStore.reorderOptimistic(uid, reordered);
 	};
 
 	const handleDelete = useCallback(
