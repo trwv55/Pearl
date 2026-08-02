@@ -31,12 +31,22 @@ class TaskStore {
 	tasks: Task[] = [];
 	selectedDate: Date = new Date();
 	private taskCache: Map<string, Task[]> = new Map();
-	private pending: Map<string, ReturnType<typeof setTimeout>> = new Map();
+	// Отложенные удаления: таймер + commit (немедленно довести удаление до конца).
+	private pending: Map<string, { timer: ReturnType<typeof setTimeout>; commit: () => void }> = new Map();
 	// Даты, по которым сейчас идёт догрузка — чтобы не слать дубли запросов.
 	private inFlightDates: Set<string> = new Set();
 
 	constructor() {
 		makeAutoObservable(this);
+
+		// Приложение уходит в фон — немедленно завершаем отложенные удаления,
+		// не дожидаясь таймера: iOS замораживает таймеры в WebView, и удаление
+		// иначе не уедет на сервер, а задача «воскреснет» при следующем запуске.
+		if (typeof document !== "undefined") {
+			document.addEventListener("visibilitychange", () => {
+				if (document.hidden) this.flushPendingDeletes();
+			});
+		}
 	}
 
 	private getDateKey(date: Date) {
@@ -297,38 +307,51 @@ class TaskStore {
 		this.removeLocal(task.id);
 		cancelTaskNotification(task.id);
 
-		let cancelled = false;
+		// settled гарантирует, что удаление ИЛИ отмена сработают ровно один раз,
+		// кто бы ни пришёл первым: таймер, флаш при сворачивании или «Отменить».
+		let settled = false;
 
-		const timer = setTimeout(async () => {
+		const commit = async () => {
+			if (settled) return;
+			settled = true;
+			const entry = this.pending.get(task.id);
+			if (entry) clearTimeout(entry.timer);
 			this.pending.delete(task.id);
-			if (cancelled) return;
 			try {
 				await deleteTaskApi(userId, task.id);
-				if (onDeleted) {
-					onDeleted();
-				}
+				onDeleted?.();
 			} catch (e) {
 				runInAction(() => this.addLocal(task));
 				scheduleTaskNotification(task);
 				console.error("Ошибка при удалении задачи:", e);
 				showErrorToast("Ошибка. Попробуй еще раз");
 			}
-		}, delayMs);
+		};
 
-		this.pending.set(task.id, timer);
+		const cancel = () => {
+			if (settled) return;
+			settled = true;
+			const entry = this.pending.get(task.id);
+			if (entry) clearTimeout(entry.timer);
+			this.pending.delete(task.id);
+			runInAction(() => this.addLocal(task));
+			scheduleTaskNotification(task);
+		};
+
+		const timer = setTimeout(commit, delayMs);
+		this.pending.set(task.id, { timer, commit });
 
 		showUndoToast({
 			title: "Задача удалена",
 			duration: delayMs,
-			onUndo: () => {
-				cancelled = true;
-				const timer = this.pending.get(task.id);
-				if (timer) clearTimeout(timer);
-				this.pending.delete(task.id);
-				runInAction(() => this.addLocal(task));
-				scheduleTaskNotification(task);
-			},
+			onUndo: cancel,
 		});
+	}
+
+	// Немедленно завершает все отложенные удаления (вызывается при сворачивании
+	// приложения). Каждый commit защищён флагом settled от повторного запуска.
+	flushPendingDeletes() {
+		this.pending.forEach((entry) => entry.commit());
 	}
 
 	async toggleCompletion(userId: string, taskId: string) {
