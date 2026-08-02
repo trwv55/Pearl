@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { userStore } from "@/shared/model/userStore";
 import { taskStore } from "@/shared/model/taskStore";
-import { useTaskDateSync } from "@/features/task-form/model/useTaskDateSync";
+import { useTaskDateSync } from "@/shared/hooks/useTaskDateSync";
 import StepCalendar from "@/shared/ui/task-form-steps/StepCalendar";
 import { StepCount } from "@/shared/ui/task-form-steps/StepCount";
 import StepIsMainTask from "@/shared/ui/task-form-steps/StepIsMainTask";
@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import StepEmoji from "@/shared/ui/task-form-steps/StepEmoji";
 import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_ERROR, HAPTIC_SUCCESS } from "@/shared/lib/haptics";
+import { MAX_MAIN_TASKS } from "@/shared/config/tasks";
 
 const DEFAULT_EMOJI = "🐚";
 
@@ -25,7 +26,7 @@ const TaskForm = observer(() => {
 	const { trigger } = useHaptics();
 	const [title, setTitle] = useState("");
 	const [titleError, setTitleError] = useState(false);
-	const [isMain, setIsMain] = useState<boolean>(taskStore.mainTasks.length < 3);
+	const [isMain, setIsMain] = useState<boolean>(taskStore.mainTasks.length < MAX_MAIN_TASKS);
 	const [date, setDate] = useState<Date>(taskStore.selectedDate);
 	const [comment, setComment] = useState("");
 	const [markerColor, setMarkerColor] = useState<string>("#3d00cb");

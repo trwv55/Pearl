@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import type { Task } from "@/shared/types/task";
 import { userStore } from "@/shared/model/userStore";
 import { taskStore } from "@/shared/model/taskStore";
-import { useTaskDateSync } from "@/features/task-edit/model/useTaskDateSync";
+import { useTaskDateSync } from "@/shared/hooks/useTaskDateSync";
 import StepCalendar from "@/shared/ui/task-form-steps/StepCalendar";
 import { StepCount } from "@/shared/ui/task-form-steps/StepCount";
 import StepIsMainTask from "@/shared/ui/task-form-steps/StepIsMainTask";
