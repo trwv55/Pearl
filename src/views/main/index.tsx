@@ -9,12 +9,27 @@ import { MainPageLayout } from "@/app/layouts/MainPageLayout";
 import { ProtectedRoute } from "@/app/providers/ProtectedRoute";
 import { observer } from "mobx-react-lite";
 import { taskStore } from "@/shared/model/taskStore";
+import { statsStore } from "@/shared/model/statsStore";
 import { userStore } from "@/shared/model/userStore";
-import { useEffect, useState } from "react";
-import { addDays, startOfDay } from "date-fns";
+import { useCallback, useEffect, useState } from "react";
+import { addDays, startOfDay, startOfWeek } from "date-fns";
+import { usePullToRefresh } from "@/shared/hooks/usePullToRefresh";
+import { RefreshRing } from "@/shared/ui/RefreshRing";
 
 export const MainPage = observer(() => {
 	const [isStackExpanded, setIsStackExpanded] = useState(false);
+
+	const handleRefresh = useCallback(async () => {
+		if (!userStore.user) return;
+		const uid = userStore.user.uid;
+		const weekStart = startOfWeek(taskStore.selectedDate, { weekStartsOn: 1 });
+		await Promise.all([
+			taskStore.fetchTasks(uid, taskStore.selectedDate),
+			statsStore.fetchWeekStats(uid, weekStart),
+		]);
+	}, []);
+
+	const { pullDistance, isRefreshing, threshold } = usePullToRefresh(handleRefresh);
 
 	useEffect(() => {
 		if (userStore.user) {
@@ -44,6 +59,7 @@ export const MainPage = observer(() => {
 	return (
 		<ProtectedRoute>
 			<MainPageLayout>
+				<RefreshRing pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={threshold} />
 				<div className="relative">
 					<div>
 						<MainPageTopBar />
