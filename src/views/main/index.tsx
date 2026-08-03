@@ -15,9 +15,13 @@ import { useCallback, useEffect, useState } from "react";
 import { addDays, startOfDay, startOfWeek } from "date-fns";
 import { usePullToRefresh } from "@/shared/hooks/usePullToRefresh";
 import { RefreshRing } from "@/shared/ui/RefreshRing";
+import { MainPageSkeleton } from "@/widgets/main-page-skeleton";
 
 export const MainPage = observer(() => {
 	const [isStackExpanded, setIsStackExpanded] = useState(false);
+	// Скелетон на первой загрузке: только если данные выбранного дня ещё не в
+	// кэше (после логина). При возврате на страницу с тёплым кэшем — не мигаем.
+	const [initialLoading, setInitialLoading] = useState(() => !taskStore.isDateLoaded(taskStore.selectedDate));
 
 	const handleRefresh = useCallback(async () => {
 		if (!userStore.user) return;
@@ -32,12 +36,19 @@ export const MainPage = observer(() => {
 	const { pullDistance, isRefreshing, threshold } = usePullToRefresh(handleRefresh);
 
 	useEffect(() => {
-		if (userStore.user) {
-			const today = startOfDay(new Date());
-			const start = addDays(today, -15);
-			const end = addDays(today, 15);
-			taskStore.fetchTasksForRange(userStore.user.uid, start, end);
-		}
+		if (!userStore.user) return;
+		const today = startOfDay(new Date());
+		const start = addDays(today, -15);
+		const end = addDays(today, 15);
+
+		let cancelled = false;
+		(async () => {
+			await taskStore.fetchTasksForRange(userStore.user!.uid, start, end);
+			if (!cancelled) setInitialLoading(false);
+		})();
+		return () => {
+			cancelled = true;
+		};
 	}, [userStore.user]);
 
 	// Догружаем день, если пользователь ушёл за пределы предзагруженного
@@ -59,6 +70,10 @@ export const MainPage = observer(() => {
 	return (
 		<ProtectedRoute>
 			<MainPageLayout>
+				{initialLoading ? (
+					<MainPageSkeleton />
+				) : (
+				<>
 				<RefreshRing pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={threshold} />
 				<div className="relative">
 					<div>
@@ -77,6 +92,8 @@ export const MainPage = observer(() => {
 						<CreateTaskBtn />
 					</div>
 				</div>
+				</>
+				)}
 			</MainPageLayout>
 		</ProtectedRoute>
 	);
