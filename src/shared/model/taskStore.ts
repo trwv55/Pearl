@@ -185,10 +185,6 @@ class TaskStore {
 		}
 	}
 
-	async reloadCurrentDay(userId: string) {
-		await this.fetchTasks(userId, this.selectedDate);
-	}
-
 	clearCache() {
 		this.taskCache.clear();
 		this.tasks = [];
@@ -354,38 +350,42 @@ class TaskStore {
 		this.pending.forEach((entry) => entry.commit());
 	}
 
-	async toggleCompletion(userId: string, taskId: string) {
-		const existingTask = this.tasks.find((t) => t.id === taskId);
+	// Оптимистичное переключение статуса: применяем сразу и с привязкой к дню
+	// самой задачи (task.date), а НЕ к текущему selectedDate. Иначе смена дня
+	// во время медленного запроса теряет обновление, и галочка «слетает».
+	// Возвращает промис завершения фоновой записи — чтобы вызвавший код мог
+	// дождаться её перед обновлением недельной статистики.
+	toggleCompletion(userId: string, taskId: string): Promise<void> {
+		const task = this.tasks.find((t) => t.id === taskId);
+		if (!task) return Promise.resolve();
 
-		try {
-			const updatedTask = await toggleTaskCompletion(userId, taskId);
+		const newIsCompleted = !task.isCompleted;
+		const optimistic: Task = {
+			...task,
+			isCompleted: newIsCompleted,
+			completedAt: newIsCompleted ? new Date() : null,
+		};
 
-			runInAction(() => {
-				const taskIndex = this.tasks.findIndex((t) => t.id === taskId);
-				if (taskIndex !== -1) {
-					this.tasks[taskIndex] = {
-						...this.tasks[taskIndex],
-						isCompleted: updatedTask.isCompleted,
-						completedAt: updatedTask.completedAt,
-					};
-				}
+		this.replaceInCache(optimistic);
 
-				this.syncCacheForSelectedDate();
-			});
-
-			if (existingTask) {
-				if (updatedTask.isCompleted) {
-					cancelTaskNotification(taskId);
-				} else {
-					scheduleTaskNotification(existingTask);
-				}
-			}
-		} catch (e) {
-			console.error("Ошибка при обновлении статуса задачи:", e);
-			showErrorToast("Не удалось обновить статус задачи");
-
-			await this.reloadCurrentDay(userId);
+		if (newIsCompleted) {
+			cancelTaskNotification(taskId);
+		} else {
+			scheduleTaskNotification(optimistic);
 		}
+
+		return toggleTaskCompletion(userId, taskId)
+			.then(() => undefined)
+			.catch((e) => {
+				console.error("Ошибка при обновлении статуса задачи:", e);
+				runInAction(() => this.replaceInCache(task));
+				if (newIsCompleted) {
+					scheduleTaskNotification(task);
+				} else {
+					cancelTaskNotification(taskId);
+				}
+				showErrorToast("Не удалось обновить статус задачи");
+			});
 	}
 
 	// «У дня есть задачи» — для индикатора в переключателе дней.
