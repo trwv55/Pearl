@@ -10,9 +10,10 @@ import { ProtectedRoute } from "@/app/providers/ProtectedRoute";
 import { observer } from "mobx-react-lite";
 import { taskStore } from "@/shared/model/taskStore";
 import { statsStore } from "@/shared/model/statsStore";
+import { taskRolloverStore } from "@/shared/model/taskRolloverStore";
 import { userStore } from "@/shared/model/userStore";
 import { useCallback, useEffect, useState } from "react";
-import { addDays, startOfDay, startOfWeek } from "date-fns";
+import { addDays, startOfDay, startOfWeek, parseISO } from "date-fns";
 import { usePullToRefresh } from "@/shared/hooks/usePullToRefresh";
 import { RefreshRing } from "@/shared/ui/RefreshRing";
 import { MainPageSkeleton } from "@/widgets/main-page-skeleton";
@@ -37,13 +38,20 @@ export const MainPage = observer(() => {
 
 	useEffect(() => {
 		if (!userStore.user) return;
+		const uid = userStore.user.uid;
 		const today = startOfDay(new Date());
 		const start = addDays(today, -15);
 		const end = addDays(today, 15);
 
 		let cancelled = false;
 		(async () => {
-			await taskStore.fetchTasksForRange(userStore.user!.uid, start, end);
+			// Автопродление: перед загрузкой переносим невыполненные главные
+			// задачи с прошедших дней на сегодня (если тоггл включён).
+			taskRolloverStore.initialize();
+			if (taskRolloverStore.isEnabled && taskRolloverStore.enabledDate) {
+				await taskStore.rolloverOverdueMainTasks(uid, parseISO(taskRolloverStore.enabledDate));
+			}
+			await taskStore.fetchTasksForRange(uid, start, end);
 			if (!cancelled) setInitialLoading(false);
 		})();
 		return () => {

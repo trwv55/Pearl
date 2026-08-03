@@ -11,9 +11,11 @@ import {
 	generateTaskId,
 	updateTask,
 	updateTasksOrder,
+	rolloverTasks,
 	mapDocToTask,
 	type TaskPayload,
 } from "@/shared/api/taskApi";
+import { MAX_MAIN_TASKS } from "@/shared/config/tasks";
 import {
 	isTaskMain,
 	isTaskRoutine,
@@ -418,6 +420,55 @@ class TaskStore {
 	getTasksForDate(date: Date): Task[] {
 		const key = this.getDateKey(date);
 		return this.taskCache.get(key) ?? [];
+	}
+
+	// Автопродление: переносит невыполненные ГЛАВНЫЕ задачи с прошедших дней
+	// (начиная с sinceDate — даты включения тоггла) на сегодня. Если лимит
+	// главных на сегодня исчерпан, лишние становятся рутинными.
+	async rolloverOverdueMainTasks(userId: string, sinceDate: Date) {
+		const today = startOfDay(new Date());
+		const since = startOfDay(sinceDate);
+		if (since >= today) return;
+
+		// Тянем задачи диапазона [since, today) по дате; фильтр по isMain/isCompleted
+		// на клиенте, чтобы не заводить составной индекс Firestore.
+		const db = getFirebaseDb();
+		const q = query(
+			collection(db, "users", userId, "tasks"),
+			where("date", ">=", since),
+			where("date", "<", today),
+		);
+		const snapshot = await getDocs(q);
+		const overdue = snapshot.docs
+			.map((d) => mapDocToTask(d.id, d.data()))
+			.filter((t) => t.isMain && !t.isCompleted)
+			.sort((a, b) => a.date.getTime() - b.date.getTime() || compareTaskOrder(a, b));
+
+		if (overdue.length === 0) return;
+
+		// Сколько главных уже на сегодня — чтобы соблюсти лимит.
+		await this.ensureTasksForDate(userId, today);
+		let todayMainCount = this.getTasksForDate(today).filter(isTaskMain).length;
+
+		const updates: { id: string; date: Date; isMain: boolean; order: number }[] = [];
+		for (const task of overdue) {
+			const newIsMain = todayMainCount < MAX_MAIN_TASKS;
+			if (newIsMain) todayMainCount++;
+			const order = this.nextOrder(today, newIsMain);
+			const moved: Task = { ...task, date: today, isMain: newIsMain, order };
+
+			runInAction(() => {
+				this.removeFromCache(task.date, task.id);
+				this.addToCache(moved);
+			});
+			updates.push({ id: task.id, date: today, isMain: newIsMain, order });
+		}
+
+		try {
+			await rolloverTasks(userId, updates);
+		} catch (e) {
+			console.error("Ошибка автопродления задач:", e);
+		}
 	}
 
 	get mainTasks(): TaskMain[] {
