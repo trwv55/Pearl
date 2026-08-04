@@ -34,7 +34,7 @@ export const MainPage = observer(() => {
 		]);
 	}, []);
 
-	const { pullDistance, isRefreshing, threshold } = usePullToRefresh(handleRefresh);
+	const { pullDistance, isRefreshing, isPulling, threshold } = usePullToRefresh(handleRefresh);
 
 	useEffect(() => {
 		if (!userStore.user) return;
@@ -83,7 +83,13 @@ export const MainPage = observer(() => {
 				) : (
 				<>
 				<RefreshRing pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={threshold} />
-				<div className="relative">
+				<div
+					className="relative"
+					style={{
+						transform: `translateY(${pullDistance}px)`,
+						transition: isPulling ? "none" : "transform 0.25s ease",
+					}}
+				>
 					<div>
 						<MainPageTopBar />
 					</div>
@@ -96,10 +102,10 @@ export const MainPage = observer(() => {
 					<div className="mt-[20px]">
 						<RoutineTasks />
 					</div>
-					<div className="flex flex-col justify-between items-center">
-						<CreateTaskBtn />
-					</div>
 				</div>
+				{/* Вне трансформируемого блока: transform создаёт containing block
+				    для position:fixed, иначе кнопка «отвязывается» от экрана. */}
+				<CreateTaskBtn />
 				</>
 				)}
 			</MainPageLayout>
