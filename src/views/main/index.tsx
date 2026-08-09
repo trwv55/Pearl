@@ -12,8 +12,8 @@ import { taskStore } from "@/shared/model/taskStore";
 import { statsStore } from "@/shared/model/statsStore";
 import { taskRolloverStore } from "@/shared/model/taskRolloverStore";
 import { userStore } from "@/shared/model/userStore";
-import { useCallback, useEffect, useState } from "react";
-import { addDays, startOfDay, startOfWeek, parseISO } from "date-fns";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { addDays, startOfDay, startOfWeek, parseISO, format, isSameDay } from "date-fns";
 import { usePullToRefresh } from "@/shared/hooks/usePullToRefresh";
 import { RefreshRing } from "@/shared/ui/RefreshRing";
 import { MainPageSkeleton } from "@/widgets/main-page-skeleton";
@@ -23,6 +23,13 @@ export const MainPage = observer(() => {
 	// Скелетон на первой загрузке: только если данные выбранного дня ещё не в
 	// кэше (после логина). При возврате на страницу с тёплым кэшем — не мигаем.
 	const [initialLoading, setInitialLoading] = useState(() => !taskStore.isDateLoaded(taskStore.selectedDate));
+	// Ключ текущего календарного дня. При его смене (переход через полночь)
+	// эффект подписки перецентрирует окно ±15 и заново запускает автопродление.
+	const [todayKey, setTodayKey] = useState(() => format(startOfDay(new Date()), "yyyy-MM-dd"));
+	const todayKeyRef = useRef(todayKey);
+	useEffect(() => {
+		todayKeyRef.current = todayKey;
+	}, [todayKey]);
 
 	const handleRefresh = useCallback(async () => {
 		if (!userStore.user) return;
@@ -62,7 +69,33 @@ export const MainPage = observer(() => {
 			cancelled = true;
 			unsubscribe?.();
 		};
-	}, [userStore.user]);
+	}, [userStore.user, todayKey]);
+
+	// Переход через полночь: при возврате из фона и раз в минуту проверяем смену
+	// календарного дня. Если сменился — если пользователь был на «старом сегодня»,
+	// переносим его на новый день, и обновляем todayKey (перецентровка окна).
+	useEffect(() => {
+		const check = () => {
+			const nowKey = format(startOfDay(new Date()), "yyyy-MM-dd");
+			if (nowKey === todayKeyRef.current) return;
+
+			const prevToday = parseISO(todayKeyRef.current);
+			if (isSameDay(taskStore.selectedDate, prevToday)) {
+				taskStore.setSelectedDate(startOfDay(new Date()));
+			}
+			setTodayKey(nowKey);
+		};
+
+		const onVisibility = () => {
+			if (!document.hidden) check();
+		};
+		document.addEventListener("visibilitychange", onVisibility);
+		const interval = setInterval(check, 60_000);
+		return () => {
+			document.removeEventListener("visibilitychange", onVisibility);
+			clearInterval(interval);
+		};
+	}, []);
 
 	// Догружаем день, если пользователь ушёл за пределы предзагруженного
 	// диапазона — иначе он увидит пустой день при существующих задачах.
