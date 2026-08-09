@@ -125,6 +125,20 @@ export const updateTasksOrder = async (userId: string, updates: { id: string; or
 	await batch.commit();
 };
 
+// Батч-перенос задач автопродлением: меняем дату, тип (главная/рутинная) и order.
+export const rolloverTasks = async (
+	userId: string,
+	updates: { id: string; date: Date; isMain: boolean; order: number }[],
+) => {
+	if (updates.length === 0) return;
+	const db = getFirebaseDb();
+	const batch = writeBatch(db);
+	for (const { id, date, isMain, order } of updates) {
+		batch.update(doc(db, "users", userId, "tasks", id), { date, isMain, order, updatedAt: serverTimestamp() });
+	}
+	await batch.commit();
+};
+
 export const getTaskById = async (userId: string, taskId: string): Promise<Task | null> => {
 	const db = getFirebaseDb();
 	const taskRef = doc(db, "users", userId, "tasks", taskId);

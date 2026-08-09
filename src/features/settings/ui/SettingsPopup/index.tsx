@@ -19,6 +19,7 @@ import styles from "./SettingsPopup.module.css";
 import { useHaptics } from "@/shared/hooks/useHaptics";
 import { HAPTIC_NUDGE, HAPTIC_LIGHT } from "@/shared/lib/haptics";
 import { notificationSettingsStore } from "@/shared/model/notificationSettingsStore";
+import { taskRolloverStore } from "@/shared/model/taskRolloverStore";
 import { showErrorToast, showSuccessToast } from "@/shared/lib/showToast";
 
 const ANIMATION_DURATION = 250;
@@ -88,6 +89,17 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 		showSuccessToast("Уведомления отключены");
 	};
 
+	const handleRolloverToggle = (checked: boolean) => {
+		trigger(...HAPTIC_LIGHT);
+		if (checked) {
+			taskRolloverStore.enable();
+			showSuccessToast("Продление задач включено");
+		} else {
+			taskRolloverStore.disable();
+			showSuccessToast("Продление задач отключено");
+		}
+	};
+
 	useEffect(() => {
 		if (!isVisible) return;
 
@@ -122,6 +134,7 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 	useEffect(() => {
 		if (!isVisible) return;
 		void notificationSettingsStore.initialize();
+		taskRolloverStore.initialize();
 	}, [isVisible]);
 
 	const displayName = userStore.displayName;
@@ -178,7 +191,12 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = observer(({ isVisible
 									onChange={handleNotificationsToggle}
 								/>
 								<div className={styles.divider} />
-								<SettingItemToggle icon={RotateCcw} label="Продление задач" disabled />
+								<SettingItemToggle
+								icon={RotateCcw}
+								label="Продление задач"
+								checked={taskRolloverStore.isEnabled}
+								onChange={handleRolloverToggle}
+							/>
 							</div>
 							<GiftButton />
 							<div className={styles.settingsContainer}>

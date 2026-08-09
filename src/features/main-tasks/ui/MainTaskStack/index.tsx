@@ -5,7 +5,7 @@ import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } 
 import { CSS } from "@dnd-kit/utilities";
 import { isTaskMain, type Task, type TaskMain } from "@/shared/types/task";
 import { MainTaskItem } from "@/features/main-tasks/ui/MainTaskItem";
-import { EmptyTaskState } from "@/shared/ui/EmptyTaskState";
+import { EmptyMainTaskSlot } from "@/features/main-tasks/ui/EmptyMainTaskSlot";
 import styles from "./MainTaskStack.module.css";
 import { userStore } from "@/shared/model/userStore";
 import { taskStore } from "@/shared/model/taskStore";
@@ -170,9 +170,7 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 									{task ? (
 										<SortableMainTask task={task} onDelete={handleDelete} onComplete={handleComplete} />
 									) : (
-										<EmptyTaskState>
-											<span>Будущая</span>&nbsp; задача
-										</EmptyTaskState>
+										<EmptyMainTaskSlot />
 									)}
 								</div>
 							</div>
@@ -224,9 +222,7 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 							{task ? (
 								<MainTaskItem task={task} isExpanded={false} onDelete={handleDelete} onComplete={handleComplete} />
 							) : (
-								<EmptyTaskState>
-									<span>Будущая</span>&nbsp; задача
-								</EmptyTaskState>
+								<EmptyMainTaskSlot />
 							)}
 						</div>
 					</motion.div>

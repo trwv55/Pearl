@@ -14,6 +14,9 @@ interface UseTaskDateSyncResult {
 	isLoadingTasks: boolean;
 }
 
+// Подгружает задачи для выбранной даты и, если на новой дате уже достигнут
+// лимит главных задач, просит форму переключить задачу в рутинные.
+// Используется формами создания и редактирования (логика идентична).
 export const useTaskDateSync = (date: Date, options?: UseTaskDateSyncOptions): UseTaskDateSyncResult => {
 	const { originalDate, onAutoSwitch } = options || {};
 	const [isLoadingTasks, setIsLoadingTasks] = useState(false);
@@ -27,7 +30,7 @@ export const useTaskDateSync = (date: Date, options?: UseTaskDateSyncOptions): U
 		if (!userStore.user) return;
 
 		const loadTasksForDate = async () => {
-			const hasCachedData = taskStore.hasTasksForDate(date);
+			const hasCachedData = taskStore.isDateLoaded(date);
 
 			if (!hasCachedData) {
 				setIsLoadingTasks(true);

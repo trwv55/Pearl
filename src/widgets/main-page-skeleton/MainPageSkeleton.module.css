@@ -1,0 +1,143 @@
+.root {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+/* Базовый блок-заглушка с бегущим бликом */
+.sk {
+	background: #e7ded7;
+	border-radius: 12px;
+	position: relative;
+	overflow: hidden;
+}
+
+.sk::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	transform: translateX(-100%);
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+	animation: sk-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes sk-shimmer {
+	100% {
+		transform: translateX(100%);
+	}
+}
+
+/* Приветствие */
+.header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+
+.greeting {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.greetLine1 {
+	width: 150px;
+	height: 34px;
+	border-radius: 10px;
+}
+
+.greetLine2 {
+	width: 190px;
+	height: 34px;
+	border-radius: 10px;
+}
+
+.logo {
+	width: 56px;
+	height: 44px;
+	border-radius: 12px;
+}
+
+/* Свитчер дней */
+.days {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 34px;
+}
+
+.month {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.monthLine {
+	width: 42px;
+	height: 14px;
+	border-radius: 6px;
+}
+
+.divider {
+	width: 1px;
+	height: 56px;
+	background: rgba(0, 0, 0, 0.08);
+	margin: 0 2px;
+}
+
+.day {
+	width: 56px;
+	height: 72px;
+	border-radius: 18px;
+	flex-shrink: 0;
+}
+
+/* Заголовок секции */
+.sectionHead {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 40px;
+	margin-bottom: 16px;
+}
+
+.label {
+	width: 150px;
+	height: 22px;
+	border-radius: 8px;
+}
+
+.pill {
+	width: 44px;
+	height: 26px;
+	border-radius: 20px;
+}
+
+.card {
+	width: 100%;
+	height: 80px;
+	border-radius: 20px;
+}
+
+/* Точки карусели */
+.dots {
+	display: flex;
+	justify-content: center;
+	gap: 6px;
+	margin-top: 16px;
+}
+
+.dot {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+}
+
+/* Кнопка создания */
+.fab {
+	width: 64px;
+	height: 64px;
+	border-radius: 50%;
+	align-self: flex-end;
+	margin-top: 40px;
+}

@@ -1,0 +1,38 @@
+.wrap {
+	position: fixed;
+	top: calc(env(safe-area-inset-top, 0px) + 6px);
+	left: 50%;
+	margin-left: -18px;
+	z-index: 50;
+	pointer-events: none;
+	transition: opacity 0.2s ease;
+}
+
+.badge {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: #fff;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.spinner {
+	width: 18px;
+	height: 18px;
+	border: 2.5px solid rgba(61, 0, 203, 0.15);
+	border-top-color: var(--main-accent);
+	border-radius: 50%;
+}
+
+.spinning {
+	animation: ptr-spin 0.7s linear infinite;
+}
+
+@keyframes ptr-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}

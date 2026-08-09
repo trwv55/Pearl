@@ -11,9 +11,11 @@ import {
 	generateTaskId,
 	updateTask,
 	updateTasksOrder,
+	rolloverTasks,
 	mapDocToTask,
 	type TaskPayload,
 } from "@/shared/api/taskApi";
+import { MAX_MAIN_TASKS } from "@/shared/config/tasks";
 import {
 	isTaskMain,
 	isTaskRoutine,
@@ -31,10 +33,22 @@ class TaskStore {
 	tasks: Task[] = [];
 	selectedDate: Date = new Date();
 	private taskCache: Map<string, Task[]> = new Map();
-	private pending: Map<string, ReturnType<typeof setTimeout>> = new Map();
+	// Отложенные удаления: таймер + commit (немедленно довести удаление до конца).
+	private pending: Map<string, { timer: ReturnType<typeof setTimeout>; commit: () => void }> = new Map();
+	// Даты, по которым сейчас идёт догрузка — чтобы не слать дубли запросов.
+	private inFlightDates: Set<string> = new Set();
 
 	constructor() {
 		makeAutoObservable(this);
+
+		// Приложение уходит в фон — немедленно завершаем отложенные удаления,
+		// не дожидаясь таймера: iOS замораживает таймеры в WebView, и удаление
+		// иначе не уедет на сервер, а задача «воскреснет» при следующем запуске.
+		if (typeof document !== "undefined") {
+			document.addEventListener("visibilitychange", () => {
+				if (document.hidden) this.flushPendingDeletes();
+			});
+		}
 	}
 
 	private getDateKey(date: Date) {
@@ -156,20 +170,21 @@ class TaskStore {
 			});
 
 			runInAction(() => {
-				groupedTasks.forEach((tasks, key) => {
-					this.taskCache.set(key, tasks);
-					if (this.getDateKey(this.selectedDate) === key) {
-						this.tasks = tasks;
-					}
-				});
+				// Помечаем загруженным ВЕСЬ диапазон, включая дни без задач —
+				// иначе пустой день выглядит как незагруженный и мы шлём лишний запрос.
+				for (let d = startOfDay(startDate); d < startOfDay(addDays(endDate, 1)); d = addDays(d, 1)) {
+					const key = this.getDateKey(d);
+					this.taskCache.set(key, groupedTasks.get(key) ?? []);
+				}
+
+				const selectedKey = this.getDateKey(this.selectedDate);
+				if (this.taskCache.has(selectedKey)) {
+					this.tasks = this.taskCache.get(selectedKey)!;
+				}
 			});
 		} catch (error) {
 			console.error("Ошибка при загрузке задач за диапазон:", error);
 		}
-	}
-
-	async reloadCurrentDay(userId: string) {
-		await this.fetchTasks(userId, this.selectedDate);
 	}
 
 	clearCache() {
@@ -290,83 +305,170 @@ class TaskStore {
 		this.removeLocal(task.id);
 		cancelTaskNotification(task.id);
 
-		let cancelled = false;
+		// settled гарантирует, что удаление ИЛИ отмена сработают ровно один раз,
+		// кто бы ни пришёл первым: таймер, флаш при сворачивании или «Отменить».
+		let settled = false;
 
-		const timer = setTimeout(async () => {
+		const commit = async () => {
+			if (settled) return;
+			settled = true;
+			const entry = this.pending.get(task.id);
+			if (entry) clearTimeout(entry.timer);
 			this.pending.delete(task.id);
-			if (cancelled) return;
 			try {
 				await deleteTaskApi(userId, task.id);
-				if (onDeleted) {
-					onDeleted();
-				}
+				onDeleted?.();
 			} catch (e) {
 				runInAction(() => this.addLocal(task));
 				scheduleTaskNotification(task);
 				console.error("Ошибка при удалении задачи:", e);
 				showErrorToast("Ошибка. Попробуй еще раз");
 			}
-		}, delayMs);
+		};
 
-		this.pending.set(task.id, timer);
+		const cancel = () => {
+			if (settled) return;
+			settled = true;
+			const entry = this.pending.get(task.id);
+			if (entry) clearTimeout(entry.timer);
+			this.pending.delete(task.id);
+			runInAction(() => this.addLocal(task));
+			scheduleTaskNotification(task);
+		};
+
+		const timer = setTimeout(commit, delayMs);
+		this.pending.set(task.id, { timer, commit });
 
 		showUndoToast({
 			title: "Задача удалена",
 			duration: delayMs,
-			onUndo: () => {
-				cancelled = true;
-				const timer = this.pending.get(task.id);
-				if (timer) clearTimeout(timer);
-				this.pending.delete(task.id);
-				runInAction(() => this.addLocal(task));
-				scheduleTaskNotification(task);
-			},
+			onUndo: cancel,
 		});
 	}
 
-	async toggleCompletion(userId: string, taskId: string) {
-		const existingTask = this.tasks.find((t) => t.id === taskId);
-
-		try {
-			const updatedTask = await toggleTaskCompletion(userId, taskId);
-
-			runInAction(() => {
-				const taskIndex = this.tasks.findIndex((t) => t.id === taskId);
-				if (taskIndex !== -1) {
-					this.tasks[taskIndex] = {
-						...this.tasks[taskIndex],
-						isCompleted: updatedTask.isCompleted,
-						completedAt: updatedTask.completedAt,
-					};
-				}
-
-				this.syncCacheForSelectedDate();
-			});
-
-			if (existingTask) {
-				if (updatedTask.isCompleted) {
-					cancelTaskNotification(taskId);
-				} else {
-					scheduleTaskNotification(existingTask);
-				}
-			}
-		} catch (e) {
-			console.error("Ошибка при обновлении статуса задачи:", e);
-			showErrorToast("Не удалось обновить статус задачи");
-
-			await this.reloadCurrentDay(userId);
-		}
+	// Немедленно завершает все отложенные удаления (вызывается при сворачивании
+	// приложения). Каждый commit защищён флагом settled от повторного запуска.
+	flushPendingDeletes() {
+		this.pending.forEach((entry) => entry.commit());
 	}
 
+	// Оптимистичное переключение статуса: применяем сразу и с привязкой к дню
+	// самой задачи (task.date), а НЕ к текущему selectedDate. Иначе смена дня
+	// во время медленного запроса теряет обновление, и галочка «слетает».
+	// Возвращает промис завершения фоновой записи — чтобы вызвавший код мог
+	// дождаться её перед обновлением недельной статистики.
+	toggleCompletion(userId: string, taskId: string): Promise<void> {
+		const task = this.tasks.find((t) => t.id === taskId);
+		if (!task) return Promise.resolve();
+
+		const newIsCompleted = !task.isCompleted;
+		const optimistic: Task = {
+			...task,
+			isCompleted: newIsCompleted,
+			completedAt: newIsCompleted ? new Date() : null,
+		};
+
+		this.replaceInCache(optimistic);
+
+		if (newIsCompleted) {
+			cancelTaskNotification(taskId);
+		} else {
+			scheduleTaskNotification(optimistic);
+		}
+
+		return toggleTaskCompletion(userId, taskId)
+			.then(() => undefined)
+			.catch((e) => {
+				console.error("Ошибка при обновлении статуса задачи:", e);
+				runInAction(() => this.replaceInCache(task));
+				if (newIsCompleted) {
+					scheduleTaskNotification(task);
+				} else {
+					cancelTaskNotification(taskId);
+				}
+				showErrorToast("Не удалось обновить статус задачи");
+			});
+	}
+
+	// «У дня есть задачи» — для индикатора в переключателе дней.
+	// НЕ путать с isDateLoaded: честно пустой день вернёт false.
 	hasTasksForDate(date: Date): boolean {
 		const key = this.getDateKey(date);
 		const tasks = this.taskCache.get(key);
 		return !!tasks && tasks.length > 0;
 	}
 
+	// «День уже загружен с сервера» — в т.ч. если задач в нём нет.
+	isDateLoaded(date: Date): boolean {
+		return this.taskCache.has(this.getDateKey(date));
+	}
+
+	// Догружает день, если он ещё не загружен. Защищено от параллельных
+	// запросов по одной дате (быстрое листание календаря).
+	async ensureTasksForDate(userId: string, date: Date) {
+		const key = this.getDateKey(date);
+		if (this.taskCache.has(key) || this.inFlightDates.has(key)) return;
+
+		this.inFlightDates.add(key);
+		try {
+			await this.fetchTasks(userId, date);
+		} finally {
+			this.inFlightDates.delete(key);
+		}
+	}
+
 	getTasksForDate(date: Date): Task[] {
 		const key = this.getDateKey(date);
 		return this.taskCache.get(key) ?? [];
+	}
+
+	// Автопродление: переносит невыполненные ГЛАВНЫЕ задачи с прошедших дней
+	// (начиная с sinceDate — даты включения тоггла) на сегодня. Если лимит
+	// главных на сегодня исчерпан, лишние становятся рутинными.
+	async rolloverOverdueMainTasks(userId: string, sinceDate: Date) {
+		const today = startOfDay(new Date());
+		const since = startOfDay(sinceDate);
+		if (since >= today) return;
+
+		// Тянем задачи диапазона [since, today) по дате; фильтр по isMain/isCompleted
+		// на клиенте, чтобы не заводить составной индекс Firestore.
+		const db = getFirebaseDb();
+		const q = query(
+			collection(db, "users", userId, "tasks"),
+			where("date", ">=", since),
+			where("date", "<", today),
+		);
+		const snapshot = await getDocs(q);
+		const overdue = snapshot.docs
+			.map((d) => mapDocToTask(d.id, d.data()))
+			.filter((t) => t.isMain && !t.isCompleted)
+			.sort((a, b) => a.date.getTime() - b.date.getTime() || compareTaskOrder(a, b));
+
+		if (overdue.length === 0) return;
+
+		// Сколько главных уже на сегодня — чтобы соблюсти лимит.
+		await this.ensureTasksForDate(userId, today);
+		let todayMainCount = this.getTasksForDate(today).filter(isTaskMain).length;
+
+		const updates: { id: string; date: Date; isMain: boolean; order: number }[] = [];
+		for (const task of overdue) {
+			const newIsMain = todayMainCount < MAX_MAIN_TASKS;
+			if (newIsMain) todayMainCount++;
+			const order = this.nextOrder(today, newIsMain);
+			const moved: Task = { ...task, date: today, isMain: newIsMain, order };
+
+			runInAction(() => {
+				this.removeFromCache(task.date, task.id);
+				this.addToCache(moved);
+			});
+			updates.push({ id: task.id, date: today, isMain: newIsMain, order });
+		}
+
+		try {
+			await rolloverTasks(userId, updates);
+		} catch (e) {
+			console.error("Ошибка автопродления задач:", e);
+		}
 	}
 
 	get mainTasks(): TaskMain[] {

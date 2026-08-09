@@ -2,6 +2,7 @@ import { makeAutoObservable, runInAction } from "mobx";
 import { addDays, format } from "date-fns";
 import type { Task } from "@/shared/types/task";
 import { getTasksForRange } from "@/shared/api/taskApi";
+import { MAX_MAIN_TASKS } from "@/shared/config/tasks";
 
 interface DayStats {
 	date: Date;
@@ -45,7 +46,7 @@ class StatsStore {
 				const dayTasks = tasksByDate.get(key) ?? [];
 				const mainTasks = dayTasks.filter((t) => t.isMain);
 				const completedMainTasksCount = mainTasks.filter((t) => t.isCompleted).length;
-				const isCompleted = mainTasks.length === 3 && completedMainTasksCount === 3;
+				const isCompleted = mainTasks.length === MAX_MAIN_TASKS && completedMainTasksCount === MAX_MAIN_TASKS;
 				days.push({ date, isCompleted, completedMainTasksCount });
 			}
 
