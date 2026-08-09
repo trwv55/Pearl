@@ -3,7 +3,7 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { getFirebaseDb } from "@/shared/lib/firebase";
 import { format, addDays, startOfDay } from "date-fns";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, onSnapshot, query, where } from "firebase/firestore";
 import {
 	deleteTask as deleteTaskApi,
 	toggleTaskCompletion,
@@ -37,6 +37,9 @@ class TaskStore {
 	private pending: Map<string, { timer: ReturnType<typeof setTimeout>; commit: () => void }> = new Map();
 	// Даты, по которым сейчас идёт догрузка — чтобы не слать дубли запросов.
 	private inFlightDates: Set<string> = new Set();
+	// Задачи в процессе оптимистичного удаления (окно undo, до записи на сервер).
+	// Realtime-подписка игнорирует их, чтобы не «вернуть» задачу с сервера.
+	private pendingDeletions: Set<string> = new Set();
 
 	constructor() {
 		makeAutoObservable(this);
@@ -187,6 +190,54 @@ class TaskStore {
 		}
 	}
 
+	// Живая подписка на задачи диапазона: изменения (в т.ч. с другого устройства)
+	// прилетают сразу. Возвращает функцию отписки. onReady зовётся после первого
+	// снапшота (для снятия скелетона). Задачи в pendingDeletions игнорируются —
+	// иначе сервер «вернул» бы задачу в окне undo-удаления.
+	subscribeToRange(userId: string, startDate: Date, endDate: Date, onReady?: () => void): () => void {
+		const db = getFirebaseDb();
+		const start = startOfDay(startDate);
+		const end = startOfDay(addDays(endDate, 1));
+		const q = query(collection(db, "users", userId, "tasks"), where("date", ">=", start), where("date", "<", end));
+
+		let ready = false;
+		const markReady = () => {
+			if (ready) return;
+			ready = true;
+			onReady?.();
+		};
+
+		return onSnapshot(
+			q,
+			(snapshot) => {
+				const grouped: Map<string, Task[]> = new Map();
+				snapshot.docs.forEach((doc) => {
+					if (this.pendingDeletions.has(doc.id)) return;
+					const task = mapDocToTask(doc.id, doc.data());
+					const key = this.getDateKey(task.date);
+					if (!grouped.has(key)) grouped.set(key, []);
+					grouped.get(key)!.push(task);
+				});
+
+				runInAction(() => {
+					for (let d = start; d < end; d = addDays(d, 1)) {
+						const key = this.getDateKey(d);
+						this.taskCache.set(key, grouped.get(key) ?? []);
+					}
+					const selectedKey = this.getDateKey(this.selectedDate);
+					if (this.taskCache.has(selectedKey)) {
+						this.tasks = this.taskCache.get(selectedKey)!;
+					}
+				});
+				markReady();
+			},
+			(error) => {
+				console.error("Ошибка realtime-подписки на задачи:", error);
+				markReady();
+			},
+		);
+	}
+
 	clearCache() {
 		this.taskCache.clear();
 		this.tasks = [];
@@ -303,6 +354,7 @@ class TaskStore {
 		if (this.pending.has(task.id)) return;
 
 		this.removeLocal(task.id);
+		this.pendingDeletions.add(task.id);
 		cancelTaskNotification(task.id);
 
 		// settled гарантирует, что удаление ИЛИ отмена сработают ровно один раз,
@@ -323,6 +375,8 @@ class TaskStore {
 				scheduleTaskNotification(task);
 				console.error("Ошибка при удалении задачи:", e);
 				showErrorToast("Ошибка. Попробуй еще раз");
+			} finally {
+				this.pendingDeletions.delete(task.id);
 			}
 		};
 
@@ -332,6 +386,7 @@ class TaskStore {
 			const entry = this.pending.get(task.id);
 			if (entry) clearTimeout(entry.timer);
 			this.pending.delete(task.id);
+			this.pendingDeletions.delete(task.id);
 			runInAction(() => this.addLocal(task));
 			scheduleTaskNotification(task);
 		};

@@ -44,18 +44,23 @@ export const MainPage = observer(() => {
 		const end = addDays(today, 15);
 
 		let cancelled = false;
+		let unsubscribe: (() => void) | undefined;
 		(async () => {
-			// Автопродление: перед загрузкой переносим невыполненные главные
-			// задачи с прошедших дней на сегодня (если тоггл включён).
+			// Автопродление: перед подпиской переносим невыполненные главные
+			// задачи с прошедших дней на активный день (если тоггл включён).
 			taskRolloverStore.initialize();
 			if (taskRolloverStore.isEnabled && taskRolloverStore.enabledDate) {
 				await taskStore.rolloverOverdueMainTasks(uid, parseISO(taskRolloverStore.enabledDate));
 			}
-			await taskStore.fetchTasksForRange(uid, start, end);
-			if (!cancelled) setInitialLoading(false);
+			if (cancelled) return;
+			// Живая подписка на окно ±15 дней: изменения приезжают сразу.
+			unsubscribe = taskStore.subscribeToRange(uid, start, end, () => {
+				if (!cancelled) setInitialLoading(false);
+			});
 		})();
 		return () => {
 			cancelled = true;
+			unsubscribe?.();
 		};
 	}, [userStore.user]);
 
