@@ -15,7 +15,7 @@ import {
 	mapDocToTask,
 	type TaskPayload,
 } from "@/shared/api/taskApi";
-import { MAX_MAIN_TASKS } from "@/shared/config/tasks";
+import { MAX_MAIN_TASKS, ROLLOVER_CUTOFF_HOUR } from "@/shared/config/tasks";
 import {
 	isTaskMain,
 	isTaskRoutine,
@@ -423,20 +423,23 @@ class TaskStore {
 	}
 
 	// Автопродление: переносит невыполненные ГЛАВНЫЕ задачи с прошедших дней
-	// (начиная с sinceDate — даты включения тоггла) на сегодня. Если лимит
-	// главных на сегодня исчерпан, лишние становятся рутинными.
+	// (начиная с sinceDate — даты включения тоггла) на активный день. Если лимит
+	// главных на активном дне исчерпан, лишние становятся рутинными.
+	// «Активный день» начинается в ROLLOVER_CUTOFF_HOUR (04:00): с 00:00 до 03:59
+	// прошлый календарный день ещё активен и задачи не переносятся.
 	async rolloverOverdueMainTasks(userId: string, sinceDate: Date) {
-		const today = startOfDay(new Date());
+		const now = new Date();
+		const activeDay = startOfDay(now.getHours() < ROLLOVER_CUTOFF_HOUR ? addDays(now, -1) : now);
 		const since = startOfDay(sinceDate);
-		if (since >= today) return;
+		if (since >= activeDay) return;
 
-		// Тянем задачи диапазона [since, today) по дате; фильтр по isMain/isCompleted
+		// Тянем задачи диапазона [since, activeDay) по дате; фильтр по isMain/isCompleted
 		// на клиенте, чтобы не заводить составной индекс Firestore.
 		const db = getFirebaseDb();
 		const q = query(
 			collection(db, "users", userId, "tasks"),
 			where("date", ">=", since),
-			where("date", "<", today),
+			where("date", "<", activeDay),
 		);
 		const snapshot = await getDocs(q);
 		const overdue = snapshot.docs
@@ -446,22 +449,22 @@ class TaskStore {
 
 		if (overdue.length === 0) return;
 
-		// Сколько главных уже на сегодня — чтобы соблюсти лимит.
-		await this.ensureTasksForDate(userId, today);
-		let todayMainCount = this.getTasksForDate(today).filter(isTaskMain).length;
+		// Сколько главных уже на активном дне — чтобы соблюсти лимит.
+		await this.ensureTasksForDate(userId, activeDay);
+		let mainCount = this.getTasksForDate(activeDay).filter(isTaskMain).length;
 
 		const updates: { id: string; date: Date; isMain: boolean; order: number }[] = [];
 		for (const task of overdue) {
-			const newIsMain = todayMainCount < MAX_MAIN_TASKS;
-			if (newIsMain) todayMainCount++;
-			const order = this.nextOrder(today, newIsMain);
-			const moved: Task = { ...task, date: today, isMain: newIsMain, order };
+			const newIsMain = mainCount < MAX_MAIN_TASKS;
+			if (newIsMain) mainCount++;
+			const order = this.nextOrder(activeDay, newIsMain);
+			const moved: Task = { ...task, date: activeDay, isMain: newIsMain, order };
 
 			runInAction(() => {
 				this.removeFromCache(task.date, task.id);
 				this.addToCache(moved);
 			});
-			updates.push({ id: task.id, date: today, isMain: newIsMain, order });
+			updates.push({ id: task.id, date: activeDay, isMain: newIsMain, order });
 		}
 
 		try {
