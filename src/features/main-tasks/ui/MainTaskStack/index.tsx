@@ -60,8 +60,13 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 	const prevTasksRef = useRef<string>("");
 	const firstItemRef = useRef<HTMLDivElement | null>(null);
 	const [itemH, setItemH] = useState<number>(0);
+	const [isDragging, setIsDragging] = useState(false);
 	const uid = userStore.user?.uid;
 	const { trigger } = useHaptics();
+
+	// Во время драга снимаем клиппинг стека (карточка выходит за границы блока)
+	// и глушим выделение текста/callout на странице через класс на body.
+	useEffect(() => () => document.body.classList.remove("dnd-dragging"), []);
 
 	useEffect(() => {
 		if (isControlled) return;
@@ -144,6 +149,25 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 		[realTasks, uid],
 	);
 
+	const handleDragStart = useCallback(() => {
+		setIsDragging(true);
+		document.body.classList.add("dnd-dragging");
+	}, []);
+
+	const handleDragEndWrapped = useCallback(
+		(event: { active: { id: string | number }; over: { id: string | number } | null }) => {
+			setIsDragging(false);
+			document.body.classList.remove("dnd-dragging");
+			handleDragEnd(event);
+		},
+		[handleDragEnd],
+	);
+
+	const handleDragCancel = useCallback(() => {
+		setIsDragging(false);
+		document.body.classList.remove("dnd-dragging");
+	}, []);
+
 	const expandedHeight = 300;
 	const collapsedHeight = itemH || undefined;
 	const containerAnimate = itemH ? { height: isExpanded ? expandedHeight : collapsedHeight } : undefined;
@@ -157,9 +181,15 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 				animate={containerAnimate}
 				transition={{ type: "tween", duration: 0.25, ease: "easeOut" }}
 				className={`${styles.stack} ${styles.expanded}`}
-				style={{ overflow: "hidden" }}
+				style={{ overflow: isDragging ? "visible" : "hidden" }}
 			>
-				<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+				<DndContext
+					sensors={sensors}
+					collisionDetection={closestCenter}
+					onDragStart={handleDragStart}
+					onDragEnd={handleDragEndWrapped}
+					onDragCancel={handleDragCancel}
+				>
 					<SortableContext items={realTasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
 						{tasks.map((task, index) => (
 							<div

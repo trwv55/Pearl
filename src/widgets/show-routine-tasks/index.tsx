@@ -34,7 +34,15 @@ export const ShowRoutineTasks: React.FC<ShowRoutineTasksProps> = ({ tasks }) => 
 		}),
 	);
 
+	// Во время драга глушим выделение текста/callout на странице через класс на body.
+	useEffect(() => () => document.body.classList.remove("dnd-dragging"), []);
+
+	const handleDragStart = () => {
+		document.body.classList.add("dnd-dragging");
+	};
+
 	const handleDragEnd = (event: DragEndEvent) => {
+		document.body.classList.remove("dnd-dragging");
 		const { active, over } = event;
 		if (!over || active.id === over.id) return;
 
@@ -44,6 +52,10 @@ export const ShowRoutineTasks: React.FC<ShowRoutineTasksProps> = ({ tasks }) => 
 		setTaskOrder(reordered);
 
 		if (uid) taskStore.reorderOptimistic(uid, reordered);
+	};
+
+	const handleDragCancel = () => {
+		document.body.classList.remove("dnd-dragging");
 	};
 
 	const handleDelete = useCallback(
@@ -68,7 +80,13 @@ export const ShowRoutineTasks: React.FC<ShowRoutineTasksProps> = ({ tasks }) => 
 	}
 
 	return (
-		<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+		<DndContext
+			sensors={sensors}
+			collisionDetection={closestCenter}
+			onDragStart={handleDragStart}
+			onDragEnd={handleDragEnd}
+			onDragCancel={handleDragCancel}
+		>
 			<SortableContext items={taskOrder.map(t => t.id)} strategy={verticalListSortingStrategy}>
 				{taskOrder.map(task => (
 					<SortableRoutineTaskItem key={task.id} task={task} onDelete={handleDelete} />

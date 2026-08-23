@@ -191,3 +191,35 @@ body.no-scroll {
   touch-action: none;
 }
 
+/* Во время drag-and-drop глушим выделение текста и iOS-callout (Copy/Translate/
+   Share), которые всплывали от удержания. Вне драга выделение работает как обычно. */
+body.dnd-dragging,
+body.dnd-dragging * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+/* Тосты: горизонтальная анимация вместо вертикальной — въезжают слева и уходят
+   влево (не вниз). Свайп-закрытие тоже влево (swipeDirections на Toaster). */
+/* Гасим собственный transform-transition sonner (вертикальный сдвиг) — иначе он
+   доигрывает вниз-вверх в конце нашей горизонтальной анимации. Свайп у sonner
+   идёт не через transition, поэтому не ломается. */
+[data-sonner-toast] {
+  transition: none !important;
+}
+[data-sonner-toast][data-mounted='true'] {
+  animation: toast-slide-in-left 0.3s cubic-bezier(0.21, 1.02, 0.73, 1) !important;
+}
+[data-sonner-toast][data-removed='true'][data-swipe-out='false'] {
+  animation: toast-slide-out-left 0.2s ease-in forwards !important;
+}
+@keyframes toast-slide-in-left {
+  from { transform: translateX(-120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes toast-slide-out-left {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-120%); opacity: 0; }
+}
+
