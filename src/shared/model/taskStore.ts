@@ -488,31 +488,46 @@ class TaskStore {
 		const since = startOfDay(sinceDate);
 		if (since >= activeDay) return;
 
-		// Тянем задачи диапазона [since, activeDay) по дате; фильтр по isMain/isCompleted
-		// на клиенте, чтобы не заводить составной индекс Firestore.
+		// Одним запросом тянем и просроченные дни [since, activeDay), и сам activeDay:
+		// существующие главные активного дня считаем из ТОЙ ЖЕ свежей выборки, а не
+		// из локального кэша — иначе счётчик отставал и главных становилось >3.
 		const db = getFirebaseDb();
 		const q = query(
 			collection(db, "users", userId, "tasks"),
 			where("date", ">=", since),
-			where("date", "<", activeDay),
+			where("date", "<", addDays(activeDay, 1)),
 		);
 		const snapshot = await getDocs(q);
-		const overdue = snapshot.docs
-			.map((d) => mapDocToTask(d.id, d.data()))
-			.filter((t) => t.isMain && !t.isCompleted)
+		const all = snapshot.docs.map((d) => mapDocToTask(d.id, d.data()));
+		const activeKey = this.getDateKey(activeDay);
+
+		const overdue = all
+			.filter((t) => this.getDateKey(t.date) !== activeKey && t.isMain && !t.isCompleted)
 			.sort((a, b) => a.date.getTime() - b.date.getTime() || compareTaskOrder(a, b));
 
 		if (overdue.length === 0) return;
 
-		// Сколько главных уже на активном дне — чтобы соблюсти лимит.
-		await this.ensureTasksForDate(userId, activeDay);
-		let mainCount = this.getTasksForDate(activeDay).filter(isTaskMain).length;
+		// Существующие задачи активного дня — из свежих данных: точный счёт главных
+		// и засев порядка для главных/рутинных без опоры на кэш.
+		const activeTasks = all.filter((t) => this.getDateKey(t.date) === activeKey);
+		const seedOrder = (list: Task[]) => {
+			const withOrder = list.filter((t) => t.order !== NO_ORDER);
+			return withOrder.length ? Math.max(...withOrder.map((t) => t.order)) + 1 : 0;
+		};
+		let mainCount = activeTasks.filter((t) => t.isMain).length;
+		let nextMainOrder = seedOrder(activeTasks.filter((t) => t.isMain));
+		let nextRoutineOrder = seedOrder(activeTasks.filter((t) => !t.isMain));
 
 		const updates: { id: string; date: Date; isMain: boolean; order: number }[] = [];
 		for (const task of overdue) {
 			const newIsMain = mainCount < MAX_MAIN_TASKS;
-			if (newIsMain) mainCount++;
-			const order = this.nextOrder(activeDay, newIsMain);
+			let order: number;
+			if (newIsMain) {
+				mainCount++;
+				order = nextMainOrder++;
+			} else {
+				order = nextRoutineOrder++;
+			}
 			const moved: Task = { ...task, date: activeDay, isMain: newIsMain, order };
 
 			runInAction(() => {
