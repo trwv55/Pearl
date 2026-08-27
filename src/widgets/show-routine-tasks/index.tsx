@@ -1,5 +1,5 @@
 import { EmptyTaskState } from "@/shared/ui/EmptyTaskState";
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type Modifier } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import type { Task } from "@/shared/types/task";
 import { useCallback, useEffect, useState } from "react";
@@ -16,6 +16,9 @@ interface DragEndEvent {
 	active: { id: string | number };
 	over: { id: string | number } | null;
 }
+
+// Тащим только по вертикали — без горизонтального увода.
+const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 0 });
 
 export const ShowRoutineTasks: React.FC<ShowRoutineTasksProps> = ({ tasks }) => {
 	const [taskOrder, setTaskOrder] = useState<Task[]>([]);
@@ -83,6 +86,7 @@ export const ShowRoutineTasks: React.FC<ShowRoutineTasksProps> = ({ tasks }) => 
 		<DndContext
 			sensors={sensors}
 			collisionDetection={closestCenter}
+			modifiers={[restrictToVerticalAxis]}
 			onDragStart={handleDragStart}
 			onDragEnd={handleDragEnd}
 			onDragCancel={handleDragCancel}

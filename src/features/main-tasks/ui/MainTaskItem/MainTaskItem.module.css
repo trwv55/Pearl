@@ -4,6 +4,11 @@
 	width: 100%;
 	position: relative;
 	overflow: hidden;
+	/* Запрет выделения текста и iOS-callout (Copy/Translate/Share): удержание для
+	   drag иначе триггерит меню выделения ещё до старта перетаскивания. */
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-touch-callout: none;
 }
 
 /* Шум поверх градиента (как у фона страницы), под контентом — текст и эмодзи
