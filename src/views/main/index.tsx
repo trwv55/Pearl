@@ -5,6 +5,7 @@ import { MainPageTopBar } from "@/widgets/main-page-top-bar";
 import { CreateTaskBtn } from "@/shared/ui/CreateTaskBtn";
 import { MainTasks } from "@/features/main-tasks";
 import { RoutineTasks } from "@/features/routine-tasks";
+import { TaskViewPopupProvider } from "@/features/task-view";
 import { MainPageLayout } from "@/app/layouts/MainPageLayout";
 import { ProtectedRoute } from "@/app/providers/ProtectedRoute";
 import { observer } from "mobx-react-lite";
@@ -119,7 +120,7 @@ export const MainPage = observer(() => {
 				{initialLoading ? (
 					<MainPageSkeleton />
 				) : (
-				<>
+				<TaskViewPopupProvider>
 				<RefreshRing pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={threshold} />
 				<div
 					className="relative"
@@ -144,7 +145,7 @@ export const MainPage = observer(() => {
 				{/* Вне трансформируемого блока: transform создаёт containing block
 				    для position:fixed, иначе кнопка «отвязывается» от экрана. */}
 				<CreateTaskBtn />
-				</>
+				</TaskViewPopupProvider>
 				)}
 			</MainPageLayout>
 		</ProtectedRoute>
