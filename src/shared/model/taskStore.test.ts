@@ -354,7 +354,9 @@ describe("toggleCompletion", () => {
 		await store.toggleCompletion(USER, task.id);
 
 		expect(store.tasks[0].isCompleted).toBe(false);
-		expect(scheduleTaskNotification).toHaveBeenLastCalledWith(expect.objectContaining({ id: task.id }));
+		expect(scheduleTaskNotification).toHaveBeenLastCalledWith(
+			expect.objectContaining({ id: task.id, isCompleted: false }),
+		);
 		expect(showErrorToast).toHaveBeenCalledTimes(1);
 	});
 
@@ -374,5 +376,93 @@ describe("computed", () => {
 
 		expect(store.mainTasks.map((t) => t.id)).toEqual([m1.id, m2.id]);
 		expect(store.routineTasks.map((t) => t.id)).toEqual([r1.id]);
+	});
+});
+
+describe("deleteWithUndo", () => {
+	const setHidden = (hidden: boolean) =>
+		Object.defineProperty(document, "hidden", { configurable: true, get: () => hidden });
+
+	const undoOf = () => vi.mocked(showUndoToast).mock.calls[0][0].onUndo!;
+
+	let task: Task;
+
+	beforeEach(async () => {
+		vi.useFakeTimers();
+		task = makeTask({ time: 600 });
+		mockTaskApi.getTasksByDate.mockResolvedValueOnce([task]);
+		await store.fetchTasks(USER, TEST_DATE);
+	});
+
+	it("задача исчезает сразу, по таймеру уходит в API, onDeleted вызван", async () => {
+		const onDeleted = vi.fn();
+		store.deleteWithUndo(USER, task, 4000, onDeleted);
+
+		expect(store.tasks).toEqual([]);
+		expect(cancelTaskNotification).toHaveBeenCalledWith(task.id);
+		expect(mockTaskApi.deleteTask).not.toHaveBeenCalled();
+
+		await vi.advanceTimersByTimeAsync(4000);
+
+		expect(mockTaskApi.deleteTask).toHaveBeenCalledWith(USER, task.id);
+		expect(onDeleted).toHaveBeenCalledTimes(1);
+	});
+
+	it("«Отменить» до таймера — задача возвращается, API не вызван, уведомление восстановлено", async () => {
+		store.deleteWithUndo(USER, task);
+		undoOf()();
+
+		expect(ids(store.tasks)).toEqual([task.id]);
+		expect(scheduleTaskNotification).toHaveBeenLastCalledWith(expect.objectContaining({ id: task.id }));
+
+		await vi.advanceTimersByTimeAsync(4000);
+		expect(mockTaskApi.deleteTask).not.toHaveBeenCalled();
+	});
+
+	it("повторный вызов для той же задачи — noop", () => {
+		store.deleteWithUndo(USER, task);
+		store.deleteWithUndo(USER, task);
+		expect(showUndoToast).toHaveBeenCalledTimes(1);
+	});
+
+	it("ошибка удаления → задача возвращается, тост", async () => {
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		failNext("deleteTask");
+		store.deleteWithUndo(USER, task);
+
+		await vi.advanceTimersByTimeAsync(4000);
+
+		expect(ids(store.tasks)).toEqual([task.id]);
+		expect(showErrorToast).toHaveBeenCalledTimes(1);
+	});
+
+	it("flushPendingDeletes коммитит немедленно, таймер потом не срабатывает второй раз", async () => {
+		store.deleteWithUndo(USER, task);
+		store.flushPendingDeletes();
+		// advanceTimersByTimeAsync(0), а не runAllTimersAsync: если flushPendingDeletes
+		// сломать (сделать no-op), исходный 4-секундный таймер останется висеть, и
+		// runAllTimersAsync всё равно его докрутит — тест перестанет отличать
+		// «отработал flush» от «просто исполнился обычный таймер». advanceTimersByTimeAsync(0)
+		// продвигает только микрозадачи, не трогая ещё не наступившие таймеры.
+		await vi.advanceTimersByTimeAsync(0);
+
+		expect(mockTaskApi.deleteTask).toHaveBeenCalledTimes(1);
+
+		await vi.advanceTimersByTimeAsync(4000);
+		expect(mockTaskApi.deleteTask).toHaveBeenCalledTimes(1);
+	});
+
+	it("уход приложения в фон (visibilitychange + hidden) коммитит отложенные удаления", async () => {
+		store.deleteWithUndo(USER, task);
+
+		setHidden(true);
+		document.dispatchEvent(new Event("visibilitychange"));
+		// Та же логика, что и в тесте на flushPendingDeletes: runAllTimersAsync
+		// докрутил бы и обычный 4-секундный таймер, даже если обработчик
+		// visibilitychange сломан, — тест бы не отличил раннее срабатывание.
+		await vi.advanceTimersByTimeAsync(0);
+		setHidden(false);
+
+		expect(mockTaskApi.deleteTask).toHaveBeenCalledWith(USER, task.id);
 	});
 });
