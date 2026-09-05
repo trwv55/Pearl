@@ -43,10 +43,15 @@ function createDefaultImpls() {
 
 const defaultImpls = createDefaultImpls();
 
+// Тип реального модуля: привязывает мок к его экспортам, чтобы добавление,
+// удаление или переименование функции в taskApi.ts стало ошибкой типов здесь,
+// а не тихо развалившимся тестом (mock[name] === undefined) в рантайме.
+type TaskApi = typeof import("@/shared/api/taskApi");
+
 // Полный мок @/shared/api/taskApi: все функции — vi.fn с «успешной» реализацией
 // по умолчанию. Подключается в тестах через
 //   vi.mock("@/shared/api/taskApi", async () => (await import("@/shared/testing/mocks/taskApi")).mockTaskApi);
-export const mockTaskApi = {
+export const mockTaskApi: { [K in keyof TaskApi]: Mock } = {
 	generateTaskId: vi.fn(defaultImpls.generateTaskId),
 	addTaskWithId: vi.fn(defaultImpls.addTaskWithId),
 	addTask: vi.fn(defaultImpls.addTask),

@@ -12,6 +12,9 @@ export default defineConfig([
 			"react-hooks/set-state-in-effect": "warn",
 			"react-hooks/immutability": "warn",
 			"react-hooks/preserve-manual-memoization": "warn",
+			// Параметр/переменная с префиксом "_" — намеренно неиспользуемые (например,
+			// в моках, где важна сигнатура функции, а не тело). Не считаем их шумом.
+			"@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
 		},
 	},
 	globalIgnores(["out/", ".next/", "ios/", "public/sw.js", "public/workbox-*.js", "next-env.d.ts"]),

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getDocs, onSnapshot, updateDoc, writeBatch } from "firebase/firestore";
+import { getDocs, onSnapshot, updateDoc, where, writeBatch } from "firebase/firestore";
+import { addDays, startOfDay } from "date-fns";
 import {
 	getTasksForRange,
 	mapDocToTask,
@@ -143,6 +144,21 @@ describe("getTasksForRange", () => {
 		const tasks = await getTasksForRange("u1", new Date(2026, 8, 1), new Date(2026, 8, 7));
 		expect(tasks).toHaveLength(1);
 		expect(tasks[0].id).toBe("a");
+		// Сырой элемент снапшота ({ id, data }) тоже имеет .id === "a" — проверяем поле,
+		// которого у него нет (title достаётся только из data()), чтобы тест реально
+		// пинал маппинг через mapDocToTask, а не проходил на незамапленном документе.
+		expect(tasks[0].title).toBe(baseDoc.title);
+	});
+
+	it("запрашивает диапазон [startOfDay(start), startOfDay(end + 1 день))", async () => {
+		vi.mocked(getDocs).mockResolvedValue({ docs: [] } as never);
+		const start = new Date(2026, 8, 1, 15, 30);
+		const end = new Date(2026, 8, 7, 8, 0);
+
+		await getTasksForRange("u1", start, end);
+
+		expect(where).toHaveBeenCalledWith("date", ">=", startOfDay(start));
+		expect(where).toHaveBeenCalledWith("date", "<", startOfDay(addDays(end, 1)));
 	});
 });
 
@@ -174,5 +190,16 @@ describe("subscribeToTasksInRange", () => {
 		const err = new Error("permission-denied");
 		onErr(err);
 		expect(onError).toHaveBeenCalledWith(err);
+	});
+
+	it("запрашивает диапазон [startOfDay(start), startOfDay(end + 1 день))", () => {
+		vi.mocked(onSnapshot).mockReturnValue(vi.fn() as never);
+		const start = new Date(2026, 8, 1, 15, 30);
+		const end = new Date(2026, 8, 7, 8, 0);
+
+		subscribeToTasksInRange("u1", start, end, vi.fn(), vi.fn());
+
+		expect(where).toHaveBeenCalledWith("date", ">=", startOfDay(start));
+		expect(where).toHaveBeenCalledWith("date", "<", startOfDay(addDays(end, 1)));
 	});
 });

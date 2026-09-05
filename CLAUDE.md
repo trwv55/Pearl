@@ -29,12 +29,13 @@ Pearl — ежедневный планировщик задач (русскоя
 
 ### Состояние (MobX)
 
-Root store и React Context отсутствуют: четыре независимых синглтона в `src/shared/model/`, импортируются напрямую; компоненты оборачиваются в `observer()` из mobx-react-lite. Классы сторов (`TaskStore`, `StatsStore`, `TaskRolloverStore`, `NotificationSettingsStore`) экспортируются наряду с синглтонами — это нужно для создания свежих инстансов в тестах; приложение использует только синглтоны:
+Root store и React Context отсутствуют: пять независимых синглтонов в `src/shared/model/`, импортируются напрямую; компоненты оборачиваются в `observer()` из mobx-react-lite. Классы сторов (`TaskStore`, `StatsStore`, `TaskRolloverStore`, `NotificationSettingsStore`) экспортируются наряду с синглтонами — это нужно для создания свежих инстансов в тестах; приложение использует только синглтоны:
 
 - `taskStore` — задачи выбранной даты, кэш по датам (`taskCache` Map), оптимистичное удаление с undo (4 с, `deleteWithUndo`), `toggleCompletion`; computed `mainTasks`/`routineTasks`.
 - `userStore` — Firebase `User | null`.
 - `statsStore` — недельная статистика (день выполнен = 3/3 главных).
 - `notificationSettingsStore` — тумблер уведомлений (OS-разрешение + localStorage).
+- `taskRolloverStore` — настройка «Продление задач»: хранит в localStorage факт и ДАТУ включения тумблера, чтобы переносились только невыполненные главные задачи с дней не раньше даты включения.
 
 ### Данные (Firebase)
 

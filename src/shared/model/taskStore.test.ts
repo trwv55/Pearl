@@ -146,6 +146,21 @@ describe("subscribeToRange", () => {
 		expect(store.isDateLoaded(OTHER_DATE)).toBe(true);
 	});
 
+	it("зовёт taskApi.subscribeToTasksInRange с теми же userId/датами, что переданы в стор", () => {
+		// Границы диапазона для заполнения кэша (taskStore.ts) и для самого
+		// запроса (taskApi.ts) выражены в двух разных местах и сегодня ничем,
+		// кроме этого теста, не связаны: разъедутся — стор пометит день
+		// загруженным, который не запрашивался, а остальные тесты этого не заметят.
+		store.subscribeToRange(USER, TEST_DATE, OTHER_DATE);
+		expect(mockTaskApi.subscribeToTasksInRange).toHaveBeenCalledWith(
+			USER,
+			TEST_DATE,
+			OTHER_DATE,
+			expect.any(Function),
+			expect.any(Function),
+		);
+	});
+
 	it("onReady вызывается один раз — на первом снапшоте", () => {
 		const onReady = vi.fn();
 		store.subscribeToRange(USER, TEST_DATE, OTHER_DATE, onReady);
@@ -327,21 +342,36 @@ describe("toggleCompletion", () => {
 		expect(scheduleTaskNotification).toHaveBeenLastCalledWith(expect.objectContaining({ id: task.id, isCompleted: false }));
 	});
 
-	it("апдейт привязан к дате задачи: смена дня во время запроса не теряет галочку", async () => {
+	// Изначально этот тест назывался «апдейт привязан к дате задачи: смена дня
+	// во время запроса не теряет галочку» и проверял только успешный путь. Но
+	// успешный путь ничего не доказывает: toggleCompletion пишет оптимистичное
+	// состояние синхронно, ДО смены даты (replaceInCache(optimistic) в начале
+	// метода), а на успехе `.then(() => undefined)` вообще не трогает кэш — так
+	// что тест прошёл бы, даже если бы replaceInCache опирался на selectedDate,
+	// а не на task.date. Реально это различимо только на пути отката: там
+	// runInAction(() => this.replaceInCache(task)) пишет уже ПОСЛЕ смены даты,
+	// в catch. Поэтому тест проверяет именно откат.
+	it("откат при ошибке привязан к дате задачи, а не к выбранной: смена дня во время запроса не роняет откат в чужой кэш", async () => {
+		vi.spyOn(console, "error").mockImplementation(() => {});
 		const task = makeTask({ date: TEST_DATE });
 		mockTaskApi.getTasksByDate.mockResolvedValueOnce([task]);
 		await store.fetchTasks(USER, TEST_DATE);
 
-		let resolve!: () => void;
-		mockTaskApi.toggleTaskCompletion.mockReturnValueOnce(new Promise<Task>((r) => (resolve = () => r({} as Task))));
+		let reject!: (e: Error) => void;
+		mockTaskApi.toggleTaskCompletion.mockReturnValueOnce(new Promise<Task>((_, r) => (reject = r)));
 
 		const pending = store.toggleCompletion(USER, task.id);
-		store.setSelectedDate(OTHER_DATE);
-		resolve();
+		store.setSelectedDate(OTHER_DATE); // откат случится уже после смены даты
+		reject(new Error("boom"));
 		await pending;
 
+		// Если бы replaceInCache(task) в catch писал в кэш selectedDate (OTHER_DATE),
+		// а не task.date (TEST_DATE), откат ушёл бы не туда: день задачи остался бы
+		// с «зависшим» оптимистичным isCompleted=true, а OTHER_DATE получил бы чужую задачу.
 		store.setSelectedDate(TEST_DATE);
-		expect(store.tasks[0].isCompleted).toBe(true);
+		expect(store.tasks[0].isCompleted).toBe(false);
+		expect(store.getTasksForDate(OTHER_DATE)).toEqual([]);
+		expect(showErrorToast).toHaveBeenCalledTimes(1);
 	});
 
 	it("ошибка API → откат статуса и уведомления, тост", async () => {
@@ -456,6 +486,18 @@ describe("deleteWithUndo", () => {
 		store.deleteWithUndo(USER, task);
 
 		setHidden(true);
+		// Конструктор TaskStore вешает слушатель visibilitychange на document и
+		// никогда его не снимает (в проде это безвредно — стор синглтон). В этом
+		// файле на один общий jsdom-document создаётся стор в каждом тесте, так что
+		// к этому моменту на document висит ~30 живых слушателей от предыдущих
+		// сторов. dispatchEvent ниже флашит их все разом, включая, например, стор
+		// из теста на подписку, у которого может остаться незавершённое отложенное
+		// удаление. Тест всё равно проходит, потому что ассерт ниже —
+		// toHaveBeenCalledWith (было ли среди вызовов нужное), а не
+		// toHaveBeenCalledTimes(1) (был ли вызов ровно один). Если когда-нибудь
+		// решите ужесточить ассерт до toHaveBeenCalledTimes — сначала разберитесь
+		// с накоплением слушателей (например, добавив store.destroy()/removeEventListener
+		// и вызывая его между тестами), иначе тест станет плавающим.
 		document.dispatchEvent(new Event("visibilitychange"));
 		// Та же логика, что и в тесте на flushPendingDeletes: runAllTimersAsync
 		// докрутил бы и обычный 4-секундный таймер, даже если обработчик
