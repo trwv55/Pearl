@@ -89,7 +89,9 @@ describe("updateTask", () => {
 		await updateTask("u1", "t1", { title: "Новое", time: undefined });
 		expect(updateDoc).toHaveBeenCalledTimes(1);
 		const [, data] = vi.mocked(updateDoc).mock.calls[0];
-		expect(data).toEqual({ title: "Новое", updatedAt: "SERVER_TIMESTAMP" });
+		// toStrictEqual, а не toEqual: toEqual не различает отсутствующий ключ и ключ со значением undefined,
+		// а нам важно проверить, что необъявленное поле (time) не попадает в payload вовсе.
+		expect(data).toStrictEqual({ title: "Новое", updatedAt: "SERVER_TIMESTAMP" });
 	});
 });
 
@@ -162,7 +164,12 @@ describe("subscribeToTasksInRange", () => {
 
 		onNext({ docs: [{ id: "a", data: () => ({ ...baseDoc, date: new Date(2026, 8, 5) }) }] });
 		expect(onTasks).toHaveBeenCalledTimes(1);
-		expect(onTasks.mock.calls[0][0][0].id).toBe("a");
+		// Сырой элемент снапшота ({ id, data }) тоже имеет .id === "a" — проверяем поле, которого
+		// у него нет (title достаётся только из data()), чтобы тест реально пинал маппинг через mapDocToTask.
+		const emitted = onTasks.mock.calls[0][0][0];
+		expect(emitted.id).toBe("a");
+		expect(emitted.title).toBe(baseDoc.title);
+		expect(emitted).not.toHaveProperty("data");
 
 		const err = new Error("permission-denied");
 		onErr(err);
