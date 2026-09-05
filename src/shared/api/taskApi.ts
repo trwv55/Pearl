@@ -14,6 +14,7 @@ import {
 	where,
 	getDoc,
 	writeBatch,
+	onSnapshot,
 	type FieldValue,
 } from "firebase/firestore";
 import { addDays, startOfDay } from "date-fns";
@@ -107,6 +108,25 @@ export const getTasksForRange = async (userId: string, startDate: Date, endDate:
 	const snapshot = await getDocs(q);
 
 	return snapshot.docs.map((doc) => mapDocToTask(doc.id, doc.data()));
+};
+
+// Живая подписка на задачи диапазона [startDate, endDate] (по дням, включительно).
+// Каждый снапшот целиком отдаётся в onTasks уже смаппленным. Возвращает функцию отписки.
+export const subscribeToTasksInRange = (
+	userId: string,
+	startDate: Date,
+	endDate: Date,
+	onTasks: (tasks: Task[]) => void,
+	onError: (error: Error) => void,
+): (() => void) => {
+	const db = getFirebaseDb();
+	const q = query(
+		collection(db, "users", userId, "tasks"),
+		where("date", ">=", startOfDay(startDate)),
+		where("date", "<", startOfDay(addDays(endDate, 1))),
+	);
+
+	return onSnapshot(q, (snapshot) => onTasks(snapshot.docs.map((d) => mapDocToTask(d.id, d.data()))), onError);
 };
 
 export const deleteTask = async (userId: string, taskId: string) => {
