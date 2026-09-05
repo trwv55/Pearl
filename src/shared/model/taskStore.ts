@@ -1,9 +1,7 @@
 "use client";
 
 import { makeAutoObservable, runInAction } from "mobx";
-import { getFirebaseDb } from "@/shared/lib/firebase";
 import { format, addDays, startOfDay } from "date-fns";
-import { collection, getDocs, onSnapshot, query, where } from "firebase/firestore";
 import {
 	deleteTask as deleteTaskApi,
 	toggleTaskCompletion,
@@ -12,7 +10,9 @@ import {
 	updateTask,
 	updateTasksOrder,
 	rolloverTasks,
-	mapDocToTask,
+	getTasksByDate,
+	getTasksForRange,
+	subscribeToTasksInRange,
 	type TaskPayload,
 } from "@/shared/api/taskApi";
 import { MAX_MAIN_TASKS, ROLLOVER_CUTOFF_HOUR } from "@/shared/config/tasks";
@@ -29,7 +29,7 @@ import { showUndoToast } from "@/shared/lib/showUndoToast";
 import { showErrorToast } from "@/shared/lib/showToast";
 import { cancelTaskNotification, scheduleTaskNotification } from "@/shared/lib/notifications";
 
-class TaskStore {
+export class TaskStore {
 	tasks: Task[] = [];
 	selectedDate: Date = new Date();
 	private taskCache: Map<string, Task[]> = new Map();
@@ -130,12 +130,7 @@ class TaskStore {
 
 	async fetchTasks(userId: string, date: Date = this.selectedDate) {
 		try {
-			const db = getFirebaseDb();
-			const start = startOfDay(date);
-			const end = addDays(start, 1);
-			const q = query(collection(db, "users", userId, "tasks"), where("date", ">=", start), where("date", "<", end));
-			const snapshot = await getDocs(q);
-			const tasks: Task[] = snapshot.docs.map((doc) => mapDocToTask(doc.id, doc.data()));
+			const tasks = await getTasksByDate(userId, date);
 
 			runInAction(() => {
 				const key = this.getDateKey(date);
@@ -152,19 +147,10 @@ class TaskStore {
 
 	async fetchTasksForRange(userId: string, startDate: Date, endDate: Date) {
 		try {
-			const db = getFirebaseDb();
-			const q = query(
-				collection(db, "users", userId, "tasks"),
-				where("date", ">=", startOfDay(startDate)),
-				where("date", "<", startOfDay(addDays(endDate, 1))),
-			);
-
-			const snapshot = await getDocs(q);
+			const tasks = await getTasksForRange(userId, startDate, endDate);
 			const groupedTasks: Map<string, Task[]> = new Map();
 
-			snapshot.docs.forEach((doc) => {
-				const task = mapDocToTask(doc.id, doc.data());
-
+			tasks.forEach((task) => {
 				const key = this.getDateKey(task.date);
 				if (!groupedTasks.has(key)) {
 					groupedTasks.set(key, []);
@@ -195,10 +181,8 @@ class TaskStore {
 	// снапшота (для снятия скелетона). Задачи в pendingDeletions игнорируются —
 	// иначе сервер «вернул» бы задачу в окне undo-удаления.
 	subscribeToRange(userId: string, startDate: Date, endDate: Date, onReady?: () => void): () => void {
-		const db = getFirebaseDb();
 		const start = startOfDay(startDate);
 		const end = startOfDay(addDays(endDate, 1));
-		const q = query(collection(db, "users", userId, "tasks"), where("date", ">=", start), where("date", "<", end));
 
 		let ready = false;
 		const markReady = () => {
@@ -207,13 +191,14 @@ class TaskStore {
 			onReady?.();
 		};
 
-		return onSnapshot(
-			q,
-			(snapshot) => {
+		return subscribeToTasksInRange(
+			userId,
+			startDate,
+			endDate,
+			(tasks) => {
 				const grouped: Map<string, Task[]> = new Map();
-				snapshot.docs.forEach((doc) => {
-					if (this.pendingDeletions.has(doc.id)) return;
-					const task = mapDocToTask(doc.id, doc.data());
+				tasks.forEach((task) => {
+					if (this.pendingDeletions.has(task.id)) return;
 					const key = this.getDateKey(task.date);
 					if (!grouped.has(key)) grouped.set(key, []);
 					grouped.get(key)!.push(task);
@@ -491,14 +476,7 @@ class TaskStore {
 		// Одним запросом тянем и просроченные дни [since, activeDay), и сам activeDay:
 		// существующие главные активного дня считаем из ТОЙ ЖЕ свежей выборки, а не
 		// из локального кэша — иначе счётчик отставал и главных становилось >3.
-		const db = getFirebaseDb();
-		const q = query(
-			collection(db, "users", userId, "tasks"),
-			where("date", ">=", since),
-			where("date", "<", addDays(activeDay, 1)),
-		);
-		const snapshot = await getDocs(q);
-		const all = snapshot.docs.map((d) => mapDocToTask(d.id, d.data()));
+		const all = await getTasksForRange(userId, since, activeDay);
 		const activeKey = this.getDateKey(activeDay);
 
 		const overdue = all
