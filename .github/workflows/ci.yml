@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, typecheck, test
+    runs-on: ubuntu-latest
+    steps:
+      # 1️⃣ Клонируем репозиторий
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Устанавливаем Node.js и кэшируем npm
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      # 3️⃣ Ставим зависимости
+      - name: Install dependencies
+        run: npm ci
+
+      # 4️⃣ Линтер
+      - name: Lint
+        run: npm run lint
+
+      # 5️⃣ Проверка типов
+      - name: Typecheck
+        run: npm run typecheck
+
+      # 6️⃣ Юнит-тесты
+      - name: Test
+        run: npm test

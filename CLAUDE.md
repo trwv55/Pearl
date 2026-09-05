@@ -10,8 +10,10 @@ Pearl — ежедневный планировщик задач (русскоя
 
 - `npm run dev` — dev-сервер (turbopack)
 - `npm run build` — прод-сборка: принудительно webpack (`next build --webpack`) из-за кастомных SVGR-правил; static export в `out/`
-- `npm run lint`
-- Тестов в проекте нет.
+- `npm run lint` — ESLint (`eslint .`, flat-конфиг из `eslint-config-next@16`; `next lint` в Next 16 удалён). Три правила React Compiler понижены до warn — компилятор в проекте не используется.
+- `npm run typecheck` — `tsc --noEmit`
+- `npm test` / `npm run test:watch` — Vitest (jsdom). Тесты лежат рядом с кодом (`*.test.ts`), покрывают бизнес-логику: MobX-сторы, `taskApi`, уведомления, типы задач. UI и хуки не тестируются. Хелперы в `src/shared/testing/`: `factories.ts` (`makeTask`/`makeMain`/`makeRoutine`, `TEST_DATE`), `async.ts` (`flushPromises`), `mocks/taskApi.ts` (полный мок `@/shared/api/taskApi` + `emitSnapshot`/`emitSubscriptionError`/`failNext`/`resetTaskApiMock`/`unsubscribeMock`), `setup.ts` (сбрасывает мок taskApi и localStorage между тестами). В тестах сторов мокаются `@/shared/api/taskApi`, `@/shared/lib/notifications`, `showToast`/`showUndoToast`; Firestore напрямую не мокается — сторы к нему не обращаются (мокается только в `taskApi.test.ts`, где тестируется сам `taskApi`).
+- CI: `.github/workflows/ci.yml` — lint + typecheck + test на каждый push/PR. `ci-test.yml` — отдельный workflow, только деплой ветки `test` в Vercel.
 - Env: `cp .env.example .env`, переменные `NEXT_PUBLIC_FIREBASE_*`.
 - iOS: `out/` — это `webDir` Capacitor (`capacitor.config.ts`, appId `com.pearl-app.app`); после сборки — `npx cap sync ios`, проект в `ios/App`.
 
@@ -27,7 +29,7 @@ Pearl — ежедневный планировщик задач (русскоя
 
 ### Состояние (MobX)
 
-Root store и React Context отсутствуют: четыре независимых синглтона в `src/shared/model/`, импортируются напрямую; компоненты оборачиваются в `observer()` из mobx-react-lite:
+Root store и React Context отсутствуют: четыре независимых синглтона в `src/shared/model/`, импортируются напрямую; компоненты оборачиваются в `observer()` из mobx-react-lite. Классы сторов (`TaskStore`, `StatsStore`, `TaskRolloverStore`, `NotificationSettingsStore`) экспортируются наряду с синглтонами — это нужно для создания свежих инстансов в тестах; приложение использует только синглтоны:
 
 - `taskStore` — задачи выбранной даты, кэш по датам (`taskCache` Map), оптимистичное удаление с undo (4 с, `deleteWithUndo`), `toggleCompletion`; computed `mainTasks`/`routineTasks`.
 - `userStore` — Firebase `User | null`.
@@ -38,7 +40,7 @@ Root store и React Context отсутствуют: четыре независ�
 
 Используются только Auth и Firestore. Инициализация — ленивый клиентский синглтон `src/shared/lib/firebase.ts` (persistence: indexedDB на нативе, browserLocal в вебе). CRUD задач — `src/shared/api/taskApi.ts` (коллекция `users/{uid}/tasks/{taskId}`); профиль — `userApi.ts` (`users/{uid}`); auth-операции — `src/shared/lib/auth/*`.
 
-Нюанс: `taskStore.fetchTasks`/`fetchTasksForRange` ходят в Firestore напрямую, минуя `taskApi` (маппинг doc→Task продублирован).
+Все чтения/записи задач идут только через `taskApi` (включая realtime-подписку `subscribeToTasksInRange`); сторы `firebase/firestore` не импортируют.
 
 ### Уведомления
 
