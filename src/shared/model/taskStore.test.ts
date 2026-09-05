@@ -494,3 +494,81 @@ describe("deleteWithUndo", () => {
 		expect(scheduleTaskNotification).not.toHaveBeenCalled();
 	});
 });
+
+describe("rolloverOverdueMainTasks", () => {
+	const SEP = (day: number, hour = 0, minute = 0) => new Date(2026, 8, day, hour, minute);
+
+	it("до 04:00 активный день — вчера; since == активный день → API не вызывается", async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(SEP(5, 3, 30));
+		await store.rolloverOverdueMainTasks(USER, SEP(4));
+		expect(mockTaskApi.getTasksForRange).not.toHaveBeenCalled();
+	});
+
+	it("до 04:00 диапазон запроса — [since, вчера]", async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(SEP(5, 3, 30));
+		await store.rolloverOverdueMainTasks(USER, SEP(3));
+		expect(mockTaskApi.getTasksForRange).toHaveBeenCalledWith(USER, SEP(3), SEP(4));
+	});
+
+	it("нет просроченных главных → rolloverTasks не вызывается", async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(SEP(5, 10));
+		mockTaskApi.getTasksForRange.mockResolvedValueOnce([
+			makeMain({ date: SEP(4), isCompleted: true }),
+			makeRoutine({ date: SEP(4) }),
+			makeMain({ date: SEP(5) }),
+		]);
+		await store.rolloverOverdueMainTasks(USER, SEP(1));
+		expect(mockTaskApi.rolloverTasks).not.toHaveBeenCalled();
+	});
+
+	it("переносит невыполненные главные; при лимите лишние становятся рутинными; order сеется от свежей выборки", async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(SEP(5, 10));
+		const o1 = makeMain({ id: "o1", date: SEP(3), order: 1 });
+		const o0 = makeMain({ id: "o0", date: SEP(3), order: 0 });
+		const o4 = makeMain({ id: "o4", date: SEP(4), order: 0 });
+		const existingMains = [makeMain({ date: SEP(5), order: 0 }), makeMain({ date: SEP(5), order: 1 })];
+		const existingRoutine = makeRoutine({ date: SEP(5), order: 0 });
+		mockTaskApi.getTasksForRange.mockResolvedValueOnce([
+			o1,
+			o0,
+			o4,
+			makeMain({ date: SEP(4), isCompleted: true }),
+			makeRoutine({ date: SEP(3) }),
+			...existingMains,
+			existingRoutine,
+		]);
+
+		await store.rolloverOverdueMainTasks(USER, SEP(1));
+
+		// Порядок обработки: дата → order: o0 (3 сент, 0), o1 (3 сент, 1), o4 (4 сент).
+		// На 5 сентября уже 2 главные → o0 становится третьей главной (order 2),
+		// o1 и o4 — рутинными с order 1 и 2 (после существующей рутинной с order 0).
+		expect(mockTaskApi.rolloverTasks).toHaveBeenCalledWith(USER, [
+			{ id: "o0", date: SEP(5), isMain: true, order: 2 },
+			{ id: "o1", date: SEP(5), isMain: false, order: 1 },
+			{ id: "o4", date: SEP(5), isMain: false, order: 2 },
+		]);
+
+		const moved = store.getTasksForDate(SEP(5));
+		expect(moved.find((t) => t.id === "o0")).toMatchObject({ isMain: true, order: 2, date: SEP(5) });
+		expect(moved.find((t) => t.id === "o1")).toMatchObject({ isMain: false, order: 1 });
+		expect(ids(store.getTasksForDate(SEP(3)))).not.toContain("o0");
+	});
+
+	it("ошибка API — только лог, локальное состояние остаётся перенесённым", async () => {
+		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		vi.useFakeTimers();
+		vi.setSystemTime(SEP(5, 10));
+		mockTaskApi.getTasksForRange.mockResolvedValueOnce([makeMain({ id: "o0", date: SEP(4) })]);
+		failNext("rolloverTasks");
+
+		await expect(store.rolloverOverdueMainTasks(USER, SEP(1))).resolves.toBeUndefined();
+
+		expect(errorSpy).toHaveBeenCalled();
+		expect(ids(store.getTasksForDate(SEP(5)))).toContain("o0");
+	});
+});
