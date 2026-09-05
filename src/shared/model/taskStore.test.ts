@@ -465,4 +465,32 @@ describe("deleteWithUndo", () => {
 
 		expect(mockTaskApi.deleteTask).toHaveBeenCalledWith(USER, task.id);
 	});
+
+	it("«Отменить» во время уже стартовавшего commit не воскрешает задачу — commit победил благодаря settled", async () => {
+		// Держим deleteTaskApi «висящим», чтобы поймать commit ровно в момент
+		// между стартом (settled уже true) и резолвом промиса.
+		let resolveDelete!: () => void;
+		mockTaskApi.deleteTask.mockReturnValueOnce(new Promise<void>((r) => (resolveDelete = r)));
+
+		store.deleteWithUndo(USER, task);
+		// Таймер срабатывает: commit() стартует, выставляет settled = true,
+		// удаляет запись из pending и подвисает на await deleteTaskApi.
+		await vi.advanceTimersByTimeAsync(4000);
+		expect(mockTaskApi.deleteTask).toHaveBeenCalledTimes(1);
+
+		// Пользователь успевает нажать «Отменить», пока запрос на удаление ещё в полёте.
+		undoOf()();
+
+		// Без settled cancel() решил бы, что удаление ещё не подтверждено (в
+		// pending уже пусто), вернул бы задачу в UI и перепланировал уведомление —
+		// хотя запрос на сервер уже не отменить. settled не даёт cancel сработать.
+		expect(store.tasks).toEqual([]);
+		expect(scheduleTaskNotification).not.toHaveBeenCalled();
+
+		resolveDelete();
+		await vi.advanceTimersByTimeAsync(0);
+
+		expect(store.tasks).toEqual([]);
+		expect(scheduleTaskNotification).not.toHaveBeenCalled();
+	});
 });
