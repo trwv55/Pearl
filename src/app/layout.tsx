@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 			<body>
 				<AuthProvider>
 					{children}
-					<Toaster position="bottom-left" richColors offset={15} />
+					<Toaster position="bottom-left" richColors offset={15} swipeDirections={["left"]} />
 				</AuthProvider>
 			</body>
 		</html>

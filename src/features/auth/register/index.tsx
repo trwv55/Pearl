@@ -55,20 +55,27 @@ export const Register = () => {
 	}, [formData, router]);
 
 	const steps = [
-		<RegisterEmail onChange={(email) => setFormData((prev) => ({ ...prev, email }))} onNext={goNext} />,
+		<RegisterEmail key="email" onChange={(email) => setFormData((prev) => ({ ...prev, email }))} onNext={goNext} />,
 		<RegisterPassword
+			key="password"
 			onChange={(password) => setFormData((prev) => ({ ...prev, password }))}
 			onNext={goNext}
 			onPrev={goBack}
 		/>,
 		<RegisterConfirmPassword
+			key="confirmPassword"
 			password={formData.password}
 			onChange={(confirmPassword) => setFormData((prev) => ({ ...prev, confirmPassword }))}
 			onNext={goNext}
 			onPrev={goBack}
 		/>,
-		<RegisterName onChange={(name) => setFormData((prev) => ({ ...prev, name }))} onNext={goNext} onPrev={goBack} />,
-		<RegisterNotifications onFinish={handleFinish} onPrev={goBack} />,
+		<RegisterName
+			key="name"
+			onChange={(name) => setFormData((prev) => ({ ...prev, name }))}
+			onNext={goNext}
+			onPrev={goBack}
+		/>,
+		<RegisterNotifications key="notifications" onFinish={handleFinish} onPrev={goBack} />,
 	];
 
 	return (

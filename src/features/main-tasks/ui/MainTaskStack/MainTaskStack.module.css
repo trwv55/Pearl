@@ -11,7 +11,9 @@
 .taskItemWrapper {
 	width: 100%;
 	padding: 0;
-	transition: all 0.3s ease;
+	/* Без CSS-transition: обёртку анимирует framer-motion (разлёт из стопки).
+	   `transition: all` интерполировал бы тот же transform ещё раз — карточки
+	   дёргались бы и отставали от пружины. */
 }
 
 .taskItemWrap {
@@ -20,6 +22,7 @@
 }
 
 .expanded {
+	/* Должен совпадать с LIST_GAP в index.tsx — по нему считается путь разлёта. */
 	gap: 10px;
 	/* height: 280px; */
 	height: auto;

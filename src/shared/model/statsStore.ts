@@ -15,7 +15,7 @@ export interface WeekStats {
 	completedDaysCount?: number;
 }
 
-class StatsStore {
+export class StatsStore {
 	weekStats: WeekStats | null = null;
 
 	constructor() {

@@ -48,3 +48,6 @@ ios/.DS_Store
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
 DerivedData/
+
+# superpowers scratch (SDD workspaces)
+.superpowers/

@@ -3,7 +3,6 @@ import { MainTasksCount } from "@/shared/ui/TasksCount";
 import { observer } from "mobx-react-lite";
 import { taskStore } from "@/shared/model/taskStore";
 import { TasksAndStatsWidget } from "@/widgets/tasks-and-stats";
-import { TaskViewPopupProvider } from "@/features/task-view";
 
 interface MainTasksProps {
 	isStackExpanded?: boolean;
@@ -17,14 +16,12 @@ export const MainTasks: React.FC<MainTasksProps> = observer(({ isStackExpanded, 
 				<h2>Главные задачи</h2>
 				<MainTasksCount current={taskStore.mainTasks.length} max={3} />
 			</div>
-			<TaskViewPopupProvider>
-				<TasksAndStatsWidget
-					tasks={taskStore.mainTasks}
-					showDots
-					isStackExpanded={isStackExpanded}
-					onExpandChange={onExpandChange}
-				/>
-			</TaskViewPopupProvider>
+			<TasksAndStatsWidget
+				tasks={taskStore.mainTasks}
+				showDots
+				isStackExpanded={isStackExpanded}
+				onExpandChange={onExpandChange}
+			/>
 		</div>
 	);
 });
