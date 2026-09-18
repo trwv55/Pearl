@@ -6,6 +6,7 @@ import { taskStore } from "@/shared/model/taskStore";
 import { toast } from "sonner";
 import { userStore } from "@/shared/model/userStore";
 import { useSwipeable } from "react-swipeable";
+import { useTaskViewPopup } from "@/features/task-view";
 import { statsStore } from "@/shared/model/statsStore";
 import { startOfWeek } from "date-fns";
 import { useHaptics } from "@/shared/hooks/useHaptics";
@@ -22,6 +23,7 @@ export const RoutineTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isDraggi
 	const [isChecked, setIsChecked] = useState(task.isCompleted);
 	const [showDelete, setShowDelete] = useState(false);
 	const uid = userStore.user?.uid;
+	const { openTask } = useTaskViewPopup();
 	const { trigger } = useHaptics();
 
 	useEffect(() => {
@@ -61,9 +63,10 @@ export const RoutineTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isDraggi
 		setShowDelete(false);
 	};
 
-	const handleTaskClick = useCallback(async () => {
-		if (!uid) return;
-	}, [uid, task.id]);
+	// Клик по карточке (не по чекбоксу) открывает попап просмотра — как у главных.
+	const handleTaskClick = useCallback(() => {
+		openTask(task);
+	}, [openTask, task]);
 
 	return (
 		<div className={styles.swipeWrap} {...(canSwipe ? swipeHandlers : {})}>
@@ -88,7 +91,13 @@ export const RoutineTaskItem: React.FC<RoutineTaskItemProps> = ({ task, isDraggi
 			>
 				<div className={styles.taskItemContent}>
 					<div className={styles.taskItemContentLeft}>
-						<input type="checkbox" className={styles.checkbox} checked={isChecked} onChange={handleCheck} />
+						<input
+							type="checkbox"
+							className={styles.checkbox}
+							checked={isChecked}
+							onChange={handleCheck}
+							onClick={(event) => event.stopPropagation()}
+						/>
 						<span className={styles.emoji}>{task.emoji}</span>
 						<span className={styles.title}>{task.title}</span>
 					</div>

@@ -9,7 +9,7 @@ import {
 	setNotificationsTogglePreference,
 } from "@/shared/lib/notifications";
 
-class NotificationSettingsStore {
+export class NotificationSettingsStore {
 	// Текущее состояние переключателя уведомлений в приложении (вкл/выкл).
 	isNotificationsEnabled = false;
 	// Флаг, что стор уже синхронизировал состояние с системным permission хотя бы один раз.

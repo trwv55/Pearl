@@ -26,4 +26,6 @@
 
 .placeholderCentered {
 	text-align: center;
+	/* WebKit (iOS) центрирует закрытый <select> только через text-align-last */
+	text-align-last: center;
 }

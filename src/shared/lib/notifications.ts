@@ -3,14 +3,29 @@ import { Capacitor } from "@capacitor/core";
 import type { Task } from "@/shared/types/task";
 
 const NOTIFICATION_TOGGLE_STORAGE_KEY = "pearl.notifications.enabled";
+const NOTIFICATION_ID_MAP_KEY = "pearl.notifications.idMap";
+const NOTIFICATION_ID_COUNTER_KEY = "pearl.notifications.idCounter";
 
-function taskIdToNumber(taskId: string): number {
-	let hash = 0;
-	for (let i = 0; i < taskId.length; i++) {
-		hash = ((hash << 5) - hash) + taskId.charCodeAt(i);
-		hash = hash & hash;
+// Устойчивый integer-id уведомления для задачи. Capacitor требует 32-битный int,
+// поэтому вместо хэша от id (давал коллизии — одна задача могла отменить
+// уведомление другой) держим маппинг taskId → возрастающий счётчик в
+// localStorage. У каждой задачи свой уникальный id, коллизий нет.
+function getNotificationId(taskId: string): number {
+	if (typeof window === "undefined") return 1;
+
+	let map: Record<string, number> = {};
+	try {
+		map = JSON.parse(window.localStorage.getItem(NOTIFICATION_ID_MAP_KEY) || "{}");
+	} catch {
+		map = {};
 	}
-	return Math.abs(hash) || 1;
+	if (typeof map[taskId] === "number") return map[taskId];
+
+	const next = parseInt(window.localStorage.getItem(NOTIFICATION_ID_COUNTER_KEY) || "0", 10) + 1;
+	map[taskId] = next;
+	window.localStorage.setItem(NOTIFICATION_ID_MAP_KEY, JSON.stringify(map));
+	window.localStorage.setItem(NOTIFICATION_ID_COUNTER_KEY, String(next));
+	return next;
 }
 
 export function getNotificationsTogglePreference(): boolean | null {
@@ -108,7 +123,7 @@ export async function scheduleTaskNotification(task: Task): Promise<void> {
 		await LocalNotifications.schedule({
 			notifications: [
 				{
-					id: taskIdToNumber(task.id),
+					id: getNotificationId(task.id),
 					title: `${task.emoji} ${task.title}`,
 					body: `Сегодня в ${timeStr}`,
 					schedule: { at: notifyAt },
@@ -125,7 +140,7 @@ export async function cancelTaskNotification(taskId: string): Promise<void> {
 	if (!Capacitor.isNativePlatform()) return;
 	try {
 		await LocalNotifications.cancel({
-			notifications: [{ id: taskIdToNumber(taskId) }],
+			notifications: [{ id: getNotificationId(taskId) }],
 		});
 	} catch (err) {
 		console.warn("Не удалось отменить уведомление", err);

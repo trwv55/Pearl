@@ -1,8 +1,22 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type Modifier } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+
+// Тащим карточку только по вертикали — иначе она уезжает за палец вбок и
+// сдвигает экран вправо. Вбок карточка не выходит, по вертикали — свободно.
+const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 0 });
+
+// Геометрия свёрнутой стопки: каждая следующая карта ниже на 11px и мельче на 7%.
+// Эти же числа задают стартовую точку «разлёта» при раскрытии, поэтому вынесены
+// в константы — иначе анимация начнётся не там, где карточка реально стояла.
+const STACK_OFFSET = 11;
+const STACK_SCALE_STEP = 0.07;
+// Отступ между карточками в раскрытом списке — должен совпадать с gap у .expanded.
+const LIST_GAP = 10;
+// Запасная высота карточки, пока ResizeObserver не измерил реальную.
+const FALLBACK_ITEM_H = 80;
 import { isTaskMain, type Task, type TaskMain } from "@/shared/types/task";
 import { MainTaskItem } from "@/features/main-tasks/ui/MainTaskItem";
 import { EmptyMainTaskSlot } from "@/features/main-tasks/ui/EmptyMainTaskSlot";
@@ -62,6 +76,9 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 	const [itemH, setItemH] = useState<number>(0);
 	const uid = userStore.user?.uid;
 	const { trigger } = useHaptics();
+
+	// Во время драга глушим выделение текста/callout на странице через класс на body.
+	useEffect(() => () => document.body.classList.remove("dnd-dragging"), []);
 
 	useEffect(() => {
 		if (isControlled) return;
@@ -144,9 +161,36 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 		[realTasks, uid],
 	);
 
+	const handleDragStart = useCallback(() => {
+		document.body.classList.add("dnd-dragging");
+	}, []);
+
+	const handleDragEndWrapped = useCallback(
+		(event: { active: { id: string | number }; over: { id: string | number } | null }) => {
+			document.body.classList.remove("dnd-dragging");
+			handleDragEnd(event);
+		},
+		[handleDragEnd],
+	);
+
+	const handleDragCancel = useCallback(() => {
+		document.body.classList.remove("dnd-dragging");
+	}, []);
+
 	const expandedHeight = 300;
 	const collapsedHeight = itemH || undefined;
 	const containerAnimate = itemH ? { height: isExpanded ? expandedHeight : collapsedHeight } : undefined;
+
+	// Стартовая точка «разлёта»: карточка начинает ровно там, где стояла в
+	// свёрнутой стопке, и пружиной встаёт на своё место в списке. В стопке
+	// карта i смещена на i*11, в списке — на i*(высота+gap); значит лететь ей
+	// нужно ровно эту разницу, снизу вверх. Верхняя карта уже на месте.
+	const cardH = itemH || FALLBACK_ITEM_H;
+	const spreadFrom = (index: number) => ({
+		y: -index * (cardH + LIST_GAP - STACK_OFFSET),
+		scale: 1 - index * STACK_SCALE_STEP,
+		opacity: index === 0 ? 1 : 0.95,
+	});
 
 	// Раскрытый стек: вертикальный список с drag-and-drop. Реальные задачи
 	// перетаскиваются, плейсхолдеры («Будущая задача») — статичны.
@@ -159,12 +203,22 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 				className={`${styles.stack} ${styles.expanded}`}
 				style={{ overflow: "hidden" }}
 			>
-				<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+				<DndContext
+					sensors={sensors}
+					collisionDetection={closestCenter}
+					modifiers={[restrictToVerticalAxis]}
+					onDragStart={handleDragStart}
+					onDragEnd={handleDragEndWrapped}
+					onDragCancel={handleDragCancel}
+				>
 					<SortableContext items={realTasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
 						{tasks.map((task, index) => (
-							<div
+							<motion.div
 								key={task ? task.id : `placeholder-${index}`}
 								className={styles.taskItemWrapper}
+								initial={spreadFrom(index)}
+								animate={{ y: 0, scale: 1, opacity: 1 }}
+								transition={{ type: "spring", stiffness: 400, damping: 30, delay: index * 0.05 }}
 							>
 								<div className={styles.taskItemWrap} ref={index === 0 ? firstItemRef : undefined}>
 									{task ? (
@@ -173,7 +227,7 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 										<EmptyMainTaskSlot />
 									)}
 								</div>
-							</div>
+							</motion.div>
 						))}
 					</SortableContext>
 				</DndContext>
@@ -191,8 +245,8 @@ export const MainTaskStack: React.FC<MainTaskStackProps> = ({
 			style={{ overflow: "hidden" }}
 		>
 			{tasks.map((task, index) => {
-				const offset = index * 11;
-				const scale = 1 - index * 0.07;
+				const offset = index * STACK_OFFSET;
+				const scale = 1 - index * STACK_SCALE_STEP;
 				const z = tasks.length - index;
 
 				return (

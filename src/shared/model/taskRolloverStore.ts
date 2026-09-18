@@ -9,7 +9,7 @@ const ENABLED_DATE_KEY = "pearl.rollover.enabledDate";
 // Настройка «Продление задач». Хранит факт включения и ДАТУ включения:
 // переносятся только невыполненные главные задачи с дней >= этой даты —
 // то есть «только с этого момента», прошлые просрочки не подметаются.
-class TaskRolloverStore {
+export class TaskRolloverStore {
 	isEnabled = false;
 	enabledDate: string | null = null; // yyyy-MM-dd, локальная дата включения
 	isInitialized = false;

@@ -1,9 +1,7 @@
 "use client";
 
 import { makeAutoObservable, runInAction } from "mobx";
-import { getFirebaseDb } from "@/shared/lib/firebase";
 import { format, addDays, startOfDay } from "date-fns";
-import { collection, getDocs, query, where } from "firebase/firestore";
 import {
 	deleteTask as deleteTaskApi,
 	toggleTaskCompletion,
@@ -12,10 +10,12 @@ import {
 	updateTask,
 	updateTasksOrder,
 	rolloverTasks,
-	mapDocToTask,
+	getTasksByDate,
+	getTasksForRange,
+	subscribeToTasksInRange,
 	type TaskPayload,
 } from "@/shared/api/taskApi";
-import { MAX_MAIN_TASKS } from "@/shared/config/tasks";
+import { MAX_MAIN_TASKS, ROLLOVER_CUTOFF_HOUR } from "@/shared/config/tasks";
 import {
 	isTaskMain,
 	isTaskRoutine,
@@ -29,7 +29,7 @@ import { showUndoToast } from "@/shared/lib/showUndoToast";
 import { showErrorToast } from "@/shared/lib/showToast";
 import { cancelTaskNotification, scheduleTaskNotification } from "@/shared/lib/notifications";
 
-class TaskStore {
+export class TaskStore {
 	tasks: Task[] = [];
 	selectedDate: Date = new Date();
 	private taskCache: Map<string, Task[]> = new Map();
@@ -37,6 +37,9 @@ class TaskStore {
 	private pending: Map<string, { timer: ReturnType<typeof setTimeout>; commit: () => void }> = new Map();
 	// Даты, по которым сейчас идёт догрузка — чтобы не слать дубли запросов.
 	private inFlightDates: Set<string> = new Set();
+	// Задачи в процессе оптимистичного удаления (окно undo, до записи на сервер).
+	// Realtime-подписка игнорирует их, чтобы не «вернуть» задачу с сервера.
+	private pendingDeletions: Set<string> = new Set();
 
 	constructor() {
 		makeAutoObservable(this);
@@ -127,12 +130,7 @@ class TaskStore {
 
 	async fetchTasks(userId: string, date: Date = this.selectedDate) {
 		try {
-			const db = getFirebaseDb();
-			const start = startOfDay(date);
-			const end = addDays(start, 1);
-			const q = query(collection(db, "users", userId, "tasks"), where("date", ">=", start), where("date", "<", end));
-			const snapshot = await getDocs(q);
-			const tasks: Task[] = snapshot.docs.map((doc) => mapDocToTask(doc.id, doc.data()));
+			const tasks = await getTasksByDate(userId, date);
 
 			runInAction(() => {
 				const key = this.getDateKey(date);
@@ -149,19 +147,10 @@ class TaskStore {
 
 	async fetchTasksForRange(userId: string, startDate: Date, endDate: Date) {
 		try {
-			const db = getFirebaseDb();
-			const q = query(
-				collection(db, "users", userId, "tasks"),
-				where("date", ">=", startOfDay(startDate)),
-				where("date", "<", startOfDay(addDays(endDate, 1))),
-			);
-
-			const snapshot = await getDocs(q);
+			const tasks = await getTasksForRange(userId, startDate, endDate);
 			const groupedTasks: Map<string, Task[]> = new Map();
 
-			snapshot.docs.forEach((doc) => {
-				const task = mapDocToTask(doc.id, doc.data());
-
+			tasks.forEach((task) => {
 				const key = this.getDateKey(task.date);
 				if (!groupedTasks.has(key)) {
 					groupedTasks.set(key, []);
@@ -185,6 +174,53 @@ class TaskStore {
 		} catch (error) {
 			console.error("Ошибка при загрузке задач за диапазон:", error);
 		}
+	}
+
+	// Живая подписка на задачи диапазона: изменения (в т.ч. с другого устройства)
+	// прилетают сразу. Возвращает функцию отписки. onReady зовётся после первого
+	// снапшота (для снятия скелетона). Задачи в pendingDeletions игнорируются —
+	// иначе сервер «вернул» бы задачу в окне undo-удаления.
+	subscribeToRange(userId: string, startDate: Date, endDate: Date, onReady?: () => void): () => void {
+		const start = startOfDay(startDate);
+		const end = startOfDay(addDays(endDate, 1));
+
+		let ready = false;
+		const markReady = () => {
+			if (ready) return;
+			ready = true;
+			onReady?.();
+		};
+
+		return subscribeToTasksInRange(
+			userId,
+			startDate,
+			endDate,
+			(tasks) => {
+				const grouped: Map<string, Task[]> = new Map();
+				tasks.forEach((task) => {
+					if (this.pendingDeletions.has(task.id)) return;
+					const key = this.getDateKey(task.date);
+					if (!grouped.has(key)) grouped.set(key, []);
+					grouped.get(key)!.push(task);
+				});
+
+				runInAction(() => {
+					for (let d = start; d < end; d = addDays(d, 1)) {
+						const key = this.getDateKey(d);
+						this.taskCache.set(key, grouped.get(key) ?? []);
+					}
+					const selectedKey = this.getDateKey(this.selectedDate);
+					if (this.taskCache.has(selectedKey)) {
+						this.tasks = this.taskCache.get(selectedKey)!;
+					}
+				});
+				markReady();
+			},
+			(error) => {
+				console.error("Ошибка realtime-подписки на задачи:", error);
+				markReady();
+			},
+		);
 	}
 
 	clearCache() {
@@ -303,6 +339,7 @@ class TaskStore {
 		if (this.pending.has(task.id)) return;
 
 		this.removeLocal(task.id);
+		this.pendingDeletions.add(task.id);
 		cancelTaskNotification(task.id);
 
 		// settled гарантирует, что удаление ИЛИ отмена сработают ровно один раз,
@@ -323,6 +360,8 @@ class TaskStore {
 				scheduleTaskNotification(task);
 				console.error("Ошибка при удалении задачи:", e);
 				showErrorToast("Ошибка. Попробуй еще раз");
+			} finally {
+				this.pendingDeletions.delete(task.id);
 			}
 		};
 
@@ -332,6 +371,7 @@ class TaskStore {
 			const entry = this.pending.get(task.id);
 			if (entry) clearTimeout(entry.timer);
 			this.pending.delete(task.id);
+			this.pendingDeletions.delete(task.id);
 			runInAction(() => this.addLocal(task));
 			scheduleTaskNotification(task);
 		};
@@ -423,45 +463,56 @@ class TaskStore {
 	}
 
 	// Автопродление: переносит невыполненные ГЛАВНЫЕ задачи с прошедших дней
-	// (начиная с sinceDate — даты включения тоггла) на сегодня. Если лимит
-	// главных на сегодня исчерпан, лишние становятся рутинными.
+	// (начиная с sinceDate — даты включения тоггла) на активный день. Если лимит
+	// главных на активном дне исчерпан, лишние становятся рутинными.
+	// «Активный день» начинается в ROLLOVER_CUTOFF_HOUR (04:00): с 00:00 до 03:59
+	// прошлый календарный день ещё активен и задачи не переносятся.
 	async rolloverOverdueMainTasks(userId: string, sinceDate: Date) {
-		const today = startOfDay(new Date());
+		const now = new Date();
+		const activeDay = startOfDay(now.getHours() < ROLLOVER_CUTOFF_HOUR ? addDays(now, -1) : now);
 		const since = startOfDay(sinceDate);
-		if (since >= today) return;
+		if (since >= activeDay) return;
 
-		// Тянем задачи диапазона [since, today) по дате; фильтр по isMain/isCompleted
-		// на клиенте, чтобы не заводить составной индекс Firestore.
-		const db = getFirebaseDb();
-		const q = query(
-			collection(db, "users", userId, "tasks"),
-			where("date", ">=", since),
-			where("date", "<", today),
-		);
-		const snapshot = await getDocs(q);
-		const overdue = snapshot.docs
-			.map((d) => mapDocToTask(d.id, d.data()))
-			.filter((t) => t.isMain && !t.isCompleted)
+		// Одним запросом тянем и просроченные дни [since, activeDay), и сам activeDay:
+		// существующие главные активного дня считаем из ТОЙ ЖЕ свежей выборки, а не
+		// из локального кэша — иначе счётчик отставал и главных становилось >3.
+		const all = await getTasksForRange(userId, since, activeDay);
+		const activeKey = this.getDateKey(activeDay);
+
+		const overdue = all
+			.filter((t) => this.getDateKey(t.date) !== activeKey && t.isMain && !t.isCompleted)
 			.sort((a, b) => a.date.getTime() - b.date.getTime() || compareTaskOrder(a, b));
 
 		if (overdue.length === 0) return;
 
-		// Сколько главных уже на сегодня — чтобы соблюсти лимит.
-		await this.ensureTasksForDate(userId, today);
-		let todayMainCount = this.getTasksForDate(today).filter(isTaskMain).length;
+		// Существующие задачи активного дня — из свежих данных: точный счёт главных
+		// и засев порядка для главных/рутинных без опоры на кэш.
+		const activeTasks = all.filter((t) => this.getDateKey(t.date) === activeKey);
+		const seedOrder = (list: Task[]) => {
+			const withOrder = list.filter((t) => t.order !== NO_ORDER);
+			return withOrder.length ? Math.max(...withOrder.map((t) => t.order)) + 1 : 0;
+		};
+		let mainCount = activeTasks.filter((t) => t.isMain).length;
+		let nextMainOrder = seedOrder(activeTasks.filter((t) => t.isMain));
+		let nextRoutineOrder = seedOrder(activeTasks.filter((t) => !t.isMain));
 
 		const updates: { id: string; date: Date; isMain: boolean; order: number }[] = [];
 		for (const task of overdue) {
-			const newIsMain = todayMainCount < MAX_MAIN_TASKS;
-			if (newIsMain) todayMainCount++;
-			const order = this.nextOrder(today, newIsMain);
-			const moved: Task = { ...task, date: today, isMain: newIsMain, order };
+			const newIsMain = mainCount < MAX_MAIN_TASKS;
+			let order: number;
+			if (newIsMain) {
+				mainCount++;
+				order = nextMainOrder++;
+			} else {
+				order = nextRoutineOrder++;
+			}
+			const moved: Task = { ...task, date: activeDay, isMain: newIsMain, order };
 
 			runInAction(() => {
 				this.removeFromCache(task.date, task.id);
 				this.addToCache(moved);
 			});
-			updates.push({ id: task.id, date: today, isMain: newIsMain, order });
+			updates.push({ id: task.id, date: activeDay, isMain: newIsMain, order });
 		}
 
 		try {
